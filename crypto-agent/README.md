@@ -88,7 +88,7 @@ Prior phases:
 CLI: `python -m src.orchestrator.run_daily once --dry-run`
      `python -m scripts.run_backtest --days 200 --btc-drift 0.001`
 
-All 107 tests run offline with zero network and zero Anthropic calls.
+All 126 tests run offline with zero network and zero Anthropic calls.
 
 ### Operational tooling
 
@@ -105,6 +105,17 @@ All 107 tests run offline with zero network and zero Anthropic calls.
   Ready for Phase 5.5 real-time fill integration; tests drive it
   through an in-memory `FakeWsTransport` so the `websockets` package is
   not a hard dependency.
+- `python -m src.dashboard.generator` — zero-dependency static HTML
+  dashboard that walks `data/runs/` artifacts and writes a single
+  self-contained `data/dashboard/index.html` with equity curve
+  (hand-rolled SVG), ELO bars, recent-runs table, and error list. No
+  Streamlit/server — open the file in a browser.
+- `src/memory/tax_export.py` — Korean 기타소득 export with weighted-
+  average cost basis, per-trade JSON + CSV, annual aggregate with
+  configurable deduction (default ₩2.5M) and tax rate (default 22%).
+- `Dockerfile` + `.dockerignore` — multi-stage build into an
+  unprivileged runtime image. Runs `once --dry-run` by default; point
+  it at `schedule` with env vars for paper/live operation.
 
 ## Getting started (dev)
 

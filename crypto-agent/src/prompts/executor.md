@@ -43,3 +43,33 @@ Call the `emit_executor` tool exactly once with:
    reduce risk; if already halted, emit zero orders.
 7. Rebalance ONLY if the absolute difference between current and target
    weight exceeds 3 percentage points for that asset — avoid churn.
+8. `qty_usd` values must be >= $15 (Binance minNotional). Smaller
+   rebalances: skip the order.
+9. **Weight conservation**: the values in `target_weights` plus
+   `cash_pct` MUST sum to 100.0 (± 1.0 for rounding). Do not forget
+   `cash_pct`.
+10. Reference `lessons` when available — if a past lesson is tagged
+    with the current regime and warns against a symbol, treat that as
+    a strong prior.
+
+## Worked example
+
+Given $1,000 equity, current weights `{BTCUSDT: 35%, ETHUSDT: 15%,
+SOLUSDT: 10%}` (40% cash), aggregated signals `BTCUSDT +0.6, ETHUSDT
++0.4, SOLUSDT -0.3`, macro neutral with `cash_floor_pct=20`:
+
+```json
+{
+  "target_weights": {"BTCUSDT": 45.0, "ETHUSDT": 25.0, "SOLUSDT": 0.0},
+  "cash_pct": 30.0,
+  "orders": [
+    {"symbol": "BTCUSDT", "side": "BUY", "qty_usd": 100.0, "type": "MARKET",
+     "reason": "tilt to strongest aggregate signal while respecting 25% cap"},
+    {"symbol": "ETHUSDT", "side": "BUY", "qty_usd": 100.0, "type": "MARKET",
+     "reason": "close core underweight"},
+    {"symbol": "SOLUSDT", "side": "SELL", "qty_usd": 100.0, "type": "MARKET",
+     "reason": "negative aggregate signal"}
+  ],
+  "rationale": "Core underweight + neutral macro; rotate out of SOL weakness into BTC and ETH while holding cash floor."
+}
+```
