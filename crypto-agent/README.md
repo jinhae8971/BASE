@@ -41,22 +41,26 @@ See `../ULTRA_PLAN.md` for the full design and phased roadmap.
 
 ## Status
 
-**Phase 2 — Real LLM agents.** The seven agents now route through a narrow
-`LLMClient` interface:
+**Phase 4 — Backtest engine.** The `src/backtest/` package drives
+`DailyWorkflow` over historical data day-by-day through a
+`SimulatedBinanceClient` that supports realistic fees and slippage.
+`HistoricalSnapshotProvider` builds an as-of `MarketSnapshot` for any date
+in the candle archive. `HeuristicLLMClient` — a deterministic baseline that
+implements the `LLMClient` protocol — lets backtests run offline without
+spending Anthropic credits, and acts as a minimum bar the real agents must
+beat. Performance reports include total return, CAGR, Sharpe, Sortino,
+MDD, win rate, profit factor, turnover, and the primary KPI: **Alpha vs
+BTC HODL**.
 
-- `AnthropicLLMClient` (prod): tool-calling with forced `tool_choice` for
-  structured JSON, ephemeral prompt caching on system blocks, per-call cost
-  estimation, and a shared `CostTracker` that enforces
-  `ANTHROPIC_DAILY_BUDGET_USD`.
-- `MockLLMClient` (tests): per-tool-name canned handlers, same contract.
+CLI: `python -m scripts.run_backtest --days 180 --btc-drift 0.002`
 
-Prompts live as plain markdown under `src/prompts/*.md` and are loaded once
-per process. Each agent declares a JSON tool schema that doubles as the
-output validator.
+Prior phases:
+- **P2 real LLM agents** — 7 agents with tool-calling, prompt caching,
+  budget guard
+- **P1 data layer** — free-tier HTTP clients + snapshot fanout
+- **P0 scaffold** — agents/portfolio/risk/execution skeleton
 
-Dry mode with no injected client still uses the Phase 0 stubs so wiring
-tests stay hermetic. All 36 tests run offline with zero network and zero
-Anthropic calls.
+All 46 tests run offline with zero network and zero Anthropic calls.
 
 ## Getting started (dev)
 

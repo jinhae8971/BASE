@@ -119,7 +119,9 @@ class DailyWorkflow:
         macro_payload = results["macro"].payload
         allocation = optimize(signals, macro_cash_floor_pct=macro_payload["cash_floor_pct"])
 
-        # 6. Executor agent
+        # 6. Executor agent — needs current portfolio state to compute deltas.
+        equity = await self.binance.account_equity_usd()
+        current_weights = self._current_weights(universe)
         exec_ctx = AgentContext(
             run_id=run_id,
             as_of=ctx.as_of,
@@ -127,13 +129,14 @@ class DailyWorkflow:
             portfolio={
                 "target_weights": allocation.weights,
                 "cash_pct": allocation.cash_pct,
+                "current_weights": current_weights,
+                "equity_usd": equity,
                 "signals": {s: {"score": sig.score} for s, sig in signals.items()},
             },
         )
         exec_result = await self.executor.run(exec_ctx)
 
         # 7. Risk filter
-        equity = await self.binance.account_equity_usd()
         state = PortfolioState(
             equity_usd=equity,
             peak_equity_usd=equity,
@@ -200,3 +203,16 @@ class DailyWorkflow:
             "fills": [f.__dict__ for f in fills],
             "elo_weights": weights,
         }
+
+    def _current_weights(self, universe: list[str]) -> dict[str, float]:
+        """Expose current portfolio weights to the executor agent.
+
+        The backtest's SimulatedBinanceClient carries a `state` and
+        `current_prices`; real Binance clients would need their own accessor.
+        We return fractional weights (0..1), not percents.
+        """
+        sim = getattr(self.binance, "state", None)
+        prices = getattr(self.binance, "current_prices", None)
+        if sim is None or prices is None:
+            return {sym: 0.0 for sym in universe}
+        return sim.weights(prices)
