@@ -41,6 +41,15 @@ See `../ULTRA_PLAN.md` for the full design and phased roadmap.
 
 ## Status
 
+**Phase 5 + 7 — Paper and Live trading wired with 3-lock safety gate.**
+Authenticated Binance REST (HMAC-SHA256 signed) for both testnet
+(paper) and prod (live) share one implementation; the only difference
+is the base URL and API keys. Live mode is locked behind three
+independent affirmative conditions (env var × 2 + a grep-able ack
+file) AND two hard caps on per-order and total equity exposure, AND an
+automatic `canWithdraw == False` verification on the first account
+call. See the Safety section below for the complete runbook.
+
 **Phase 6 — Self-learning loop activated.** The system now actually
 changes its own behavior as a function of realized outcomes, which is the
 core user requirement. New pieces:
@@ -79,7 +88,7 @@ Prior phases:
 CLI: `python -m src.orchestrator.run_daily once --dry-run`
      `python -m scripts.run_backtest --days 200 --btc-drift 0.001`
 
-All 63 tests run offline with zero network and zero Anthropic calls.
+All 93 tests run offline with zero network and zero Anthropic calls.
 
 ## Getting started (dev)
 
@@ -93,7 +102,84 @@ python -m src.orchestrator.run_daily --dry-run
 
 ## Safety
 
-- `TRADING_MODE` defaults to `dry`. Only `live` places real Binance orders.
-- Binance API keys MUST have **Withdraw OFF** and **Futures OFF**.
-- A file named `HALT` at the repo root halts all trading on the next tick.
-- MDD circuit breaker at 15% flattens to cash and requires human ack.
+The system defends against three distinct failure modes:
+
+1. **Accidental live execution** — someone flips `TRADING_MODE=live`
+   without intending to. Three independent locks must all be present.
+2. **Bug-induced over-sizing** — the executor agent hallucinates a
+   massive order. Two hard caps clamp what can actually reach Binance.
+3. **Key compromise** — the API key with trading rights has Withdraw
+   enabled. The system refuses to trade and requires key rotation.
+
+### Mode promotion
+
+`TRADING_MODE` values: `dry` → `paper` → `live`. Promotion direction is
+one-way intent:
+
+- **dry**: no network, no LLM cost, no Binance. Default everywhere.
+- **paper**: authenticated REST against `testnet.binance.vision`. Real
+  API path, fake money. Requires `BINANCE_API_KEY` + `BINANCE_API_SECRET`
+  from the testnet. This is the **Phase 5 gate** — run for 2 weeks
+  before considering `live`.
+- **live**: authenticated REST against `api.binance.com`. Real money.
+  **Requires ALL THREE**:
+  1. `TRADING_MODE=live` in the environment
+  2. `PROMOTE_LIVE=1` in the environment
+  3. A `.live-promotion-ack` file at the repo root containing exactly
+     the string `I UNDERSTAND THE RISK OF LIVE TRADING`
+
+Any live submit without all three → `LiveNotPromoted` raised before
+leaving the process.
+
+### Hard caps (live mode only)
+
+- `LIVE_MAX_CAPITAL_USDT` (default **$1,000**): the system clamps
+  reported account equity to this value before any sizing math, so it
+  physically cannot construct an order against funds you didn't opt in.
+- `LIVE_MAX_ORDER_USDT` (default **$250**): every single order's
+  notional is clamped to this ceiling regardless of what the executor
+  agent requests.
+
+### API key checklist
+
+Before running paper, and again before promoting to live:
+
+- [ ] **Withdraw: OFF** (the system verifies this on first account call
+      and refuses to trade if enabled)
+- [ ] Futures: OFF
+- [ ] Margin: OFF
+- [ ] IP whitelist configured to the host that will run the scheduler
+- [ ] Secret stored in `.env` (never committed — `.env` is gitignored)
+- [ ] Telegram bot token set for failure alerts
+
+### Kill switches
+
+- `HALT` file at repo root → every order submission refuses until the
+  file is removed (checked in both dry and live paths).
+- MDD circuit breaker at 15% equity drawdown → flattens to cash and
+  requires human acknowledgment before resuming.
+- Daily loss > 3% → freezes new buys for the remainder of the day.
+- Weekly loss > 7% → halves every open position.
+
+### Promotion runbook
+
+```bash
+# --- Paper (Phase 5) ---
+export BINANCE_API_KEY=...        # testnet key
+export BINANCE_API_SECRET=...     # testnet secret
+export TRADING_MODE=paper
+python -m src.orchestrator.run_daily once
+
+# --- Live (Phase 7) — only after Phase 5 passes ---
+echo "I UNDERSTAND THE RISK OF LIVE TRADING" > .live-promotion-ack
+export BINANCE_API_KEY=...        # real key, Withdraw OFF
+export BINANCE_API_SECRET=...
+export TRADING_MODE=live
+export PROMOTE_LIVE=1
+python -m src.orchestrator.run_daily once
+```
+
+The three-lock design means `.live-promotion-ack` is a grep-able shell-
+history artifact, `PROMOTE_LIVE=1` is an env-var audit trail, and
+`TRADING_MODE=live` is the obvious knob. Missing any one → no live
+orders leave the process.

@@ -58,6 +58,10 @@ class Settings(BaseSettings):
     weekly_loss_reduce_pct: float = 7.0
     mdd_circuit_breaker_pct: float = 15.0
 
+    # Live trading hard caps (independent of agent decisions).
+    live_max_capital_usdt: float = 1000.0   # equity cap: never touch funds above this
+    live_max_order_usdt: float = 250.0       # per-order notional ceiling
+
     # Observability
     telegram_bot_token: str = ""
     telegram_chat_id: str = ""
