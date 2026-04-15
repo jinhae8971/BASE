@@ -124,18 +124,83 @@ if not errorlevel 1 (
     if defined PYV if !PYV! GEQ 311 set "PYTHON_EXE=python"
 )
 :find_python_done
-if not defined PYTHON_EXE (
-    echo [X] Python 3.11+ not found.
-    echo     Install Python 3.12 from https://www.python.org/downloads/
-    echo     During installation, check "Add Python to PATH".
+if defined PYTHON_EXE exit /b 0
+exit /b 1
+
+:install_python
+rem Attempts to download + silent install Python 3.12 (per-user, no admin).
+rem Returns 2 on success so the caller can print "restart cmd" and exit.
+echo.
+echo [!] Python 3.11+ not found on this machine.
+echo.
+echo This launcher can download and install Python 3.12 for you automatically.
+echo The installer is downloaded into %%TEMP%%, runs in silent per-user mode
+echo (no admin rights required), adds itself to PATH, then cleans up.
+echo.
+choice /c YN /n /m "Install Python 3.12 now? (Y/N) "
+if errorlevel 2 (
+    echo.
+    echo Manual install:
+    echo   1^) Open https://www.python.org/downloads/
+    echo   2^) Click "Download Python 3.12.x"
+    echo   3^) Run the installer - CHECK "Add python.exe to PATH"
+    echo   4^) Close this window, open a new cmd
+    echo   5^) cd %%USERPROFILE%%\Desktop\BASE\crypto-agent
+    echo   6^) run setup
     exit /b 1
 )
-exit /b 0
+
+set "PY_URL=https://www.python.org/ftp/python/3.12.8/python-3.12.8-amd64.exe"
+set "PY_INSTALLER=%TEMP%\python-3.12.8-amd64.exe"
+
+echo.
+echo [*] Downloading Python 3.12.8 (~25 MB) from python.org ...
+powershell -NoProfile -Command "[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri '%PY_URL%' -OutFile '%PY_INSTALLER%' -UseBasicParsing"
+if errorlevel 1 (
+    echo [X] Download failed. Check your internet connection or install manually
+    echo     from https://www.python.org/downloads/
+    exit /b 1
+)
+if not exist "%PY_INSTALLER%" (
+    echo [X] Installer did not save to %PY_INSTALLER%
+    exit /b 1
+)
+
+echo [*] Running silent installer (per-user, adds to PATH)^. This takes ~1 minute...
+"%PY_INSTALLER%" /quiet InstallAllUsers=0 PrependPath=1 Include_test=0 Include_launcher=1
+set "INSTALL_RC=%errorlevel%"
+del /q "%PY_INSTALLER%" >nul 2>&1
+if not "%INSTALL_RC%"=="0" (
+    echo [X] Python installer exited with code %INSTALL_RC%
+    exit /b 1
+)
+
+echo.
+echo [v] Python 3.12 installed successfully.
+echo.
+echo ================================================================
+echo  IMPORTANT: PATH changes ONLY take effect in NEW cmd windows.
+echo  Please do the following now:
+echo.
+echo    1. Close THIS cmd window.
+echo    2. Open a NEW Command Prompt (Start menu -^> "Command Prompt").
+echo    3. Run these commands:
+echo         cd %%USERPROFILE%%\Desktop\BASE\crypto-agent
+echo         run setup
+echo ================================================================
+echo.
+pause
+exit /b 2
 
 :ensure_venv
 if exist "%VENV_PY%" exit /b 0
+call :find_python
+if errorlevel 1 (
+    call :install_python
+    exit /b %errorlevel%
+)
 echo [*] Creating virtual environment in %VENV_DIR% ...
-call :find_python || exit /b 1
+echo [v] Using %PYTHON_EXE%
 %PYTHON_EXE% -m venv "%VENV_DIR%"
 if errorlevel 1 (
     echo [X] Failed to create venv.
