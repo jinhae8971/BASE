@@ -20,7 +20,6 @@ from __future__ import annotations
 
 import asyncio
 from dataclasses import asdict
-from datetime import UTC, datetime
 from typing import Any
 from uuid import uuid4
 
@@ -34,7 +33,7 @@ from src.agents import (
     ValueAgent,
 )
 from src.agents.base import AgentResult
-from src.data.binance_md import fetch_universe_top
+from src.data.snapshot import MarketSnapshot, gather as gather_snapshot
 from src.execution.binance_client import BinanceClient, Order
 from src.execution.killswitch import is_halted
 from src.learning.elo import EloTable
@@ -59,10 +58,13 @@ class DailyWorkflow:
         elo: EloTable | None = None,
         trade_store: InMemoryTradeStore | None = None,
         binance: BinanceClient | None = None,
+        snapshot_fn=None,
     ) -> None:
         self.elo = elo or EloTable()
         self.trade_store = trade_store or InMemoryTradeStore()
         self.binance = binance or BinanceClient()
+        # Injectable for tests; defaults to the real MarketSnapshot fanout.
+        self._snapshot_fn = snapshot_fn or gather_snapshot
         self.signal_agents = [
             ResearchAgent(),
             MacroAgent(),
@@ -80,11 +82,23 @@ class DailyWorkflow:
             log.warning("run.halted")
             return {"run_id": run_id, "halted": True}
 
-        # 1. Universe
-        universe = await fetch_universe_top(limit=universe_size)
+        # 1. Collect one market snapshot and build the shared agent context.
+        snapshot: MarketSnapshot = await self._snapshot_fn(universe_size=universe_size)
+        universe = snapshot.universe
+        if not universe:
+            log.error("run.empty_universe", errors=snapshot.errors)
+            return {"run_id": run_id, "halted": True, "reason": "empty universe", "errors": snapshot.errors}
 
-        # 2. Context (Phase 1 will populate data fields)
-        ctx = AgentContext(run_id=run_id, as_of=datetime.now(UTC), universe=universe)
+        snap_fields = snapshot.agent_dict()
+        ctx = AgentContext(
+            run_id=run_id,
+            as_of=snapshot.as_of,
+            universe=universe,
+            market_data=snap_fields["market_data"],
+            macro_data=snap_fields["macro_data"],
+            onchain_data=snap_fields["onchain_data"],
+            news=snap_fields["news"],
+        )
 
         # 3. Signal agents in parallel
         results_list: list[AgentResult] = await asyncio.gather(

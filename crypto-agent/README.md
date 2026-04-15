@@ -41,7 +41,14 @@ See `../ULTRA_PLAN.md` for the full design and phased roadmap.
 
 ## Status
 
-Phase 0 — Scaffolding. Not yet runnable against live Binance. All agents are stubs that return deterministic mock payloads so the end-to-end wiring can be tested before any LLM or exchange calls.
+**Phase 1 — Data Layer.** Real free-tier HTTP clients are in place for
+Binance public, CoinGecko, DefiLlama, CryptoPanic (with daily budget
+manager), and FRED. `DailyWorkflow` now takes one `MarketSnapshot` per run
+and fans it out to every agent via `AgentContext`. All 27 tests run offline
+using `httpx.MockTransport`; no test touches the network.
+
+Agents still return deterministic stubs — Phase 2 swaps those for real
+Anthropic calls.
 
 ## Getting started (dev)
 
