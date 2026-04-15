@@ -1,18 +1,8 @@
-"""Executor (Trader) agent — turns signals into concrete Binance orders.
-
-This is the one agent that actually decides *what to trade*. It reads:
-  - aggregated signals from the other five agents,
-  - the current portfolio snapshot,
-  - the macro regime (for cash floor),
-  - the risk guardrail state.
-
-It must emit a list of orders that will be filtered again by `portfolio.risk`
-before being sent to the Binance executor. In dry mode we return an empty
-order list so wiring tests do not accidentally move capital.
-"""
+"""Executor (Trader) agent — turns aggregated signals into concrete orders."""
 
 from __future__ import annotations
 
+import json
 from typing import Any
 
 from src.agents.base import AgentContext, BaseAgent
@@ -20,7 +10,51 @@ from src.agents.base import AgentContext, BaseAgent
 
 class ExecutorAgent(BaseAgent):
     name = "executor"
-    model_key = "strong"  # Opus — final decision gate
+    model_key = "strong"
+    max_tokens = 4096  # needs room for order list + rationale
+
+    @property
+    def tool_name(self) -> str:
+        return "emit_executor"
+
+    @property
+    def input_schema(self) -> dict[str, Any]:
+        return {
+            "type": "object",
+            "required": ["target_weights", "cash_pct", "orders", "rationale"],
+            "properties": {
+                "target_weights": {
+                    "type": "object",
+                    "additionalProperties": {"type": "number", "minimum": 0, "maximum": 100},
+                },
+                "cash_pct": {"type": "number", "minimum": 0, "maximum": 100},
+                "orders": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "required": ["symbol", "side", "qty_usd"],
+                        "properties": {
+                            "symbol": {"type": "string"},
+                            "side": {"type": "string", "enum": ["BUY", "SELL"]},
+                            "qty_usd": {"type": "number", "minimum": 0},
+                            "type": {"type": "string", "enum": ["MARKET", "LIMIT"]},
+                            "reason": {"type": "string"},
+                        },
+                    },
+                },
+                "rationale": {"type": "string", "maxLength": 800},
+            },
+        }
+
+    def user_message(self, ctx: AgentContext) -> str:
+        return json.dumps(
+            {
+                "universe": ctx.universe,
+                "portfolio": ctx.portfolio,
+                "lessons": ctx.lessons[:5],
+            },
+            ensure_ascii=False,
+        )
 
     def _run_stub(self, ctx: AgentContext) -> dict[str, Any]:
         return {

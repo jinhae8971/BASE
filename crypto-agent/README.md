@@ -41,13 +41,21 @@ See `../ULTRA_PLAN.md` for the full design and phased roadmap.
 
 ## Status
 
-**Phase 1 — Data Layer.** Real free-tier HTTP clients are in place for
-Binance public, CoinGecko, DefiLlama, CryptoPanic (with daily budget
-manager), and FRED. `DailyWorkflow` now takes one `MarketSnapshot` per run
-and fans it out to every agent via `AgentContext`. All 27 tests run offline
-using `httpx.MockTransport`; no test touches the network.
+**Phase 2 — Real LLM agents.** The seven agents now route through a narrow
+`LLMClient` interface:
 
-Agents still return deterministic stubs — Phase 2 swaps those for real
+- `AnthropicLLMClient` (prod): tool-calling with forced `tool_choice` for
+  structured JSON, ephemeral prompt caching on system blocks, per-call cost
+  estimation, and a shared `CostTracker` that enforces
+  `ANTHROPIC_DAILY_BUDGET_USD`.
+- `MockLLMClient` (tests): per-tool-name canned handlers, same contract.
+
+Prompts live as plain markdown under `src/prompts/*.md` and are loaded once
+per process. Each agent declares a JSON tool schema that doubles as the
+output validator.
+
+Dry mode with no injected client still uses the Phase 0 stubs so wiring
+tests stay hermetic. All 36 tests run offline with zero network and zero
 Anthropic calls.
 
 ## Getting started (dev)

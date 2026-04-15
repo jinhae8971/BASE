@@ -1,33 +1,56 @@
-"""Reflection agent — post-mortem after each closed trade.
-
-Runs asynchronously when a position closes. Compares each specialist agent's
-predicted direction / conviction to realized P&L and writes:
-  1. a natural-language `lesson` into the vector store (RAG for future runs),
-  2. per-agent scoring deltas used by the ELO updater.
-"""
+"""Reflection agent — post-mortem after each closed trade."""
 
 from __future__ import annotations
 
+import json
 from typing import Any
 
 from src.agents.base import AgentContext, BaseAgent
+
+AGENT_KEYS = ["research", "macro", "sector", "value", "quant", "executor"]
 
 
 class ReflectionAgent(BaseAgent):
     name = "reflection"
     model_key = "strong"
+    max_tokens = 1024
+
+    @property
+    def tool_name(self) -> str:
+        return "emit_reflection"
+
+    @property
+    def input_schema(self) -> dict[str, Any]:
+        return {
+            "type": "object",
+            "required": ["lesson", "agent_scores", "tags"],
+            "properties": {
+                "lesson": {"type": "string", "minLength": 20, "maxLength": 800},
+                "agent_scores": {
+                    "type": "object",
+                    "required": AGENT_KEYS,
+                    "properties": {
+                        k: {"type": "number", "minimum": -1, "maximum": 1}
+                        for k in AGENT_KEYS
+                    },
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "maxItems": 10,
+                },
+            },
+        }
+
+    def user_message(self, ctx: AgentContext) -> str:
+        # Reflection reads trade metadata out of ctx.portfolio, which the
+        # post-mortem pipeline populates from the closed TradeRecord.
+        return json.dumps(ctx.portfolio, ensure_ascii=False)
 
     def _run_stub(self, ctx: AgentContext) -> dict[str, Any]:
         return {
-            "lesson": "stub: no closed trades yet",
-            "agent_scores": {
-                "research": 0.0,
-                "macro": 0.0,
-                "sector": 0.0,
-                "value": 0.0,
-                "quant": 0.0,
-                "executor": 0.0,
-            },
+            "lesson": "stub: no closed trades yet to reflect on",
+            "agent_scores": {k: 0.0 for k in AGENT_KEYS},
             "tags": [],
         }
 
@@ -35,6 +58,8 @@ class ReflectionAgent(BaseAgent):
         if "lesson" not in payload or not isinstance(payload["lesson"], str):
             raise ValueError("reflection: missing lesson string")
         scores = payload.get("agent_scores", {})
-        for agent, delta in scores.items():
-            if not -1.0 <= float(delta) <= 1.0:
-                raise ValueError(f"reflection: {agent} delta out of range")
+        for k in AGENT_KEYS:
+            if k not in scores:
+                raise ValueError(f"reflection: missing score for {k}")
+            if not -1.0 <= float(scores[k]) <= 1.0:
+                raise ValueError(f"reflection: {k} delta out of range")

@@ -37,6 +37,7 @@ from src.data.snapshot import MarketSnapshot, gather as gather_snapshot
 from src.execution.binance_client import BinanceClient, Order
 from src.execution.killswitch import is_halted
 from src.learning.elo import EloTable
+from src.llm import LLMClient
 from src.logging import get_logger
 from src.memory.trade_store import AgentDecision, InMemoryTradeStore, TradeRecord
 from src.portfolio.aggregator import aggregate
@@ -59,20 +60,24 @@ class DailyWorkflow:
         trade_store: InMemoryTradeStore | None = None,
         binance: BinanceClient | None = None,
         snapshot_fn=None,
+        llm_client: LLMClient | None = None,
     ) -> None:
         self.elo = elo or EloTable()
         self.trade_store = trade_store or InMemoryTradeStore()
         self.binance = binance or BinanceClient()
         # Injectable for tests; defaults to the real MarketSnapshot fanout.
         self._snapshot_fn = snapshot_fn or gather_snapshot
+        self._llm = llm_client
+        # All agents share the same client so prompt-cache breakpoints set by
+        # one agent warm the cache for every subsequent call in the run.
         self.signal_agents = [
-            ResearchAgent(),
-            MacroAgent(),
-            SectorAgent(),
-            ValueAgent(),
-            QuantAgent(),
+            ResearchAgent(llm_client=llm_client),
+            MacroAgent(llm_client=llm_client),
+            SectorAgent(llm_client=llm_client),
+            ValueAgent(llm_client=llm_client),
+            QuantAgent(llm_client=llm_client),
         ]
-        self.executor = ExecutorAgent()
+        self.executor = ExecutorAgent(llm_client=llm_client)
 
     async def run(self, universe_size: int = 20) -> dict[str, Any]:
         run_id = uuid4().hex[:12]
