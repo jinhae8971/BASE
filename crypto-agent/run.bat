@@ -9,6 +9,10 @@ rem  Keys (ANTHROPIC_API_KEY, BINANCE_API_KEY, BINANCE_API_SECRET) are
 rem  prompted interactively in THIS command window only and are NEVER
 rem  written to disk. Closing the window clears every secret.
 rem
+rem  NOTE: this file must be stored with CRLF line endings (enforced by
+rem  .gitattributes). LF endings cause cmd.exe to silently mis-parse
+rem  multi-line if blocks.
+rem
 rem  Usage:
 rem      run                (interactive menu — you can also double-click)
 rem      run setup          (create venv, install deps, run tests)
