@@ -14,7 +14,7 @@ rem  .gitattributes). LF endings cause cmd.exe to silently mis-parse
 rem  multi-line if blocks.
 rem
 rem  Usage:
-rem      run                (interactive menu — you can also double-click)
+rem      run                (interactive menu - you can also double-click)
 rem      run setup          (create venv, install deps, run tests)
 rem      run verify         (one real Anthropic call to check your key)
 rem      run fetch          (download 2y BTC/ETH/SOL klines)
