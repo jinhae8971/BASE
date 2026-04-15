@@ -23,3 +23,18 @@ class InMemoryLessonStore:
         # Phase 0: naive substring match. Phase 2: Qdrant + embeddings.
         q = query.lower()
         return [le for le in self._lessons if q in le.text.lower()][:k]
+
+    async def recent(self, k: int = 5) -> list[Lesson]:
+        return list(self._lessons[-k:])
+
+
+_default_store = InMemoryLessonStore()
+
+
+def default_store() -> InMemoryLessonStore:
+    """Process-wide lesson store.
+
+    Phase 6 will replace this with a persistent Qdrant-backed store; the
+    API stays the same (add / search / recent) so call sites don't change.
+    """
+    return _default_store

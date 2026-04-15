@@ -51,7 +51,7 @@ def aggregate(
         if macro is not None:
             bias = float(macro.payload.get("btc_bias", 0.0))
             contrib["macro"] = bias if sym.startswith("BTC") else 0.5 * bias
-        # Sector mapping is deferred to Phase 2 — placeholder 0.
+        # Sector mapping is deferred to Phase 2 -- placeholder 0.
         contrib["sector"] = 0.0
         if value is not None:
             contrib["value"] = float(

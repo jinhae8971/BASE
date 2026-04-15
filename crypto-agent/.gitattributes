@@ -1,0 +1,14 @@
+# Always check out Windows batch scripts with CRLF line endings.
+# cmd.exe's parser silently mis-parses multi-line `if` blocks when
+# it encounters LF-only line endings, producing "… was not expected"
+# errors that are hard to debug.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Keep shell scripts as LF.
+*.sh  text eol=lf
+*.py  text eol=lf
+*.md  text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.toml text eol=lf

@@ -1,4 +1,4 @@
-"""Trade journal — source of truth for learning and reporting.
+"""Trade journal -- source of truth for learning and reporting.
 
 Phase 0 defines the schemas as dataclasses and provides an in-memory store
 so the orchestrator can run end-to-end without Postgres. Phase 1 will swap
