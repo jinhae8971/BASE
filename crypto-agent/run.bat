@@ -129,13 +129,15 @@ exit /b 1
 
 :install_python
 rem Attempts to download + silent install Python 3.12 (per-user, no admin).
-rem Returns 2 on success so the caller can print "restart cmd" and exit.
+rem On success, adds the new Python to PATH in the current session and
+rem returns 0 so the caller can continue setup without a restart.
 echo.
 echo [!] Python 3.11+ not found on this machine.
 echo.
 echo This launcher can download and install Python 3.12 for you automatically.
-echo The installer is downloaded into %%TEMP%%, runs in silent per-user mode
-echo (no admin rights required), adds itself to PATH, then cleans up.
+echo The installer is downloaded to %%TEMP%%, runs in silent per-user mode
+echo (no admin rights required), then the launcher continues setup in the
+echo same window.
 echo.
 choice /c YN /n /m "Install Python 3.12 now? (Y/N) "
 if errorlevel 2 (
@@ -155,18 +157,27 @@ set "PY_INSTALLER=%TEMP%\python-3.12.8-amd64.exe"
 
 echo.
 echo [*] Downloading Python 3.12.8 (~25 MB) from python.org ...
-powershell -NoProfile -Command "[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri '%PY_URL%' -OutFile '%PY_INSTALLER%' -UseBasicParsing"
-if errorlevel 1 (
+rem Prefer curl.exe (built into Windows 10 1803+) since it avoids
+rem PowerShell quoting pitfalls. Fall back to PowerShell if curl is
+rem missing or the download fails.
+set "DOWNLOAD_OK=0"
+where curl >nul 2>&1
+if not errorlevel 1 (
+    curl.exe -L --fail --silent --show-error -o "%PY_INSTALLER%" "%PY_URL%"
+    if not errorlevel 1 set "DOWNLOAD_OK=1"
+)
+if "%DOWNLOAD_OK%"=="0" (
+    echo [*] curl unavailable or failed. Trying PowerShell ...
+    powershell -NoProfile -ExecutionPolicy Bypass -Command "Invoke-WebRequest -Uri $env:PY_URL -OutFile $env:PY_INSTALLER -UseBasicParsing"
+    if not errorlevel 1 if exist "%PY_INSTALLER%" set "DOWNLOAD_OK=1"
+)
+if "%DOWNLOAD_OK%"=="0" (
     echo [X] Download failed. Check your internet connection or install manually
     echo     from https://www.python.org/downloads/
     exit /b 1
 )
-if not exist "%PY_INSTALLER%" (
-    echo [X] Installer did not save to %PY_INSTALLER%
-    exit /b 1
-)
 
-echo [*] Running silent installer (per-user, adds to PATH)^. This takes ~1 minute...
+echo [*] Running silent installer (per-user, adds to PATH). This takes ~1 minute...
 "%PY_INSTALLER%" /quiet InstallAllUsers=0 PrependPath=1 Include_test=0 Include_launcher=1
 set "INSTALL_RC=%errorlevel%"
 del /q "%PY_INSTALLER%" >nul 2>&1
@@ -175,22 +186,37 @@ if not "%INSTALL_RC%"=="0" (
     exit /b 1
 )
 
-echo.
 echo [v] Python 3.12 installed successfully.
-echo.
-echo ================================================================
-echo  IMPORTANT: PATH changes ONLY take effect in NEW cmd windows.
-echo  Please do the following now:
-echo.
-echo    1. Close THIS cmd window.
-echo    2. Open a NEW Command Prompt (Start menu -^> "Command Prompt").
-echo    3. Run these commands:
-echo         cd %%USERPROFILE%%\Desktop\BASE\crypto-agent
-echo         run setup
-echo ================================================================
-echo.
-pause
-exit /b 2
+echo [*] Adding Python 3.12 to PATH for this session ...
+
+rem Per-user install location. Try the standard path first, then the
+rem py-launcher-aware fallback.
+set "PY312_ROOT=%LOCALAPPDATA%\Programs\Python\Python312"
+if not exist "%PY312_ROOT%\python.exe" (
+    rem Some installer versions drop it under a slightly different name.
+    for /d %%D in ("%LOCALAPPDATA%\Programs\Python\Python312*") do (
+        if exist "%%D\python.exe" set "PY312_ROOT=%%D"
+    )
+)
+if not exist "%PY312_ROOT%\python.exe" (
+    echo [!] Python installed but not found at expected path:
+    echo     %PY312_ROOT%
+    echo     Close this window, open a NEW cmd, and run: run setup
+    exit /b 2
+)
+
+set "PATH=%PY312_ROOT%;%PY312_ROOT%\Scripts;%PATH%"
+echo [v] PATH updated. Python 3.12 is now available in this window.
+
+rem Re-run find_python now that PATH contains the new Python.
+call :find_python
+if errorlevel 1 (
+    echo [X] Python still not detected after install. This should not happen.
+    echo     Try closing and reopening cmd, then running: run setup
+    exit /b 1
+)
+echo [v] Continuing with setup ...
+exit /b 0
 
 :ensure_venv
 if exist "%VENV_PY%" exit /b 0
@@ -211,14 +237,24 @@ exit /b 0
 
 :ensure_deps
 call :ensure_venv || exit /b 1
+if not exist "%VENV_PY%" (
+    echo [X] venv python.exe not found at %VENV_PY%
+    echo     This means venv creation silently failed. Try:
+    echo       rmdir /s /q %VENV_DIR%
+    echo       run setup
+    exit /b 1
+)
 "%VENV_PY%" -c "import src, pytest, httpx, anthropic" >nul 2>&1
 if errorlevel 1 (
-    echo [*] Installing dependencies (takes ~30s on first run) ...
-    "%VENV_PY%" -m pip install --quiet --upgrade pip
-    if errorlevel 1 exit /b 1
-    "%VENV_PY%" -m pip install --quiet -e ".[dev]"
+    echo [*] Installing dependencies (takes ~30-60s on first run) ...
+    "%VENV_PY%" -m pip install --upgrade pip
     if errorlevel 1 (
-        echo [X] Dependency install failed.
+        echo [X] pip upgrade failed.
+        exit /b 1
+    )
+    "%VENV_PY%" -m pip install -e ".[dev]"
+    if errorlevel 1 (
+        echo [X] Dependency install failed. See the pip output above.
         exit /b 1
     )
     echo [v] Dependencies installed.
