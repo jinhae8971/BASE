@@ -1,15 +1,18 @@
 """CLI entrypoint for the backtest engine.
 
-Usage:
-    python -m scripts.run_backtest \
-        --symbols BTCUSDT,ETHUSDT,SOLUSDT \
-        --days 365 \
-        --start-price 30000
+Two modes:
 
-This is intentionally minimal — it drives synthetic candles so the backtest
-loop can be exercised without a Binance historical download. Phase 4 adds a
-dedicated historical fetcher that pulls real Binance klines into a Parquet
-archive; this script will then grow a `--from-archive` flag.
+1. Synthetic drift (default) — useful for wiring tests:
+
+    python -m scripts.run_backtest --days 365 --btc-drift 0.003
+
+2. Real Binance history from a previously-downloaded archive:
+
+    python -m scripts.fetch_history --symbols BTCUSDT,ETHUSDT --start 2023-01-01 --end 2025-01-01
+    python -m scripts.run_backtest --from-archive --symbols BTCUSDT,ETHUSDT
+
+The archive path is `data/history/<interval>/<symbol>.ndjson` which is
+what `scripts/fetch_history.py` writes.
 """
 
 from __future__ import annotations
@@ -24,6 +27,7 @@ from src.backtest.engine import BacktestEngine
 from src.backtest.heuristic_llm import HeuristicLLMClient
 from src.backtest.portfolio_sim import SimConfig
 from src.backtest.provider import HistoricalSnapshotProvider
+from src.data.binance_history import load_archive
 from src.data.binance_md import Candle
 
 
@@ -52,7 +56,7 @@ def _synthetic_candles(
 
 
 def parse_args() -> argparse.Namespace:
-    p = argparse.ArgumentParser(description="Run a synthetic-data backtest")
+    p = argparse.ArgumentParser(description="Run a backtest")
     p.add_argument("--symbols", default="BTCUSDT,ETHUSDT")
     p.add_argument("--days", type=int, default=365)
     p.add_argument("--initial-capital", type=float, default=1000.0)
@@ -61,6 +65,12 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--btc-drift", type=float, default=0.003)
     p.add_argument("--alt-drift", type=float, default=0.002)
     p.add_argument("--rebalance-every", type=int, default=1)
+    p.add_argument(
+        "--from-archive",
+        action="store_true",
+        help="Use real Binance history from data/history/<interval>/<symbol>.ndjson",
+    )
+    p.add_argument("--interval", default="1d", help="Kline interval for --from-archive")
     return p.parse_args()
 
 
@@ -71,14 +81,24 @@ async def main_async() -> int:
     args = parse_args()
     symbols = [s.strip().upper() for s in args.symbols.split(",") if s.strip()]
 
-    candles = {
-        sym: _synthetic_candles(
-            args.days,
-            start_price=30_000.0 if sym == "BTCUSDT" else 2_000.0,
-            daily_drift=args.btc_drift if sym == "BTCUSDT" else args.alt_drift,
-        )
-        for sym in symbols
-    }
+    if args.from_archive:
+        candles = load_archive(symbols, interval=args.interval)
+        empty = [s for s, cs in candles.items() if not cs]
+        if empty:
+            print(
+                f"ERROR: no archive data for {empty}. "
+                f"Run: python -m scripts.fetch_history --symbols {','.join(empty)}"
+            )
+            return 2
+    else:
+        candles = {
+            sym: _synthetic_candles(
+                args.days,
+                start_price=30_000.0 if sym == "BTCUSDT" else 2_000.0,
+                daily_drift=args.btc_drift if sym == "BTCUSDT" else args.alt_drift,
+            )
+            for sym in symbols
+        }
     provider = HistoricalSnapshotProvider(
         universe=symbols,
         candles_by_symbol=candles,

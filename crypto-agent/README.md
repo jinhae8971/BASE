@@ -88,7 +88,23 @@ Prior phases:
 CLI: `python -m src.orchestrator.run_daily once --dry-run`
      `python -m scripts.run_backtest --days 200 --btc-drift 0.001`
 
-All 93 tests run offline with zero network and zero Anthropic calls.
+All 107 tests run offline with zero network and zero Anthropic calls.
+
+### Operational tooling
+
+- `scripts/fetch_history.py` — bulk-download historical Binance klines
+  (1000/request, auto-paginated) into `data/history/<interval>/<symbol>.ndjson`.
+- `scripts/run_backtest.py --from-archive` — run the backtest engine
+  over real historical data instead of synthetic drift.
+- `scripts/verify_anthropic.py` — manual smoke test that runs the six
+  signal agents once against the real Anthropic API (requires
+  `ANTHROPIC_API_KEY`) and prints per-agent tokens, cache hit, and cost.
+  The test suite never runs this — it's a pre-promotion sanity check.
+- `src/execution/binance_user_stream.py` — WebSocket userDataStream
+  client (listenKey lifecycle + keepalive + execution-report parser).
+  Ready for Phase 5.5 real-time fill integration; tests drive it
+  through an in-memory `FakeWsTransport` so the `websockets` package is
+  not a hard dependency.
 
 ## Getting started (dev)
 
