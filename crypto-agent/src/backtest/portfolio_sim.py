@@ -8,7 +8,7 @@ the current-day close price with a configurable fee and slippage.
 
 Accounting model: spot only, long-only, USDT-quoted pairs, fractional
 quantities permitted. Holdings are tracked as base-asset quantity; equity is
-`cash + Σ qty_i * price_i` where prices come from the engine's daily feed.
+`cash + Sum qty_i * price_i` where prices come from the engine's daily feed.
 """
 
 from __future__ import annotations
@@ -108,7 +108,7 @@ class SimulatedBinanceClient:
             exec_price = price * (1 - slip_mult)
             held = self.state.positions.get(order.symbol, 0.0)
             if held <= 0:
-                raise RuntimeError(f"sim: cannot SELL {order.symbol} — no position")
+                raise RuntimeError(f"sim: cannot SELL {order.symbol} -- no position")
             # qty_usd is notional desired; clamp to held value.
             desired_qty = min(held, order.qty_usd / exec_price)
             proceeds = desired_qty * exec_price

@@ -50,7 +50,7 @@ def _handler_factory():
         {"symbol": "BTCUSDT", "lastPrice": "60000", "priceChangePercent": "1.5", "quoteVolume": "2000000000"},
         {"symbol": "ETHUSDT", "lastPrice": "3000", "priceChangePercent": "1.2", "quoteVolume": "1000000000"},
         {"symbol": "SOLUSDT", "lastPrice": "150", "priceChangePercent": "2.0", "quoteVolume": "500000000"},
-        # SHIB volume below $50M threshold — should be filtered out.
+        # SHIB volume below $50M threshold -- should be filtered out.
         {"symbol": "SHIBUSDT", "lastPrice": "0.00001", "priceChangePercent": "0.5", "quoteVolume": "10000000"},
         {"symbol": "NEWUSDT", "lastPrice": "1", "priceChangePercent": "10.0", "quoteVolume": "900000000"},
         {"symbol": "HALTUSDT", "lastPrice": "1", "priceChangePercent": "0", "quoteVolume": "100000000"},

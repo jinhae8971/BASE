@@ -1,4 +1,4 @@
-"""MarketSnapshot — single input bundle for a daily run.
+"""MarketSnapshot -- single input bundle for a daily run.
 
 The orchestrator calls `gather()` exactly once at the top of a run, then
 hands the resulting `MarketSnapshot` to every agent via `AgentContext`. This
@@ -7,7 +7,7 @@ each re-fetch the same data.
 
 Fan-out runs the five sources concurrently via `asyncio.gather` with
 `return_exceptions=True`: one flaky source (e.g. FRED rate-limited) does not
-fail the whole run — the affected fields are simply left empty and the agents
+fail the whole run -- the affected fields are simply left empty and the agents
 degrade gracefully.
 """
 
@@ -130,7 +130,7 @@ async def gather(
         CryptoPanicClient() as cp,
         FredClient() as fred,
     ):
-        # 1. Universe first — many downstream calls depend on it.
+        # 1. Universe first -- many downstream calls depend on it.
         try:
             snap.universe = await binance.universe_top(limit=universe_size)
         except Exception as exc:  # noqa: BLE001

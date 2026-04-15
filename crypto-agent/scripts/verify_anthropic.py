@@ -2,7 +2,7 @@
 
 The entire test suite runs with a `MockLLMClient`, so this is the only
 place the actual Anthropic SDK gets exercised. It's intentionally NOT a
-pytest — it requires a real API key and burns real credits (bounded by
+pytest -- it requires a real API key and burns real credits (bounded by
 `ANTHROPIC_DAILY_BUDGET_USD`). Run it manually when:
 
   - You've added or edited a prompt in `src/prompts/` and want to see
@@ -17,7 +17,7 @@ Usage:
     python -m scripts.verify_anthropic
 
 The script forces `TRADING_MODE=dry` regardless of env so no orders can
-leave the process — only the LLM path is exercised. The result prints
+leave the process -- only the LLM path is exercised. The result prints
 per-agent token counts + cumulative cost.
 """
 

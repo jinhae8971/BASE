@@ -14,12 +14,12 @@ WebSocket library:
 
   - `BinanceUserStreamRest`   : the three REST calls above (listenKey
     lifecycle) backed by httpx. Fully testable with MockTransport.
-  - `WsTransport`             : tiny Protocol — `connect() -> async
+  - `WsTransport`             : tiny Protocol -- `connect() -> async
     iterator of text frames`. Production uses the `websockets` package
     (lazy-imported); tests inject a fake that yields canned JSON.
   - `parse_execution_report`  : turns a raw ``executionReport`` event
     dict into a `Fill` compatible with our existing trade journal.
-  - `BinanceUserStream`       : the glue — given a REST client and a
+  - `BinanceUserStream`       : the glue -- given a REST client and a
     `WsTransport`, it manages the listenKey, runs a keep-alive task on
     a 30-minute cadence, and yields parsed Fills one at a time.
 
@@ -177,7 +177,7 @@ def parse_execution_report(msg: dict[str, Any]) -> ExecutionReport | None:
 def report_to_fill(report: ExecutionReport) -> Fill | None:
     """Turn a TRADE execution into our lightweight `Fill`, or None.
 
-    Uses the ``last_filled_*`` fields exclusively — those are the only
+    Uses the ``last_filled_*`` fields exclusively -- those are the only
     ones guaranteed to represent actual execution. A TRADE event with
     zero last-filled qty/price is malformed and we drop it rather than
     silently fall back to the (possibly stale) total fields.

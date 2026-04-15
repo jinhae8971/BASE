@@ -1,4 +1,4 @@
-"""run_backtest CLI tests — the synthetic-data path and the --real-llm guards.
+"""run_backtest CLI tests -- the synthetic-data path and the --real-llm guards.
 
 The CLI glue is tested via `subprocess.run` on the current Python
 interpreter so argparse + main_async + result-print formatting are all

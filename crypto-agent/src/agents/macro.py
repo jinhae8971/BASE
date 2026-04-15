@@ -1,4 +1,4 @@
-"""Macro agent — DXY, rates, equities, risk regime."""
+"""Macro agent -- DXY, rates, equities, risk regime."""
 
 from __future__ import annotations
 

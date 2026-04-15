@@ -1,4 +1,4 @@
-"""Sector agent — L1/L2/DeFi/AI/RWA rotation."""
+"""Sector agent -- L1/L2/DeFi/AI/RWA rotation."""
 
 from __future__ import annotations
 

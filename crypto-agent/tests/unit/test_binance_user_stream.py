@@ -1,4 +1,4 @@
-"""Binance userDataStream tests — listenKey lifecycle + event parsing."""
+"""Binance userDataStream tests -- listenKey lifecycle + event parsing."""
 
 from __future__ import annotations
 

@@ -8,12 +8,12 @@ weights and automatically tilts toward whichever specialist agents have
 been right most recently.
 
 This module is the bridge that closes the user's stated core requirement:
-*"지난 투자이력을 통해 스스로 실력을 쌓아가는 구조"*. Everything else in
+*"past-trade history forms the basis for the system's own improvement"*. Everything else in
 the system just routes signals; this is the only place where the system
 actually *changes its own behavior* as a function of realized outcomes.
 
 The loop is side-effect heavy (vector store insert + ELO mutation), so
-failures are caught, logged, and swallowed — a broken reflection must not
+failures are caught, logged, and swallowed -- a broken reflection must not
 take down the daily trading loop.
 """
 

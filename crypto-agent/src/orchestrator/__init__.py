@@ -1,1 +1,1 @@
-"""Daily orchestrator — the entrypoint for every scheduled run."""
+"""Daily orchestrator -- the entrypoint for every scheduled run."""

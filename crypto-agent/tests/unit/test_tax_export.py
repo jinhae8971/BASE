@@ -1,4 +1,4 @@
-"""Korean tax export tests — realized P&L aggregation + KRW conversion."""
+"""Korean tax export tests -- realized P&L aggregation + KRW conversion."""
 
 from __future__ import annotations
 

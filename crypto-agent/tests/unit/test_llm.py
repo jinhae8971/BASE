@@ -1,4 +1,4 @@
-"""LLM layer tests — mock client, cost tracker, budget guard, agent path."""
+"""LLM layer tests -- mock client, cost tracker, budget guard, agent path."""
 
 from __future__ import annotations
 

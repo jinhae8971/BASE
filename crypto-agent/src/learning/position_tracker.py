@@ -1,4 +1,4 @@
-"""Position tracker — open/close lifecycle with realized P&L.
+"""Position tracker -- open/close lifecycle with realized P&L.
 
 Observes fills from the orchestrator and maintains per-symbol open-position
 state (quantity + average entry price + entry-time agent decisions).
@@ -7,7 +7,7 @@ the `LearningLoop` consumes to run reflection and update ELO.
 
 This is deliberately a separate layer from the Binance client so it works
 identically for the simulated client (backtest), testnet (paper), and live
-exchange — all of which produce the same `Fill` shape.
+exchange -- all of which produce the same `Fill` shape.
 
 Partial exits update realized P&L but do NOT trigger reflection. The
 "thesis was right / wrong" question only gets a verdict when the whole

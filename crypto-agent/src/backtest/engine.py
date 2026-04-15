@@ -13,7 +13,7 @@ Each tick:
 once in `__init__` and passed into every per-day `DailyWorkflow`. That's
 what lets the backtest actually simulate the self-learning loop: a SELL
 on day 47 that closes a position opened on day 32 triggers the Reflection
-agent, which stores a lesson and updates the ELO table — and day 48's
+agent, which stores a lesson and updates the ELO table -- and day 48's
 aggregator sees the new weights. Without shared state, every day would
 start from scratch and the learning loop would be untestable.
 

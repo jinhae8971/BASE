@@ -15,7 +15,7 @@ Design notes:
     the workflow. This gives the operator a single place to freeze trading
     without tearing down the process.
   - Uncaught exceptions inside the workflow are logged and alerted but do
-    NOT terminate the loop — the system is supposed to run unattended.
+    NOT terminate the loop -- the system is supposed to run unattended.
   - Test-mode: pass `max_ticks` and `now_fn` / `sleep_fn` to step through
     a deterministic fake clock.
 """
@@ -76,7 +76,7 @@ class DailyScheduler:
                 log.warning("scheduler.halt_file_present")
                 if self.alerter is not None:
                     await self.alerter.send(
-                        "Trading halted — HALT file present", level="warn"
+                        "Trading halted -- HALT file present", level="warn"
                     )
             else:
                 try:

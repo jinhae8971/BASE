@@ -1,6 +1,6 @@
 """Binance public market data client.
 
-Public REST endpoints only — no key required for the read-only data the
+Public REST endpoints only -- no key required for the read-only data the
 agents need. Paper/live trading will use a separate authenticated client in
 `execution.binance_client`.
 

@@ -54,7 +54,7 @@ def _provider(n: int = 50) -> HistoricalSnapshotProvider:
 def _build_churning_mock() -> MockLLMClient:
     """Mock that alternates buying and selling BTC so positions close often.
 
-    The executor tracks its own day counter via a mutable closure — odd
+    The executor tracks its own day counter via a mutable closure -- odd
     calls emit BUYs, even calls emit SELLs. That guarantees we observe
     closed positions and the learning loop runs.
     """
@@ -107,7 +107,7 @@ def _build_churning_mock() -> MockLLMClient:
 
     mock.register("emit_executor", executor)
 
-    # Reflection gives quant a positive delta on every close — ELO should
+    # Reflection gives quant a positive delta on every close -- ELO should
     # drift toward quant as the backtest progresses.
     mock.register("emit_reflection", lambda c: {
         "lesson": "Quant trend-follow call in neutral regime landed a small win on BTC.",

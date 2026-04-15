@@ -7,7 +7,7 @@ All private Binance endpoints require:
 
 We also add `recvWindow` to tolerate small clock drift without accepting
 stale requests. This module is stateless and dependency-free so it's
-trivially unit-testable — every test pins a fixed `timestamp_ms` and
+trivially unit-testable -- every test pins a fixed `timestamp_ms` and
 asserts the resulting hex matches a known vector.
 """
 

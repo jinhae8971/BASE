@@ -1,4 +1,4 @@
-"""Crypto Quant agent — price/volatility signals.
+"""Crypto Quant agent -- price/volatility signals.
 
 Builds a compact per-symbol feature summary from the snapshot's candles so
 the LLM doesn't have to ingest raw OHLCV. The features are deterministic

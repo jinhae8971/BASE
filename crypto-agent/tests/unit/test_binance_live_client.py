@@ -166,7 +166,7 @@ async def test_withdraw_check_only_runs_once(recorder: _Recorder) -> None:
     client = _build_client(recorder)
     await client.account_equity_usd()  # first call verifies
     assert client._withdraw_checked is True
-    # Second call would raise if we tried to verify again with bad data —
+    # Second call would raise if we tried to verify again with bad data --
     # this time we don't, proving we only check once.
     await client.account_equity_usd()
 
@@ -185,7 +185,7 @@ async def test_market_buy_sends_quote_order_qty(recorder: _Recorder) -> None:
     assert fill.side == "BUY"
     assert fill.qty > 0
 
-    # Inspect the last request — MARKET BUY goes via quoteOrderQty, not quantity.
+    # Inspect the last request -- MARKET BUY goes via quoteOrderQty, not quantity.
     assert recorder.last is not None
     params = _decoded_query(recorder.last)
     assert params["side"] == ["BUY"]

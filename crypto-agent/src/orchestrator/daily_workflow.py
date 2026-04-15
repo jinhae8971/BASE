@@ -1,4 +1,4 @@
-"""Daily workflow — the DAG that runs once per day.
+"""Daily workflow -- the DAG that runs once per day.
 
 Phase 3 upgrades:
   - **Graceful degradation**: one agent failure falls back to that agent's
@@ -11,7 +11,7 @@ Phase 3 upgrades:
     learning loop lands in Phase 6; the consumption side lives here.
   - **Run artifact**: every completed (or aborted) run writes a single JSON
     file under `data/runs/<date>/<run_id>.json` with the full agent
-    decisions, allocation, orders, fills, and errors — the audit trail and
+    decisions, allocation, orders, fills, and errors -- the audit trail and
     the input to backtest regression / Optuna in later phases.
   - **Alerts**: optional Telegram notifications on halt / risk guardrail
     trips / uncaught failures.
@@ -418,7 +418,7 @@ class DailyWorkflow:
                 )
             )
 
-        # 7. Learning loop — reflection + ELO update for every full close.
+        # 7. Learning loop -- reflection + ELO update for every full close.
         for closed in closed_positions:
             try:
                 await self.learning_loop.on_closed(closed)

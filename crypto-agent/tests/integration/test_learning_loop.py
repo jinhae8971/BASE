@@ -1,7 +1,7 @@
 """Self-learning loop integration tests.
 
 Verify that a closed position triggers the Reflection agent, persists a
-lesson into the vector store, and updates the ELO table — all through a
+lesson into the vector store, and updates the ELO table -- all through a
 MockLLMClient so the tests stay hermetic.
 """
 

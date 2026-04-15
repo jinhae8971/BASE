@@ -32,7 +32,7 @@ class TelegramAlerter:
         s = get_settings()
         if not s.telegram_bot_token or not s.telegram_chat_id:
             return False  # silently disabled
-        prefix = {"info": "ℹ️", "warn": "⚠️", "error": "🚨"}.get(level, "•")
+        prefix = {"info": "INFO", "warn": "WARN", "error": "ERROR"}.get(level, "-")
         body = f"{prefix} {text}"
         try:
             client = await self._get_client()

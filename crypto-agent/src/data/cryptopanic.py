@@ -1,7 +1,7 @@
 """CryptoPanic free-tier news client with a daily budget manager.
 
 Free tier limit: 500 requests per day. We enforce the budget locally using a
-per-UTC-day counter persisted in memory — once the budget is exhausted
+per-UTC-day counter persisted in memory -- once the budget is exhausted
 further calls raise `BudgetExceeded`. Phase 2 will persist the counter to
 Postgres so it survives restarts.
 """

@@ -25,6 +25,12 @@ rem ======================================================================
 setlocal enabledelayedexpansion
 cd /d "%~dp0"
 
+rem Force Python to emit UTF-8 on stdout regardless of the console's OEM
+rem codepage. Without this, print() with any non-ASCII char crashes with
+rem UnicodeEncodeError on Korean Windows (cp949 default).
+set "PYTHONIOENCODING=utf-8"
+set "PYTHONUTF8=1"
+
 set "VENV_DIR=.venv"
 set "VENV_PY=%VENV_DIR%\Scripts\python.exe"
 

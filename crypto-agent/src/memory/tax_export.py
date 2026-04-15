@@ -1,17 +1,17 @@
 """Korean virtual-asset tax export.
 
 Starting with the 2025 tax year Korea treats realized gains on virtual
-assets as `기타소득` (other income), taxed at 22% (20% income tax + 2%
-local tax) on net gain above a ₩2.5M annual deduction. This module
+assets as `other-income` (other income), taxed at 22% (20% income tax + 2%
+local tax) on net gain above a KRW 2.5M annual deduction. This module
 produces two things operators can hand to an accountant:
 
   1. A line-by-line realized-gain ledger in both JSON and CSV.
   2. An annual aggregate totaling gains, losses, net gain, and the
      estimated tax liability under the default rate.
 
-Cost-basis method: **weighted average** (가중평균) per symbol, which is
+Cost-basis method: **weighted average** (weighted-average) per symbol, which is
 the method Korean NTS has indicated they will default to. We do not
-attempt to support other methods (FIFO, specific ID) yet — add them if
+attempt to support other methods (FIFO, specific ID) yet -- add them if
 and when the guidance settles.
 
 KRW conversion: the export accepts a `usd_to_krw` rate as a float. For a
@@ -33,7 +33,7 @@ from typing import Iterable
 from src.learning.position_tracker import ClosedPosition
 
 # Default tax parameters (update with the final NTS schedule once it lands).
-DEFAULT_TAX_RATE = 0.22           # 20% 기타소득세 + 2% 지방소득세
+DEFAULT_TAX_RATE = 0.22           # 20% other-income-tax + 2% local-income-tax
 DEFAULT_ANNUAL_DEDUCTION_KRW = 2_500_000
 
 

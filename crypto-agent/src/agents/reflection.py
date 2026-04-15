@@ -1,4 +1,4 @@
-"""Reflection agent — post-mortem after each closed trade."""
+"""Reflection agent -- post-mortem after each closed trade."""
 
 from __future__ import annotations
 

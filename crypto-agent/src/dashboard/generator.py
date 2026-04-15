@@ -7,19 +7,19 @@ no external CSS.
 
 What the dashboard surfaces:
 
-  1. **Headline** — latest equity, last-run date, number of lifetime runs,
+  1. **Headline** -- latest equity, last-run date, number of lifetime runs,
      cumulative LLM cost, days with errors, days halted.
-  2. **Equity curve** — SVG line chart of end-of-run equity by date
+  2. **Equity curve** -- SVG line chart of end-of-run equity by date
      (uses `run_artifact.equity_usd`).
-  3. **Recent runs table** — last 20 runs: date, run_id (short), equity,
+  3. **Recent runs table** -- last 20 runs: date, run_id (short), equity,
      orders placed, errors, macro regime, run duration, cost.
-  4. **Agent ELO weights** — latest weights from the most recent run
+  4. **Agent ELO weights** -- latest weights from the most recent run
      for which the artifact carries `elo_weights`.
-  5. **Recent lessons** — tail of the lesson store is not in artifacts
+  5. **Recent lessons** -- tail of the lesson store is not in artifacts
      (it's in the in-memory store which doesn't persist yet), but the
      dashboard shows any reflection lessons it can extract from the
      reflection agent output in the artifact if present.
-  6. **Errors** — a flat list of the last 10 errors across all runs.
+  6. **Errors** -- a flat list of the last 10 errors across all runs.
 
 Design notes:
   - HTML is emitted from plain f-strings. No Jinja dep.
@@ -243,7 +243,7 @@ def _runs_table(artifacts: list[dict[str, Any]], limit: int = 20) -> str:
         eq = float(art.get("equity_usd", 0) or 0)
         n_orders = len(art.get("approved_orders", []) or [])
         n_errors = len(art.get("errors", []) or [])
-        halted = "⛔" if art.get("halted") else ""
+        halted = "HALT" if art.get("halted") else ""
         regime = _esc(art.get("macro_regime", ""))
         dur_ms = int(art.get("duration_ms", 0) or 0)
         cost = sum(float(r.get("cost_usd", 0) or 0) for r in art.get("agent_results", []))
@@ -276,9 +276,9 @@ def _runs_table(artifacts: list[dict[str, Any]], limit: int = 20) -> str:
 
 def _errors_list(errors: list[tuple[str, str]]) -> str:
     if not errors:
-        return '<p style="color:#888;font-family:monospace;">no errors 🎉</p>'
+        return '<p style="color:#888;font-family:monospace;">no errors</p>'
     items = [
-        f'<li><code>{_esc(rid[:8])}</code> — {_esc(msg)}</li>'
+        f'<li><code>{_esc(rid[:8])}</code> -- {_esc(msg)}</li>'
         for rid, msg in errors
     ]
     return f'<ul>{"".join(items)}</ul>'
@@ -341,8 +341,8 @@ def render_html(stats: DashboardStats, artifacts: list[dict[str, Any]]) -> str:
 {_errors_list(stats.recent_errors)}
 
 <footer>
-crypto-agent · latest run <code>{_esc(stats.latest_run_id)}</code> on
-{_esc(stats.latest_run_date)} · this page is a static artifact produced by
+crypto-agent - latest run <code>{_esc(stats.latest_run_id)}</code> on
+{_esc(stats.latest_run_date)} - this page is a static artifact produced by
 <code>python -m src.dashboard.generator</code>
 </footer>
 </body>
@@ -373,7 +373,7 @@ def generate_dashboard(
     return out
 
 
-def main() -> int:  # pragma: no cover — CLI glue
+def main() -> int:  # pragma: no cover -- CLI glue
     path = generate_dashboard()
     print(f"wrote {path}")
     return 0

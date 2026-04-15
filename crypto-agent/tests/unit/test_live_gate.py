@@ -1,4 +1,4 @@
-"""Live mode safety gate tests — the single most security-critical module.
+"""Live mode safety gate tests -- the single most security-critical module.
 
 Every test resets TRADING_MODE to `live`, asserts the precise behavior
 of each lock, then leaves state clean for the next test via monkeypatch
@@ -39,7 +39,7 @@ def _live_mode(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_assert_live_allowed_is_noop_in_dry_mode() -> None:
-    # Dry mode by default in conftest — this should just return without raising.
+    # Dry mode by default in conftest -- this should just return without raising.
     assert_live_allowed()
 
 
@@ -91,7 +91,7 @@ def test_assert_withdraw_disabled_raises_when_enabled() -> None:
 
 
 def test_assert_withdraw_disabled_raises_when_field_missing() -> None:
-    # Missing field is treated as enabled — fail-closed.
+    # Missing field is treated as enabled -- fail-closed.
     with pytest.raises(WithdrawEnabled):
         assert_withdraw_disabled({"balances": []})
 

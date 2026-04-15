@@ -5,7 +5,7 @@ most important number is **Alpha vs BTC** (rolling 3-month for production,
 total-period for the initial backtest). Everything else in this module is
 supporting detail.
 
-All inputs are plain Python lists — no pandas dependency — so the module is
+All inputs are plain Python lists -- no pandas dependency -- so the module is
 fast, dep-free, and importable from tests.
 """
 

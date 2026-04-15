@@ -6,7 +6,7 @@ intentionally schema-compatible with `data.snapshot.gather()` so
 `DailyWorkflow` doesn't know it's running inside a backtest.
 
 Non-candle snapshot fields (markets, categories, chain_tvl, news, macro)
-are derived where possible from candles or left empty — Phase 4 focuses on
+are derived where possible from candles or left empty -- Phase 4 focuses on
 the price/quant loop; Phase 5+ can layer in historical CoinGecko/FRED/etc.
 """
 
@@ -84,7 +84,7 @@ class HistoricalSnapshotProvider:
     def snapshot_fn(self, day: datetime):
         """Return a closure matching `data.snapshot.gather`'s signature.
 
-        `DailyWorkflow` calls `await self._snapshot_fn(universe_size=...)` —
+        `DailyWorkflow` calls `await self._snapshot_fn(universe_size=...)` --
         accept and ignore the kwargs so the signature matches exactly.
         """
 
@@ -125,7 +125,7 @@ def _derive_markets(candles: dict[str, list[Candle]]) -> list[MarketRow]:
                 id=base.lower(),
                 symbol=base,
                 name=base,
-                market_cap=last.close * 1e9,   # nominal — we lack real MC historically
+                market_cap=last.close * 1e9,   # nominal -- we lack real MC historically
                 fdv=last.close * 1.1e9,
                 volume_24h=last.quote_volume,
                 price_change_24h_pct=chg_24,

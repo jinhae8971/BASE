@@ -1,4 +1,4 @@
-"""DefiLlama client — free, no key, generous limits.
+"""DefiLlama client -- free, no key, generous limits.
 
 Endpoints:
   - /v2/chains             : TVL by chain

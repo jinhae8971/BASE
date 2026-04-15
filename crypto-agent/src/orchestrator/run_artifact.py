@@ -1,4 +1,4 @@
-"""Run artifact — one structured JSON dump per DailyWorkflow execution.
+"""Run artifact -- one structured JSON dump per DailyWorkflow execution.
 
 Purpose:
   - complete audit trail for regulatory/tax review,

@@ -1,4 +1,4 @@
-"""Binance spot client façade.
+"""Binance spot client facade.
 
 `BinanceClient` is the one type `DailyWorkflow` and the test suite
 construct directly. Internally it dispatches by `TradingMode`:
@@ -9,7 +9,7 @@ construct directly. Internally it dispatches by `TradingMode`:
             every operation is gated by `live_gate.assert_live_allowed()`.
 
 Paper and live share the same authenticated client class; only the base
-URL and API keys differ. That is intentional — we want whatever bugs we
+URL and API keys differ. That is intentional -- we want whatever bugs we
 find in paper to also have been latent in live, so the paper run is as
 production-identical as we can make it.
 
@@ -60,7 +60,7 @@ class BinanceClient:
 
     async def submit(self, order: Order) -> Fill:
         if is_halted():
-            raise RuntimeError("HALT file present — refusing to submit order")
+            raise RuntimeError("HALT file present -- refusing to submit order")
         mode = self.settings.trading_mode
         if mode == TradingMode.DRY:
             return self._dry_fill(order)

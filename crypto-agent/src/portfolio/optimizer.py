@@ -1,8 +1,8 @@
-"""Portfolio optimizer — turns aggregated signals into target weights.
+"""Portfolio optimizer -- turns aggregated signals into target weights.
 
 Phase 0: a simple long-only, top-K, equal-weight allocator bounded by risk
 constraints from `Settings`. Phase 2 will upgrade to Risk Parity with a
-½-Kelly overlay and a cash floor driven by the macro regime.
+1/2-Kelly overlay and a cash floor driven by the macro regime.
 """
 
 from __future__ import annotations

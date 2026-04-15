@@ -164,7 +164,7 @@ class BaseAgent(abc.ABC):
         """Use the stub if we're in dry mode AND no client was injected.
 
         Tests that want to exercise the LLM path inject a MockLLMClient and
-        leave mode=DRY — in that case we still take the LLM branch because
+        leave mode=DRY -- in that case we still take the LLM branch because
         the presence of a client is treated as the stronger signal.
         """
         if self._llm is not None:

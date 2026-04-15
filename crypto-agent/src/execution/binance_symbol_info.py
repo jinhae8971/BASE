@@ -11,7 +11,7 @@ Orders that cannot be quantized up into a valid size (e.g. $5 worth of
 BTC when minNotional is $10) are rejected at this layer BEFORE any
 network I/O so the executor sees a clean failure mode.
 
-All math uses `decimal.Decimal` — never float arithmetic on exchange
+All math uses `decimal.Decimal` -- never float arithmetic on exchange
 filters. Binance rejects a few bps of rounding error, and float
 multiplication of arbitrary tick sizes can silently drift.
 """

@@ -1,7 +1,7 @@
 """Risk guardrails.
 
 These checks run *after* the executor agent has proposed orders and *before*
-anything hits Binance. A violation downgrades, skips, or halts the order —
+anything hits Binance. A violation downgrades, skips, or halts the order --
 never silently mutates sizing without logging the change.
 """
 
@@ -46,7 +46,7 @@ def check_mdd(state: PortfolioState) -> GuardDecision:
     if dd_pct >= s.mdd_circuit_breaker_pct:
         return GuardDecision(
             GuardAction.HALT_ALL,
-            f"MDD {dd_pct:.2f}% >= {s.mdd_circuit_breaker_pct:.2f}% — circuit breaker",
+            f"MDD {dd_pct:.2f}% >= {s.mdd_circuit_breaker_pct:.2f}% -- circuit breaker",
         )
     return GuardDecision(GuardAction.ALLOW, f"MDD {dd_pct:.2f}% within budget")
 

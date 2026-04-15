@@ -104,7 +104,7 @@ def _build_mock() -> MockLLMClient:
                 {"symbol": "ETHUSDT", "side": "BUY", "qty_usd": 120.0,
                  "type": "MARKET", "reason": "core underweight"},
             ],
-            "rationale": "Risk-on regime plus core underweight — add BTC and ETH.",
+            "rationale": "Risk-on regime plus core underweight -- add BTC and ETH.",
         }
 
     mock.register("emit_research", research)

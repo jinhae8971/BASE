@@ -17,7 +17,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class TradingMode(str, Enum):
     DRY = "dry"       # no orders, no real LLM; good for wiring tests
     PAPER = "paper"   # Binance testnet, real LLM
-    LIVE = "live"     # real money, real LLM — P5 gate required
+    LIVE = "live"     # real money, real LLM -- P5 gate required
 
 
 class Settings(BaseSettings):

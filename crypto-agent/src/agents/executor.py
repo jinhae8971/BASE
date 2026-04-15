@@ -1,4 +1,4 @@
-"""Executor (Trader) agent — turns aggregated signals into concrete orders."""
+"""Executor (Trader) agent -- turns aggregated signals into concrete orders."""
 
 from __future__ import annotations
 
@@ -61,7 +61,7 @@ class ExecutorAgent(BaseAgent):
             "target_weights": {sym: 0.0 for sym in ctx.universe},
             "cash_pct": 100.0,
             "orders": [],
-            "rationale": "stub: dry mode — no orders emitted",
+            "rationale": "stub: dry mode -- no orders emitted",
         }
 
     def _validate(self, payload: dict[str, Any]) -> None:

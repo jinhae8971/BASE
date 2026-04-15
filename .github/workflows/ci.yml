@@ -28,29 +28,39 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
-      - name: Windows batch files must be pure ASCII
+      - name: Source files must be pure ASCII (cp949-safe)
         shell: bash
         run: |
-          set -e
-          bad=$(find . -type f \( -name '*.bat' -o -name '*.cmd' \) -print0 \
-                  | xargs -0 -I{} python3 -c "
-          import sys
-          try:
-              open('{}', 'rb').read().decode('ascii')
-          except UnicodeDecodeError as e:
-              print('{}')
+          python3 <<'PYEOF'
+          import os, sys
+          bad = []
+          for root, dirs, files in os.walk('.'):
+              for skip in ('.git', '.venv', '__pycache__', 'node_modules'):
+                  if skip in dirs:
+                      dirs.remove(skip)
+              for fn in files:
+                  if not fn.endswith(('.py', '.bat', '.cmd')):
+                      continue
+                  p = os.path.join(root, fn)
+                  try:
+                      open(p, 'rb').read().decode('ascii')
+                  except UnicodeDecodeError:
+                      bad.append(p)
+          if bad:
+              print("Non-ASCII characters found in:")
+              for p in bad:
+                  print(f"  {p}")
+              print()
+              print("Why this matters: on Korean Windows (the target platform),")
+              print("cmd.exe uses cp949 as its default OEM codepage. Non-ASCII")
+              print("bytes in .bat files corrupt the parser a few lines later;")
+              print("non-ASCII chars in Python print() calls raise")
+              print("UnicodeEncodeError when the subprocess writes to stdout.")
+              print("Replace em-dashes, curly quotes, emojis, and other")
+              print("Unicode punctuation with plain ASCII equivalents.")
               sys.exit(1)
-          " || true)
-          if [ -n "$bad" ]; then
-            echo "Non-ASCII character found in:"
-            echo "$bad"
-            echo "cmd.exe's default OEM codepage (cp949 on Korean Windows)"
-            echo "will mis-parse non-ASCII bytes and break the script. Replace"
-            echo "em-dashes, curly quotes, and other Unicode punctuation with"
-            echo "plain ASCII equivalents."
-            exit 1
-          fi
-          echo "OK: all .bat/.cmd files are pure ASCII"
+          print("OK: all .py/.bat/.cmd files are pure ASCII")
+          PYEOF
       - name: Ruff lint
         run: ruff check src tests scripts
       - name: Ruff format check

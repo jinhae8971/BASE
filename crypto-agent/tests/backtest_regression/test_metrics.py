@@ -1,4 +1,4 @@
-"""Metrics unit tests — known inputs, hand-computable outputs."""
+"""Metrics unit tests -- known inputs, hand-computable outputs."""
 
 from __future__ import annotations
 

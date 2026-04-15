@@ -1,4 +1,4 @@
-"""Heuristic LLM client — deterministic baseline for backtests.
+"""Heuristic LLM client -- deterministic baseline for backtests.
 
 Implements the `LLMClient` protocol but computes agent payloads with simple,
 reproducible rules over the same user message the real agents would receive.
@@ -6,8 +6,8 @@ This gives the backtest a meaningful "beat BTC with basic rules" baseline
 without burning Anthropic credits, and it gives the test suite a way to
 drive DailyWorkflow with non-trivial signals.
 
-The rules are intentionally simple — momentum-driven long-only tilt, core
-BTC/ETH floor, macro cash floor — so that anything the LLM does can be
+The rules are intentionally simple -- momentum-driven long-only tilt, core
+BTC/ETH floor, macro cash floor -- so that anything the LLM does can be
 compared against this as an Alpha-vs-heuristic benchmark.
 """
 
@@ -175,7 +175,7 @@ def _executor(user: dict[str, Any]) -> dict[str, Any]:
     `optimize()`), so the executor's job here is mechanical: compute the
     rebalance delta vs the currently-held weights and emit the orders that
     would move the portfolio onto target. We do NOT second-guess the
-    optimizer — that's the LLM's job; the heuristic baseline just trusts it.
+    optimizer -- that's the LLM's job; the heuristic baseline just trusts it.
     """
     universe: list[str] = user.get("universe", [])
     portfolio: dict[str, Any] = user.get("portfolio", {}) or {}
@@ -221,7 +221,7 @@ def _reflection(user: dict[str, Any]) -> dict[str, Any]:
     For each agent we pull the entry-time payload out of `agent_decisions`,
     extract a scalar "was this bullish" signal in [-1, 1], and score it as
     +|signal|*sign(pnl) when both move together, -|signal|*|sign(pnl)| when
-    they diverge. Zero-signal agents get a zero delta — no credit, no
+    they diverge. Zero-signal agents get a zero delta -- no credit, no
     blame, they simply had no opinion.
 
     This is a *baseline*. A real Reflection LLM reads the narrative
@@ -262,7 +262,7 @@ def _reflection(user: dict[str, Any]) -> dict[str, Any]:
         # Agreement with outcome: sign(s) * sign(pnl) * |s|, bounded in [-1,1].
         agreement = max(-1.0, min(1.0, (s * pnl_sign) if s != 0 else 0.0))
         scores[a] = round(agreement, 4)
-    # The executor gets credit proportional to realized pnl — it's the one
+    # The executor gets credit proportional to realized pnl -- it's the one
     # who actually sized and timed the trade.
     scores["executor"] = max(-1.0, min(1.0, pnl / 20.0))
 

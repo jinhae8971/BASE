@@ -1,7 +1,7 @@
 """Authenticated Binance spot REST client for paper + live modes.
 
 Implements the subset of the `BinanceClient` surface that `DailyWorkflow`
-needs — `submit(Order) -> Fill` and `account_equity_usd() -> float` —
+needs -- `submit(Order) -> Fill` and `account_equity_usd() -> float` --
 against either the Binance live API or the testnet. Both modes share
 100% of the code path; only the base URL and the API keys differ. That
 is intentional: paper mode's entire job is to be production-identical
@@ -115,14 +115,14 @@ class BinanceLiveClient:
             try:
                 px = await self._last_price(f"{asset}{base}")
                 total += amt * px
-            except Exception:  # noqa: BLE001 — unsupported pair, skip
+            except Exception:  # noqa: BLE001 -- unsupported pair, skip
                 continue
 
         return cap_equity_usd(total)
 
     async def submit(self, order: Order) -> Fill:
         if is_halted():
-            raise RuntimeError("HALT file present — refusing to submit order")
+            raise RuntimeError("HALT file present -- refusing to submit order")
 
         # Promotion gate (no-op in paper, hard stop in live without ack).
         assert_live_allowed()

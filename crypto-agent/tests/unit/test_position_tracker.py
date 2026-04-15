@@ -75,7 +75,7 @@ def test_sell_with_no_position_returns_none() -> None:
 def test_sell_clamps_to_held_qty_and_still_closes() -> None:
     t = PositionTracker()
     t.on_buy("BTCUSDT", 1.0, 100.0, datetime(2025, 1, 1, tzinfo=UTC), _ctx())
-    # Ask to sell 5 BTC when we only hold 1 — should close on 1.
+    # Ask to sell 5 BTC when we only hold 1 -- should close on 1.
     closed = t.on_sell("BTCUSDT", 5.0, 150.0, datetime(2025, 1, 2, tzinfo=UTC))
     assert closed is not None
     assert closed.total_qty == pytest.approx(1.0)

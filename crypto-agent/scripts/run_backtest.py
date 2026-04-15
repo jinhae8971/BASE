@@ -2,7 +2,7 @@
 
 Three modes:
 
-1. Synthetic drift (default) — for wiring tests:
+1. Synthetic drift (default) -- for wiring tests:
 
     python -m scripts.run_backtest --days 365 --btc-drift 0.003
 
@@ -40,7 +40,7 @@ from src.data.binance_md import Candle
 
 
 # Rough cost estimate per single DailyWorkflow run using the real LLM.
-# See README / src/llm.py PRICING — updated per Anthropic pricing changes.
+# See README / src/llm.py PRICING -- updated per Anthropic pricing changes.
 COST_PER_DAY_REAL_LLM_USD = 0.15
 DEFAULT_MAX_DAYS_REAL_LLM = 60
 
@@ -140,7 +140,7 @@ def _build_llm_client(args: argparse.Namespace):
 def _print_cost_estimate(days: int) -> float:
     est = days * COST_PER_DAY_REAL_LLM_USD
     print("------------------------------------------------------------")
-    print(f"REAL LLM BACKTEST — cost estimate")
+    print(f"REAL LLM BACKTEST -- cost estimate")
     print(f"  days          : {days}")
     print(f"  per-day est   : ${COST_PER_DAY_REAL_LLM_USD:.3f}")
     print(f"  total estimate: ${est:.2f}")

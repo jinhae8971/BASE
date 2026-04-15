@@ -16,6 +16,12 @@ rem ======================================================================
 setlocal
 cd /d "%~dp0"
 
+rem Force Python to emit UTF-8 on stdout regardless of the console's OEM
+rem codepage. Without this, print() with any non-ASCII char crashes with
+rem UnicodeEncodeError on Korean Windows (cp949 default).
+set "PYTHONIOENCODING=utf-8"
+set "PYTHONUTF8=1"
+
 echo.
 echo [1/4] Checking Python 3.11+
 set "PY_CMD="

@@ -29,7 +29,7 @@ And one hard refusal:
     must disable Withdraw in the Binance API dashboard and regenerate
     keys before retry.
 
-This module is pure (no network I/O) — it consumes an account snapshot
+This module is pure (no network I/O) -- it consumes an account snapshot
 from the caller (the authenticated Binance client) so tests stay
 hermetic.
 """
@@ -54,7 +54,7 @@ class LiveNotPromoted(RuntimeError):
 
 
 class WithdrawEnabled(RuntimeError):
-    """API key has Withdraw permission ON — refuse to trade."""
+    """API key has Withdraw permission ON -- refuse to trade."""
 
 
 def assert_live_allowed(repo_root: Path | None = None) -> None:
@@ -81,7 +81,7 @@ def assert_withdraw_disabled(account_info: dict) -> None:
     """Enforce that the API key used for live trading cannot withdraw funds.
 
     The caller passes the response of `GET /api/v3/account`. Binance
-    returns `canWithdraw: bool`. If True, we raise — no orders allowed.
+    returns `canWithdraw: bool`. If True, we raise -- no orders allowed.
     """
     can_withdraw = bool(account_info.get("canWithdraw", True))
     if can_withdraw:
@@ -94,7 +94,7 @@ def assert_withdraw_disabled(account_info: dict) -> None:
 def cap_order_usd(qty_usd: float) -> float:
     """Clamp a live order's notional to `LIVE_MAX_ORDER_USDT`.
 
-    Pass-through in dry and paper modes — those paths already have their
+    Pass-through in dry and paper modes -- those paths already have their
     own sanity checks and the cap is a live-mode-specific backstop.
     """
     s = get_settings()
