@@ -61,6 +61,11 @@ class SimulatedBinanceClient:
         self.current_prices: dict[str, float] = {}
         self.current_day: datetime = datetime.now(UTC)
         self.trade_log: list[Fill] = []
+        # High-water mark across the whole backtest. Required for the MDD
+        # circuit breaker to see real drawdowns; without this the daily
+        # workflow re-anchors peak to current equity each run and the
+        # breaker never fires.
+        self.peak_equity: float = self.config.initial_cash
 
     # --- engine hooks -------------------------------------------------
 
@@ -68,9 +73,17 @@ class SimulatedBinanceClient:
         """Called by the engine before each workflow run."""
         self.current_day = day
         self.current_prices = prices
+        # Update peak at the new price regime so the MDD guard sees
+        # the real running maximum.
+        eq = self.state.equity(prices)
+        if eq > self.peak_equity:
+            self.peak_equity = eq
 
     def mark_equity(self) -> float:
-        return self.state.equity(self.current_prices)
+        eq = self.state.equity(self.current_prices)
+        if eq > self.peak_equity:
+            self.peak_equity = eq
+        return eq
 
     # --- BinanceClient surface ---------------------------------------
 
@@ -136,3 +149,10 @@ class SimulatedBinanceClient:
 
     async def account_equity_usd(self) -> float:
         return self.mark_equity()
+
+    async def peak_equity_usd(self) -> float:
+        """High-water mark used by the MDD circuit breaker."""
+        # Make sure the peak reflects the current mark even if no fill
+        # was submitted this tick.
+        self.mark_equity()
+        return self.peak_equity

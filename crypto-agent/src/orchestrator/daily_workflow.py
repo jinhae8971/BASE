@@ -305,9 +305,14 @@ class DailyWorkflow:
         exec_result = await self._safe_run(self.executor, exec_ctx, errors)
 
         # 5. Risk guardrails.
+        try:
+            peak = await self.binance.peak_equity_usd()
+        except Exception as exc:  # noqa: BLE001 -- fall back to current
+            log.warning("run.peak_equity_failed", err=str(exc))
+            peak = equity
         state = PortfolioState(
             equity_usd=equity,
-            peak_equity_usd=equity,
+            peak_equity_usd=max(peak, equity),
             daily_pnl_pct=0.0,
             weekly_pnl_pct=0.0,
         )

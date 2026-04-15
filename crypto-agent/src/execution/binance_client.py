@@ -20,8 +20,10 @@ touching the network.
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from datetime import UTC, datetime
+from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from src.config import TradingMode, get_settings
@@ -32,6 +34,29 @@ if TYPE_CHECKING:  # avoid circular import at runtime
     from src.execution.binance_live_client import BinanceLiveClient
 
 log = get_logger("binance")
+
+PEAK_STATE_FILE = Path("data/state/peak_equity.json")
+
+
+def _load_peak_state() -> float:
+    try:
+        if PEAK_STATE_FILE.exists():
+            data = json.loads(PEAK_STATE_FILE.read_text(encoding="utf-8"))
+            return float(data.get("peak_equity_usd", 0.0) or 0.0)
+    except Exception as exc:  # noqa: BLE001
+        log.warning("binance.peak_load_failed", err=str(exc))
+    return 0.0
+
+
+def _save_peak_state(peak: float) -> None:
+    try:
+        PEAK_STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
+        PEAK_STATE_FILE.write_text(
+            json.dumps({"peak_equity_usd": peak}),
+            encoding="utf-8",
+        )
+    except Exception as exc:  # noqa: BLE001
+        log.warning("binance.peak_save_failed", err=str(exc))
 
 
 @dataclass
@@ -72,6 +97,26 @@ class BinanceClient:
         if mode == TradingMode.DRY:
             return self.settings.initial_capital_usdt
         return await self._get_live_client().account_equity_usd()
+
+    async def peak_equity_usd(self) -> float:
+        """Running high-water mark of account equity.
+
+        Used by the MDD circuit breaker to compute drawdown against the
+        all-time peak, not against the current tick. In dry mode we
+        return the configured initial capital (no drawdown ever). In
+        paper/live, we persist the peak to `data/state/peak_equity.json`
+        across process restarts so the circuit breaker survives a
+        scheduler restart during a drawdown.
+        """
+        mode = self.settings.trading_mode
+        current = await self.account_equity_usd()
+        if mode == TradingMode.DRY:
+            return max(current, self.settings.initial_capital_usdt)
+        persisted = _load_peak_state()
+        peak = max(persisted, current)
+        if peak > persisted:
+            _save_peak_state(peak)
+        return peak
 
     # --- lazy live client factory -------------------------------------
 

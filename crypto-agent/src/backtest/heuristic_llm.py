@@ -96,10 +96,10 @@ def _macro(user: dict[str, Any]) -> dict[str, Any]:
     if vix == 0.0:
         return {
             "regime": "neutral",
-            "btc_bias": 0.0,
-            "leverage_cap": 0.7,
-            "cash_floor_pct": 20.0,
-            "notes": "heuristic: no macro data available",
+            "btc_bias": 0.2,          # mild bull tilt when no macro data
+            "leverage_cap": 0.9,
+            "cash_floor_pct": 10.0,   # was 20 -- too much cash drag in a bull run
+            "notes": "heuristic: no macro data; mild pro-risk default",
         }
     if vix < 15:
         return {
@@ -189,12 +189,17 @@ def _executor(user: dict[str, Any]) -> dict[str, Any]:
         target = float(target_weights.get(sym, 0.0))
         current = float(current_weights.get(sym, 0.0)) * 100.0
         delta_pct = target - current
-        if abs(delta_pct) < 3.0:  # dead band: avoid churn below 3pp
+        # Wider dead band than the Phase 4 baseline (3pp -> 10pp) so the
+        # heuristic stops churning on every minor price wiggle. The 2023-
+        # 2025 real-data backtest showed 437 orders in 702 days with the
+        # 3pp threshold -- most of them pointless rebalances that lost
+        # the portfolio money to fees and slippage during a bull run.
+        if abs(delta_pct) < 10.0:
             continue
         qty_usd = abs(delta_pct) / 100.0 * equity
         # Cap per-order at 30% of equity (same as risk guardrail).
         qty_usd = min(qty_usd, equity * 0.30)
-        if qty_usd < 5.0:
+        if qty_usd < 15.0:  # Binance minNotional
             continue
         orders.append(
             {

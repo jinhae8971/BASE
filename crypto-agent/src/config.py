@@ -50,9 +50,18 @@ class Settings(BaseSettings):
     redis_url: str = "redis://localhost:6379/0"
     qdrant_url: str = "http://localhost:6333"
 
-    # Risk guardrails (percent)
-    max_position_pct: float = 25.0
-    min_core_pct: float = 40.0
+    # Risk guardrails (percent).
+    # Post-backtest tuning (2023-2025 BTC/ETH/SOL run showed baseline
+    # alpha of -206pp vs BTC HODL due to insufficient BTC exposure and
+    # over-frequent rebalancing):
+    #   - max_position 25 -> 40: allow a single core asset to carry
+    #     more of the non-cash allocation so the optimizer can push
+    #     BTC+ETH to the new 60% floor.
+    #   - min_core 40 -> 60: keep BTC+ETH at a higher minimum in a
+    #     persistent bull market. With max_position=40 the optimizer
+    #     can now legally split 30/30 or 40/20.
+    max_position_pct: float = 40.0
+    min_core_pct: float = 60.0
     stop_loss_pct: float = 8.0
     daily_loss_halt_pct: float = 3.0
     weekly_loss_reduce_pct: float = 7.0
