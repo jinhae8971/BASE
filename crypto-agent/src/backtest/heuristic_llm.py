@@ -215,16 +215,62 @@ def _executor(user: dict[str, Any]) -> dict[str, Any]:
 
 
 def _reflection(user: dict[str, Any]) -> dict[str, Any]:
+    """Assign credit / blame to each signal agent based on whether its entry
+    prediction agreed with the realized outcome.
+
+    For each agent we pull the entry-time payload out of `agent_decisions`,
+    extract a scalar "was this bullish" signal in [-1, 1], and score it as
+    +|signal|*sign(pnl) when both move together, -|signal|*|sign(pnl)| when
+    they diverge. Zero-signal agents get a zero delta — no credit, no
+    blame, they simply had no opinion.
+
+    This is a *baseline*. A real Reflection LLM reads the narrative
+    context, weighs the regime, and can credit the value agent for a call
+    that took 60 days to play out. The heuristic is deliberately simpler.
+    """
     pnl = float(user.get("realized_pnl_pct", 0.0) or 0.0)
-    verdict = "won" if pnl > 0 else "lost"
+    regime = str(user.get("macro_regime_at_entry", "unknown"))
+    symbol = str(user.get("symbol", "?"))
+    verdict = "won" if pnl > 0 else ("lost" if pnl < 0 else "flat")
+    pnl_sign = 1.0 if pnl > 0 else (-1.0 if pnl < 0 else 0.0)
+
+    decisions: dict[str, Any] = user.get("agent_decisions", {}) or {}
+
+    def _scalar(name: str) -> float:
+        pay = decisions.get(name) or {}
+        if name == "research":
+            coins = pay.get("coins") or {}
+            row = coins.get(symbol) or {}
+            return float(row.get("sentiment", 0.0) or 0.0)
+        if name == "macro":
+            return float(pay.get("btc_bias", 0.0) or 0.0)
+        if name == "value":
+            coins = pay.get("coins") or {}
+            row = coins.get(symbol) or {}
+            return float(row.get("conviction", 0.0) or 0.0)
+        if name == "quant":
+            coins = pay.get("coins") or {}
+            row = coins.get(symbol) or {}
+            return float(row.get("signal", 0.0) or 0.0)
+        if name == "sector":
+            return 0.0  # sector is portfolio-level, not per-coin
+        return 0.0
+
+    scores: dict[str, float] = {}
+    for a in ("research", "macro", "sector", "value", "quant"):
+        s = _scalar(a)
+        # Agreement with outcome: sign(s) * sign(pnl) * |s|, bounded in [-1,1].
+        agreement = max(-1.0, min(1.0, (s * pnl_sign) if s != 0 else 0.0))
+        scores[a] = round(agreement, 4)
+    # The executor gets credit proportional to realized pnl — it's the one
+    # who actually sized and timed the trade.
+    scores["executor"] = max(-1.0, min(1.0, pnl / 20.0))
+
     return {
         "lesson": (
-            f"Trade {verdict} {pnl:+.2f}%. Heuristic baseline has no deeper "
-            f"insight; swap in the real Reflection agent for actionable lessons."
+            f"{symbol} {verdict} {pnl:+.2f}% in {regime} regime. Heuristic "
+            f"attribution: {', '.join(f'{k}={v:+.2f}' for k, v in scores.items())}."
         ),
-        "agent_scores": {
-            "research": 0.0, "macro": 0.0, "sector": 0.0,
-            "value": 0.0, "quant": 0.0, "executor": 0.0,
-        },
-        "tags": [],
+        "agent_scores": scores,
+        "tags": [regime, verdict],
     }

@@ -52,6 +52,12 @@ from src.data.snapshot import MarketSnapshot, gather as gather_snapshot
 from src.execution.binance_client import BinanceClient, Order
 from src.execution.killswitch import is_halted
 from src.learning.elo import EloTable
+from src.learning.learning_loop import LearningLoop
+from src.learning.position_tracker import (
+    ClosedPosition,
+    EntryContext,
+    PositionTracker,
+)
 from src.llm import LLMClient
 from src.logging import get_logger
 from src.memory.trade_store import AgentDecision, InMemoryTradeStore, TradeRecord
@@ -85,6 +91,8 @@ class DailyWorkflow:
         llm_client: LLMClient | None = None,
         lesson_store: InMemoryLessonStore | None = None,
         alerter: TelegramAlerter | None = None,
+        position_tracker: PositionTracker | None = None,
+        learning_loop: LearningLoop | None = None,
         write_artifacts: bool = True,
         lessons_k: int = 5,
     ) -> None:
@@ -95,6 +103,14 @@ class DailyWorkflow:
         self._llm = llm_client
         self.lesson_store = lesson_store or default_store()
         self.alerter = alerter
+        self.position_tracker = position_tracker or PositionTracker()
+        # Default learning loop shares this workflow's ELO + lesson store so
+        # the feedback path is wired end-to-end even with no explicit setup.
+        self.learning_loop = learning_loop or LearningLoop(
+            elo=self.elo,
+            lesson_store=self.lesson_store,
+            llm_client=llm_client,
+        )
         self.write_artifacts = write_artifacts
         self.lessons_k = lessons_k
         # All agents share the same client so prompt-cache breakpoints set by
@@ -327,7 +343,19 @@ class DailyWorkflow:
                 approved_orders.append(raw)
 
         # 6. Submit approved orders, tolerating per-order failures.
+        # Build the entry-context snapshot once per run; BUY fills all share
+        # this thesis, which is what the reflection agent will audit later.
+        entry_ctx = EntryContext(
+            run_id=run_id,
+            as_of=ctx.as_of,
+            agent_payloads={
+                r.agent: r.payload for r in list(results.values()) + [exec_result]
+            },
+            macro_regime=str(macro_payload.get("regime", "unknown")),
+            universe=list(universe),
+        )
         fill_dicts: list[dict[str, Any]] = []
+        closed_positions: list[ClosedPosition] = []
         for raw in approved_orders:
             try:
                 fill = await self.binance.submit(
@@ -347,6 +375,23 @@ class DailyWorkflow:
                     "filled_at": fill.filled_at.isoformat(),
                 }
             )
+            if fill.side == "BUY":
+                self.position_tracker.on_buy(
+                    symbol=fill.symbol,
+                    qty=fill.qty,
+                    price=fill.price,
+                    at=fill.filled_at,
+                    entry=entry_ctx,
+                )
+            else:  # SELL
+                closed = self.position_tracker.on_sell(
+                    symbol=fill.symbol,
+                    qty=fill.qty,
+                    price=fill.price,
+                    at=fill.filled_at,
+                )
+                if closed is not None:
+                    closed_positions.append(closed)
             await self.trade_store.insert(
                 TradeRecord(
                     run_id=run_id,
@@ -373,7 +418,21 @@ class DailyWorkflow:
                 )
             )
 
-        log.info("run.done", run_id=run_id, orders=len(approved_orders), errors=len(errors))
+        # 7. Learning loop — reflection + ELO update for every full close.
+        for closed in closed_positions:
+            try:
+                await self.learning_loop.on_closed(closed)
+            except Exception as exc:  # noqa: BLE001
+                log.error("run.learning_failed", symbol=closed.symbol, err=str(exc))
+                errors.append(f"learning {closed.symbol}: {exc}")
+
+        log.info(
+            "run.done",
+            run_id=run_id,
+            orders=len(approved_orders),
+            closes=len(closed_positions),
+            errors=len(errors),
+        )
         return await _finalize(
             halted=False,
             halt_reason=None,

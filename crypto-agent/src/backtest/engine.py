@@ -8,6 +8,15 @@ Each tick:
   3. Record equity (mark-to-market at the new close).
   4. Record the BTC-HODL benchmark equity for the same day.
 
+**Persistent learning state across days.** A single `EloTable`,
+`PositionTracker`, `InMemoryLessonStore`, and `LearningLoop` are created
+once in `__init__` and passed into every per-day `DailyWorkflow`. That's
+what lets the backtest actually simulate the self-learning loop: a SELL
+on day 47 that closes a position opened on day 32 triggers the Reflection
+agent, which stores a lesson and updates the ELO table — and day 48's
+aggregator sees the new weights. Without shared state, every day would
+start from scratch and the learning loop would be untestable.
+
 At the end, `compute_metrics()` turns the daily equity series into a
 `PerformanceReport`. The engine never touches the network; everything runs
 off the `HistoricalSnapshotProvider`.
@@ -23,9 +32,12 @@ from src.backtest.metrics import PerformanceReport, compute_metrics
 from src.backtest.portfolio_sim import SimConfig, SimulatedBinanceClient
 from src.backtest.provider import HistoricalSnapshotProvider
 from src.learning.elo import EloTable
+from src.learning.learning_loop import LearningLoop
+from src.learning.position_tracker import PositionTracker
 from src.llm import LLMClient
 from src.logging import get_logger
 from src.memory.trade_store import InMemoryTradeStore
+from src.memory.vector_store import InMemoryLessonStore
 from src.orchestrator.daily_workflow import DailyWorkflow
 
 log = get_logger("backtest.engine")
@@ -39,6 +51,9 @@ class BacktestResult:
     gross_traded_usd: float
     report: PerformanceReport
     num_orders: int
+    num_closed_positions: int
+    num_lessons: int
+    final_elo_weights: dict[str, float]
     fills: list[Any] = field(default_factory=list)
 
 
@@ -54,6 +69,16 @@ class BacktestEngine:
         self.sim = SimulatedBinanceClient(config=sim_config)
         self.llm_client = llm_client
         self.rebalance_every_n_days = max(1, rebalance_every_n_days)
+
+        # Persistent learning state shared across every day's DailyWorkflow.
+        self.elo = EloTable()
+        self.lesson_store = InMemoryLessonStore()
+        self.position_tracker = PositionTracker()
+        self.learning_loop = LearningLoop(
+            elo=self.elo,
+            lesson_store=self.lesson_store,
+            llm_client=llm_client,
+        )
 
     async def run(self) -> BacktestResult:
         days = self.provider.trading_days()
@@ -90,7 +115,12 @@ class BacktestEngine:
             btc_equity=btc_curve,
             gross_traded_usd=gross_traded,
         )
-        log.info("backtest.done", **report.__dict__)
+        log.info(
+            "backtest.done",
+            closed=self.learning_loop.closures_processed,
+            lessons=self.learning_loop.lessons_written,
+            **report.__dict__,
+        )
         return BacktestResult(
             days=days,
             equity=equity_curve,
@@ -98,16 +128,22 @@ class BacktestEngine:
             gross_traded_usd=gross_traded,
             report=report,
             num_orders=num_orders,
+            num_closed_positions=self.learning_loop.closures_processed,
+            num_lessons=self.learning_loop.lessons_written,
+            final_elo_weights=self.elo.weights(),
             fills=list(self.sim.trade_log),
         )
 
     async def _step(self, day: datetime) -> dict[str, Any]:
         wf = DailyWorkflow(
-            elo=EloTable(),
-            trade_store=InMemoryTradeStore(),
-            binance=self.sim,  # type: ignore[arg-type]
+            elo=self.elo,                       # persistent
+            trade_store=InMemoryTradeStore(),   # per-day (journal scope)
+            binance=self.sim,                   # persistent sim
             snapshot_fn=self.provider.snapshot_fn(day),
             llm_client=self.llm_client,
-            write_artifacts=False,  # 100+ runs per backtest; skip disk I/O
+            lesson_store=self.lesson_store,     # persistent
+            position_tracker=self.position_tracker,  # persistent
+            learning_loop=self.learning_loop,   # persistent
+            write_artifacts=False,              # 100+ runs per backtest
         )
         return await wf.run(universe_size=len(self.provider.universe))

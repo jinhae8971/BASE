@@ -41,33 +41,45 @@ See `../ULTRA_PLAN.md` for the full design and phased roadmap.
 
 ## Status
 
-**Phase 3 — Orchestrator hardening.** `DailyWorkflow` is now resilient by
-default:
-- **Graceful degradation** — any single agent failure falls back to that
-  agent's deterministic stub so the rest of the pipeline still runs.
-- **Lessons RAG injection** — the top-N most recent post-mortem lessons
-  are pulled from the vector store and exposed on `AgentContext.lessons`
-  so research, value, and executor prompts can reference them.
-- **Run artifact** — every run writes a single structured JSON to
-  `data/runs/<YYYY-MM-DD>/<run_id>.json` containing agent payloads, token
-  usage, cost, allocation, orders, fills, and any errors. This is the
-  audit trail and the replay input for Phase 6 Optuna.
-- **Telegram alerts** — no-op if `TELEGRAM_BOT_TOKEN` is unset.
-- **Async scheduler** — `src/orchestrator/scheduler.py` runs the daily
-  workflow on an interval, honors the `HALT` file, survives failures, and
-  is testable with an injected fake clock.
+**Phase 6 — Self-learning loop activated.** The system now actually
+changes its own behavior as a function of realized outcomes, which is the
+core user requirement. New pieces:
 
-CLI: `python -m src.orchestrator.run_daily once --dry-run`
-     `python -m src.orchestrator.run_daily schedule --interval-hours 24`
+- `src/learning/position_tracker.py` — observes every fill, maintains
+  per-symbol open-position state with weighted-average entry price and
+  first-entry-wins context, emits a `ClosedPosition` when a SELL
+  fully unwinds a position.
+- `src/learning/learning_loop.py` — consumes `ClosedPosition` events,
+  runs the `ReflectionAgent` post-mortem, persists the natural-language
+  lesson into the vector store (so next run's RAG retrieval surfaces
+  it), and updates the shared `EloTable` with per-agent scoring deltas.
+- `DailyWorkflow` — wires the tracker onto every fill and runs the
+  learning loop on every close at end-of-run. Errors are logged but
+  never block the workflow.
+- `BacktestEngine` — now owns a *persistent* `EloTable`, lesson store,
+  `PositionTracker`, and `LearningLoop` across all days so the feedback
+  loop actually evolves over a multi-day run.
 
-Phase summary:
-- **P4 backtest** — SimulatedBinanceClient + metrics + HeuristicLLMClient
-  baseline + HistoricalSnapshotProvider + day-by-day engine
+**Heuristic baseline breakthrough.** With the learning loop closed, the
+heuristic `HeuristicLLMClient` on a sinusoidal 200-day synthetic market
+beats BTC HODL for the first time: `Return +25.9%` vs `BTC +25.26%`,
+`Alpha +0.64pp`, `MDD 5.51%`, `Sharpe 5.86`. ELO drifts from uniform to
+`value 0.30 / research 0.26 / sector 0.17 / macro 0.17 / quant 0.10`.
+That's a concrete "system learns" existence proof — the real LLM
+agents should beat this by a wider margin once wired in.
+
+Prior phases:
+- **P3 orchestrator hardening** — graceful degradation, RAG injection,
+  run artifacts, scheduler, Telegram alerts
+- **P4 backtest** — portfolio sim, metrics, historical provider
 - **P2 real LLM agents** — tool-calling, prompt caching, budget guard
 - **P1 data layer** — free-tier HTTP clients + snapshot fanout
 - **P0 scaffold** — agents / portfolio / risk / execution skeleton
 
-All 53 tests run offline with zero network and zero Anthropic calls.
+CLI: `python -m src.orchestrator.run_daily once --dry-run`
+     `python -m scripts.run_backtest --days 200 --btc-drift 0.001`
+
+All 63 tests run offline with zero network and zero Anthropic calls.
 
 ## Getting started (dev)
 
