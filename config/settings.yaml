@@ -1,0 +1,90 @@
+# ============================================================
+# MAIS Global Settings
+# ============================================================
+
+system:
+  timezone: Asia/Seoul
+  benchmark: KOSPI
+  base_currency: KRW
+
+universe:
+  index: KOSPI200      # KOSPI200 | KRX300 | ALL
+  min_market_cap: 300_000_000_000
+  min_adv_20d: 3_000_000_000
+  exclude_kosdaq_venture: true
+  exclude_administrative: true
+
+risk:
+  max_position_weight: 0.10
+  max_sector_weight: 0.30
+  max_portfolio_mdd: 0.15
+  daily_loss_kill: 0.03
+  max_turnover_daily: 0.30
+  rebalance_threshold: 0.05
+  cash_buffer_min: 0.05
+
+execution:
+  order_style: limit              # limit | market | twap
+  twap_slices: 4
+  slippage_bps: 15
+  commission_bps: 1.5
+  tax_sell_bps: 23
+  dry_run_default: true
+
+scheduler:
+  research_time: "08:00"
+  order_time: "09:05"
+  eod_review_time: "16:00"
+  reflection_day: "friday"
+  reflection_time: "18:00"
+
+agents:
+  macro:
+    model: claude-opus-4-6
+    temperature: 0.2
+    max_tokens: 4000
+  sector:
+    model: claude-opus-4-6
+    temperature: 0.2
+    max_tokens: 4000
+  value:
+    model: claude-opus-4-6
+    temperature: 0.1
+    max_tokens: 4000
+  quant:
+    model: claude-haiku-4-5-20251001
+    temperature: 0.0
+    max_tokens: 2000
+  execution:
+    model: claude-opus-4-6
+    temperature: 0.0
+    max_tokens: 3000
+  reflection:
+    model: claude-opus-4-6
+    temperature: 0.3
+    max_tokens: 8000
+
+consensus:
+  weights:
+    macro: 0.25
+    sector: 0.20
+    value: 0.25
+    quant: 0.30
+  min_conviction: 5
+  min_agreement: 2
+
+optimizer:
+  method: black_litterman
+  risk_aversion: 3.0
+  lookback_days: 252
+  shrinkage: ledoit_wolf
+
+memory:
+  journal_db: data_store/journal.sqlite
+  rag_store: data_store/chroma
+  rag_top_k: 5
+
+backtest:
+  start: "2015-01-01"
+  initial_capital: 100_000_000
+  benchmark_ticker: "^KS11"
