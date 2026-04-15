@@ -117,14 +117,48 @@ All 126 tests run offline with zero network and zero Anthropic calls.
   unprivileged runtime image. Runs `once --dry-run` by default; point
   it at `schedule` with env vars for paper/live operation.
 
-## Getting started (dev)
+## Getting started — Windows one-liner
+
+`run.bat` handles venv bootstrap, dependency install, interactive API-key
+prompting, and every common operator task. Double-click it or run from
+cmd:
+
+```cmd
+run
+```
+
+That opens the menu. Or use subcommands directly:
+
+```cmd
+run setup         :: create venv, install deps, run 129 tests
+run verify        :: one real Anthropic call to check your key
+run fetch         :: download 2y BTC/ETH/SOL klines from Binance
+run backtest      :: heuristic baseline backtest (free, ~5s)
+run backtest-llm  :: real Anthropic backtest (~$9, 5-10 min)
+run paper         :: one paper-trade cycle on Binance testnet
+run schedule      :: paper-trade scheduler (Ctrl+C to stop)
+run dashboard     :: generate + open the HTML dashboard
+run halt          :: stop any running scheduler
+run resume        :: remove HALT file
+```
+
+**Keys are prompted interactively in the current command window only**
+and are never written to disk. Each of `ANTHROPIC_API_KEY`,
+`BINANCE_API_KEY`, and `BINANCE_API_SECRET` uses PowerShell's hidden
+`Read-Host -AsSecureString` so the value never echoes to the terminal
+or scrolls into history. Closing the window clears every secret.
+
+If an existing `.env` file is present, keys found there are loaded
+automatically so you don't re-enter them every session.
+
+### Dev loop without the launcher
 
 ```bash
 cp .env.example .env
-docker compose up -d postgres redis qdrant
-uv sync   # or: pip install -e .
+docker compose up -d postgres redis qdrant   # optional
+pip install -e ".[dev]"
 pytest
-python -m src.orchestrator.run_daily --dry-run
+python -m src.orchestrator.run_daily once --dry-run
 ```
 
 ## Safety
