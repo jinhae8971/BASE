@@ -108,5 +108,6 @@ class BacktestEngine:
             binance=self.sim,  # type: ignore[arg-type]
             snapshot_fn=self.provider.snapshot_fn(day),
             llm_client=self.llm_client,
+            write_artifacts=False,  # 100+ runs per backtest; skip disk I/O
         )
         return await wf.run(universe_size=len(self.provider.universe))

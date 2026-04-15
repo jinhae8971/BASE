@@ -41,26 +41,33 @@ See `../ULTRA_PLAN.md` for the full design and phased roadmap.
 
 ## Status
 
-**Phase 4 — Backtest engine.** The `src/backtest/` package drives
-`DailyWorkflow` over historical data day-by-day through a
-`SimulatedBinanceClient` that supports realistic fees and slippage.
-`HistoricalSnapshotProvider` builds an as-of `MarketSnapshot` for any date
-in the candle archive. `HeuristicLLMClient` — a deterministic baseline that
-implements the `LLMClient` protocol — lets backtests run offline without
-spending Anthropic credits, and acts as a minimum bar the real agents must
-beat. Performance reports include total return, CAGR, Sharpe, Sortino,
-MDD, win rate, profit factor, turnover, and the primary KPI: **Alpha vs
-BTC HODL**.
+**Phase 3 — Orchestrator hardening.** `DailyWorkflow` is now resilient by
+default:
+- **Graceful degradation** — any single agent failure falls back to that
+  agent's deterministic stub so the rest of the pipeline still runs.
+- **Lessons RAG injection** — the top-N most recent post-mortem lessons
+  are pulled from the vector store and exposed on `AgentContext.lessons`
+  so research, value, and executor prompts can reference them.
+- **Run artifact** — every run writes a single structured JSON to
+  `data/runs/<YYYY-MM-DD>/<run_id>.json` containing agent payloads, token
+  usage, cost, allocation, orders, fills, and any errors. This is the
+  audit trail and the replay input for Phase 6 Optuna.
+- **Telegram alerts** — no-op if `TELEGRAM_BOT_TOKEN` is unset.
+- **Async scheduler** — `src/orchestrator/scheduler.py` runs the daily
+  workflow on an interval, honors the `HALT` file, survives failures, and
+  is testable with an injected fake clock.
 
-CLI: `python -m scripts.run_backtest --days 180 --btc-drift 0.002`
+CLI: `python -m src.orchestrator.run_daily once --dry-run`
+     `python -m src.orchestrator.run_daily schedule --interval-hours 24`
 
-Prior phases:
-- **P2 real LLM agents** — 7 agents with tool-calling, prompt caching,
-  budget guard
+Phase summary:
+- **P4 backtest** — SimulatedBinanceClient + metrics + HeuristicLLMClient
+  baseline + HistoricalSnapshotProvider + day-by-day engine
+- **P2 real LLM agents** — tool-calling, prompt caching, budget guard
 - **P1 data layer** — free-tier HTTP clients + snapshot fanout
-- **P0 scaffold** — agents/portfolio/risk/execution skeleton
+- **P0 scaffold** — agents / portfolio / risk / execution skeleton
 
-All 46 tests run offline with zero network and zero Anthropic calls.
+All 53 tests run offline with zero network and zero Anthropic calls.
 
 ## Getting started (dev)
 

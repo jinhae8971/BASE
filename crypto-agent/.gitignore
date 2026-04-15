@@ -12,7 +12,7 @@ build/
 .ruff_cache/
 .coverage
 htmlcov/
-data/archive/
+data/
 *.parquet
 *.duckdb
 HALT
