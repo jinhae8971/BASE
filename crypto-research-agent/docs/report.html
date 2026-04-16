@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Crypto Report</title>
+<link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+<header class="hero">
+  <h1 id="report-title">Report</h1>
+  <p class="tagline"><a href="index.html">← Back to dashboard</a></p>
+</header>
+
+<main>
+  <section class="card" id="narrative-card">
+    <h2>📊 Narrative</h2>
+    <p id="narrative-text"></p>
+    <div class="sector-row">
+      <div>🔥 <strong>Hot:</strong> <span id="hot-sectors"></span></div>
+      <div>❄️ <strong>Cooling:</strong> <span id="cooling-sectors"></span></div>
+    </div>
+    <p><strong>WoW:</strong> <span id="wow-text"></span></p>
+    <p class="insight" id="insight-text"></p>
+  </section>
+
+  <section class="card">
+    <h2>🏆 48h Top Gainers</h2>
+    <div id="gainers" class="analysis-list"></div>
+  </section>
+
+  <nav class="card nav-buttons">
+    <button id="prev-btn">← 이전일</button>
+    <button id="next-btn">다음일 →</button>
+  </nav>
+</main>
+
+<footer>
+  <p><a href="index.html">← Back to dashboard</a></p>
+</footer>
+
+<script src="assets/app.js"></script>
+<script>
+  if (window.renderReportPage) renderReportPage();
+</script>
+</body>
+</html>
