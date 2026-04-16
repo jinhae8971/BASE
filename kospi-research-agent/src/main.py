@@ -37,6 +37,8 @@ log = get_logger(__name__)
 
 def run(dry_run: bool = False, skip_telegram: bool = False) -> DailyReport:
     settings = get_settings()
+    if not dry_run and not settings.anthropic_api_key:
+        raise RuntimeError("ANTHROPIC_API_KEY is required for full runs (use --dry-run to skip)")
     log.info("=== kospi-research-agent run (dry_run=%s, market=%s) ===", dry_run, settings.market)
 
     # 1. Fetch

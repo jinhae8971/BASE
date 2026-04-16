@@ -47,8 +47,10 @@ def _parse_news_html(html: str, limit: int) -> list[NewsItem]:
     soup = BeautifulSoup(html, "html.parser")
     items: list[NewsItem] = []
 
-    # Naver Finance news table rows
-    rows = soup.select("table.type5 tr")
+    # Naver Finance news table rows (try multiple selectors for resilience)
+    rows = soup.select("table.type5 tr") or soup.select(".news_list tr") or soup.select("table tr")
+    if not rows:
+        log.warning("naver news HTML has no matching table rows — page structure may have changed")
     for row in rows:
         if len(items) >= limit:
             break

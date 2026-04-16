@@ -19,16 +19,38 @@ SP500_WIKI_URL = "https://en.wikipedia.org/wiki/List_of_S%26P_500_companies"
 def _fetch_sp500_constituents() -> pd.DataFrame:
     """Scrape current S&P 500 list from Wikipedia."""
     tables = pd.read_html(SP500_WIKI_URL)
-    df = tables[0]
-    # Columns: Symbol, Security, GICS Sector, GICS Sub-Industry, ...
-    df = df.rename(columns={
-        "Symbol": "ticker",
-        "Security": "name",
-        "GICS Sector": "sector",
-        "GICS Sub-Industry": "sub_industry",
-    })
-    # Fix tickers with dots (BRK.B → BRK-B for yfinance)
-    df["ticker"] = df["ticker"].str.replace(".", "-", regex=False)
+    df = None
+    for t in tables:
+        cols_lower = [str(c).lower() for c in t.columns]
+        if any("symbol" in c or "ticker" in c for c in cols_lower):
+            df = t
+            break
+    if df is None:
+        raise RuntimeError("could not find S&P 500 constituents table on Wikipedia")
+
+    col_map = {}
+    for c in df.columns:
+        cl = str(c).lower().strip()
+        if cl in ("symbol", "ticker"):
+            col_map[c] = "ticker"
+        elif cl in ("security", "company"):
+            col_map[c] = "name"
+        elif "sector" in cl and "sub" not in cl:
+            col_map[c] = "sector"
+        elif "sub" in cl and "industry" in cl:
+            col_map[c] = "sub_industry"
+    df = df.rename(columns=col_map)
+
+    if "ticker" not in df.columns:
+        raise RuntimeError("ticker column not found in S&P 500 Wikipedia table")
+    if "name" not in df.columns:
+        df["name"] = df["ticker"]
+    if "sector" not in df.columns:
+        df["sector"] = ""
+    if "sub_industry" not in df.columns:
+        df["sub_industry"] = ""
+
+    df["ticker"] = df["ticker"].astype(str).str.replace(".", "-", regex=False).str.strip()
     log.info("fetched %d S&P 500 constituents from Wikipedia", len(df))
     return df[["ticker", "name", "sector", "sub_industry"]]
 

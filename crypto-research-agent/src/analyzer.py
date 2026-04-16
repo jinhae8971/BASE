@@ -99,20 +99,28 @@ def _extract_json(text: str) -> dict:
     """Tolerantly extract the first JSON object from a model response."""
     text = text.strip()
     if text.startswith("```"):
-        text = re.sub(r"^```(?:json)?\s*|\s*```$", "", text, flags=re.DOTALL)
-    # Find the first balanced object
+        text = re.sub(r"^```(?:json)?\s*|\s*```$", "", text, flags=re.DOTALL).strip()
+    # Try parsing the whole thing first
+    try:
+        result = json.loads(text)
+        if isinstance(result, dict):
+            return result
+    except json.JSONDecodeError:
+        pass
+    # Find the first { and try json.loads from there
     start = text.find("{")
     if start < 0:
         raise ValueError("no JSON object in model response")
-    depth = 0
-    for i in range(start, len(text)):
-        if text[i] == "{":
-            depth += 1
-        elif text[i] == "}":
-            depth -= 1
-            if depth == 0:
-                return json.loads(text[start : i + 1])
-    raise ValueError("unbalanced JSON in model response")
+    for end in range(len(text), start, -1):
+        if text[end - 1] != "}":
+            continue
+        try:
+            result = json.loads(text[start:end])
+            if isinstance(result, dict):
+                return result
+        except json.JSONDecodeError:
+            continue
+    raise ValueError("no valid JSON object found in model response")
 
 
 def analyze_gainers(gainers: list[GainerCoin]) -> list[CoinAnalysis]:
@@ -146,6 +154,10 @@ def analyze_gainers(gainers: list[GainerCoin]) -> list[CoinAnalysis]:
         raise
 
     analyses_raw = data.get("analyses") or []
+    if len(analyses_raw) != len(gainers):
+        log.warning(
+            "Claude returned %d analyses for %d gainers", len(analyses_raw), len(gainers),
+        )
     analyses: list[CoinAnalysis] = []
     for item, gainer in zip(analyses_raw, gainers, strict=False):
         analyses.append(

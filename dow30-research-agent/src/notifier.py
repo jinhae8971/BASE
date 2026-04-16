@@ -63,6 +63,11 @@ def send_report(report: DailyReport) -> None:
         log.warning("telegram credentials missing; skipping notification")
         return
     text = _format_message(report, settings.dashboard_url)
+    MAX_TG_LEN = 4096
+    if len(text) > MAX_TG_LEN:
+        # Truncate but keep the dashboard link at the end
+        link_line = text.rsplit("\n", 1)[-1] if "\n" in text else ""
+        text = text[: MAX_TG_LEN - len(link_line) - 20] + "\n\\.\\.\\.\n" + link_line
     _send(settings.telegram_bot_token, {"chat_id": settings.telegram_chat_id,
            "text": text, "parse_mode": "MarkdownV2", "disable_web_page_preview": False})
     log.info("telegram notification sent for %s", report.date)

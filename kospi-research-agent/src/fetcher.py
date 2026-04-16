@@ -25,10 +25,9 @@ _PREFERRED_SUFFIXES = {"5", "7", "8", "9"}
 
 def _is_excluded(ticker: str, name: str) -> bool:
     """Exclude ETFs, ETNs, SPACs, REITs, preferred shares."""
-    if ticker[-1] in _PREFERRED_SUFFIXES and not name.endswith("우"):
-        # 코드 끝자리만으로는 확실치 않으므로 이름 기반 이중체크
-        pass
     if name[-1:] == "우" or "우B" in name or "우(전환)" in name:
+        return True
+    if ticker[-1] in _PREFERRED_SUFFIXES:
         return True
     upper = name.upper()
     return any(pat in upper for pat in _EXCLUDE_NAME_PATTERNS)
@@ -74,6 +73,11 @@ def fetch_market(date_str: str, market: str) -> list[StockMarket]:
         log.warning("no OHLCV data for %s %s", market, date_str)
         return []
 
+    expected_cols = {"종가", "시가", "고가", "저가", "거래량", "거래대금", "등락률"}
+    missing_cols = expected_cols - set(ohlcv.columns)
+    if missing_cols:
+        log.warning("pykrx columns missing: %s (available: %s)", missing_cols, list(ohlcv.columns))
+
     stocks: list[StockMarket] = []
     for ticker in ohlcv.index:
         name = krx.get_market_ticker_name(ticker)
@@ -81,12 +85,13 @@ def fetch_market(date_str: str, market: str) -> list[StockMarket]:
             continue
 
         row = ohlcv.loc[ticker]
-        cap_row = cap.loc[ticker] if ticker in cap.index else None
         close = float(row.get("종가", 0))
         if close <= 0:
             continue
 
-        change_pct = float(row.get("등락률", 0.0))
+        mcap = 0.0
+        if cap is not None and ticker in cap.index:
+            mcap = float(cap.loc[ticker].get("시가총액", 0))
 
         stocks.append(
             StockMarket(
@@ -99,8 +104,8 @@ def fetch_market(date_str: str, market: str) -> list[StockMarket]:
                 low=float(row.get("저가", 0)),
                 volume=int(row.get("거래량", 0)),
                 trading_value=float(row.get("거래대금", 0)),
-                market_cap=float(cap_row["시가총액"]) if cap_row is not None else 0,
-                change_pct=change_pct,
+                market_cap=mcap,
+                change_pct=float(row.get("등락률", 0.0)),
             )
         )
 

@@ -39,6 +39,9 @@ def run(dry_run: bool = False, skip_telegram: bool = False) -> DailyReport:
     settings = get_settings()
     log.info("=== sp500-research-agent run (dry_run=%s) ===", dry_run)
 
+    if not dry_run and not settings.anthropic_api_key:
+        raise RuntimeError("ANTHROPIC_API_KEY is required for full runs (use --dry-run to skip)")
+
     # 1. Fetch
     stocks, trading_date = fetch_all_markets()
     if not stocks:
