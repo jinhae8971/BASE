@@ -68,7 +68,12 @@ def run(dry_run: bool = False, skip_telegram: bool = False) -> DailyReport:
         )
 
     # 4. Analyze
-    analyses = analyze_gainers(gainers)
+    # Load yesterday's narrative for context
+    prior_narrative = ""
+    recent = load_recent_reports(days=1)
+    if recent:
+        prior_narrative = recent[0].narrative.current_narrative
+    analyses = analyze_gainers(gainers, prior_narrative=prior_narrative)
 
     # 5. Narrative
     prior_reports = load_recent_reports(days=settings.narrative_lookback_days)

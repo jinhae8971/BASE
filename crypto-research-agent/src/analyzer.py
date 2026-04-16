@@ -123,7 +123,10 @@ def _extract_json(text: str) -> dict:
     raise ValueError("no valid JSON object found in model response")
 
 
-def analyze_gainers(gainers: list[GainerCoin]) -> list[CoinAnalysis]:
+def analyze_gainers(
+    gainers: list[GainerCoin],
+    prior_narrative: str = "",
+) -> list[CoinAnalysis]:
     """Run Claude analysis for the full list of gainers in a single request.
 
     Batching all coins into one call lets the cached system prompt amortize
@@ -145,6 +148,8 @@ def analyze_gainers(gainers: list[GainerCoin]) -> list[CoinAnalysis]:
         "in the system prompt.\n\n"
         f"{json.dumps({'coins': contexts}, ensure_ascii=False, indent=2)}"
     )
+    if prior_narrative:
+        user_text += f"\n\nYesterday's market narrative for context:\n{prior_narrative}"
 
     raw = _call_claude(system, user_text)
     try:

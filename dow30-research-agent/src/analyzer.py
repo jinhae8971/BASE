@@ -84,7 +84,10 @@ def _build_stock_context(gainer: GainerStock) -> tuple[dict, list[NewsItem]]:
     return context, news
 
 
-def analyze_gainers(gainers: list[GainerStock]) -> list[StockAnalysis]:
+def analyze_gainers(
+    gainers: list[GainerStock],
+    prior_narrative: str = "",
+) -> list[StockAnalysis]:
     if not gainers:
         return []
 
@@ -101,6 +104,8 @@ def analyze_gainers(gainers: list[GainerStock]) -> list[StockAnalysis]:
         "Return JSON per the schema in the system prompt.\n\n"
         f"{json.dumps({'stocks': contexts}, ensure_ascii=False, indent=2)}"
     )
+    if prior_narrative:
+        user_text += f"\n\nYesterday's market narrative for context:\n{prior_narrative}"
 
     raw = _call_claude(system, user_text)
     try:

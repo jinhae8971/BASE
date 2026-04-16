@@ -40,10 +40,11 @@ def _format_message(report: DailyReport, dashboard_url: str) -> str:
     for i, g in enumerate(report.gainers, start=1):
         analysis = analyses_by_ticker.get(g.ticker)
         thesis = analysis.pump_thesis if analysis else ""
+        conf_mark = " ⚠️low" if (analysis and analysis.confidence < 0.3) else ""
         lines.append(
             f"{i}\\. *{_escape_md(g.name)}* \\({_escape_md(g.ticker)}\\) "
             f"\\+{_escape_md(f'{g.change_pct_nd:.1f}')}%  "
-            f"{_escape_md(thesis[:80])}"
+            f"{_escape_md(thesis[:80])}{_escape_md(conf_mark)}"
         )
     lines.append("")
     lines.append("*💡 투자 인사이트*")

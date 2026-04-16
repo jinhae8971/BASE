@@ -41,10 +41,11 @@ def _format_message(report: DailyReport, dashboard_url: str) -> str:
         symbol = g.symbol.upper()
         analysis = analyses_by_symbol.get(symbol)
         thesis = analysis.pump_thesis if analysis else ""
+        conf_mark = " ⚠️low" if (analysis and analysis.confidence < 0.3) else ""
         lines.append(
             f"{i}\\. *{_escape_md(symbol)}* "
             f"\\+{_escape_md(f'{g.change_48h_pct:.1f}')}%  "
-            f"{_escape_md(thesis[:90])}"
+            f"{_escape_md(thesis[:90])}{_escape_md(conf_mark)}"
         )
     lines.append("")
     lines.append("*💡 Insight*")
