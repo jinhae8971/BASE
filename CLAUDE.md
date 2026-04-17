@@ -125,10 +125,10 @@ docs/                # GitHub Pages 대시보드 (vanilla HTML/JS)
 | 에이전트 | 데이터 | 뉴스 | API 키 필요 |
 |---|---|---|---|
 | crypto | CoinGecko | CryptoPanic | CoinGecko demo 키 권장 |
-| kospi | pykrx (KRX) | 네이버 금융 | 없음 |
-| sp500 | yfinance + Wikipedia | yfinance 내장 | 없음 |
-| nasdaq | yfinance + Wikipedia | yfinance 내장 | 없음 |
-| dow30 | yfinance + Wikipedia | yfinance 내장 | 없음 |
+| kospi | ❌ pykrx→정적리스트+yfinance 교체 필요 | 네이버 금융 | 없음 |
+| sp500 | ❌ Wikipedia→정적리스트+yfinance 교체 필요 | yfinance 내장 | 없음 |
+| nasdaq | ❌ Wikipedia→정적리스트+yfinance 교체 필요 | yfinance 내장 | 없음 |
+| dow30 | ❌ Wikipedia→정적리스트+yfinance 교체 필요 | yfinance 내장 | 없음 |
 | orchestrator | 5개 에이전트 Pages fetch | — | 없음 |
 
 ### 이관 현황 및 남은 작업
@@ -137,18 +137,58 @@ docs/                # GitHub Pages 대시보드 (vanilla HTML/JS)
 - [x] 6개 GitHub 레포 생성 + 코드 push
 - [x] GitHub Pages 활성화 (GitHub Actions source)
 - [x] Actions Variables 등록 (DASHBOARD_URL + 오케스트레이터의 agent URLs)
-- [x] crypto-research-agent Secrets 등록 (ANTHROPIC_API_KEY, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID)
+- [x] 6개 레포 전부 Secrets 등록 (ANTHROPIC_API_KEY, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID)
+- [x] CoinGecko 403 수정 — Demo API 엔드포인트 + 403 fail-fast
+- [x] crypto-research-agent 프로덕션 가동 ✅ (텔레그램 정상 발송)
+- [x] global-market-orchestrator 프로덕션 가동 ✅ (텔레그램 정상 발송)
+- [x] 전체 리뷰 16건 수정 (JSON 추출, API 키 검증, git push 실패 처리 등)
+- [x] 테스트 50→85개 확장
+- [x] 텔레그램 HTML 전환 + 한국어 Chain of Density 포맷
+- [x] Claude 분석 프롬프트 한국어 출력 지시 추가 (12개 프롬프트)
+- [x] 오케스트레이터 대시보드 Chart.js + 다크/라이트 토글
+- [x] 섹터 정규화 매핑 (src/sector_map.py)
+- [x] Workflow 실패 시 Telegram 에러 알림
+- [x] Workflow pipefail 추가 (tee 마스킹 방지)
+- [x] 실패 시 에러 내용 텔레그램 전송
 
-**남은 작업:**
-- [ ] **Secrets 수동 등록** — 5개 레포에 동일한 3개 시크릿 등록
-      대상: kospi, sp500, nasdaq, dow30, global-market-orchestrator
-      경로: 각 레포 → Settings → Secrets and variables → Actions → New repository secret
-- [ ] **CoinGecko 403 수정** — crypto-research-agent의 CoinGecko API가 GitHub Actions IP에서 차단됨
-      수정: src/fetcher.py에서 Demo API 엔드포인트 사용 또는 COINGECKO_API_KEY 시크릿 추가
-      CoinGecko Demo 키: https://www.coingecko.com/en/api/pricing (무료 플랜에서 발급)
-- [ ] **5개 에이전트 첫 실행** — Secrets 등록 후 각 레포 Actions → Run workflow
-- [ ] **오케스트레이터 첫 실행** — 에이전트 최소 1개 성공 후 트리거
+**🔴 미해결 — 코워크에서 이어서 작업 필요:**
+- [ ] **4개 에이전트 fetcher 근본 수정 (CRITICAL)**
+      근본 원인: GitHub Actions IP에서 Wikipedia, KRX 등 외부 사이트 403 차단
+      해결: Wikipedia/KRX 스크래핑을 완전 제거하고 **정적 구성종목 리스트(JSON) + yfinance 전용**으로 교체
+      대상: kospi, sp500, nasdaq, dow30
+      작업 내용:
+        1. 각 에이전트에 `data/constituents.json` 생성 (정적 티커 리스트)
+           - DOW30: 30개 티커 (거의 불변)
+           - NASDAQ-100: ~101개 티커
+           - S&P 500: ~503개 티커
+           - KOSPI: 주요 200+종목 (yfinance `.KS` 접미사 사용)
+        2. `src/fetcher.py` 재작성:
+           - `data/constituents.json`에서 티커 리스트 로드
+           - yfinance로 가격 데이터만 조회 (yfinance는 GitHub Actions에서 정상 작동)
+           - Wikipedia/KRX 스크래핑 코드 완전 제거
+           - pykrx 의존성 제거 (kospi)
+        3. `pyproject.toml` 의존성 정리
+        4. 테스트 업데이트
+        5. Push + 재트리거
+      참고: crypto-research-agent는 CoinGecko Demo API로 이미 해결됨 (정상 작동 중)
+
+- [ ] **오케스트레이터 재실행** — 4개 에이전트 성공 후 트리거
+      현재 오케스트레이터 index.json에 4개가 stale/null로 표시됨
+      에이전트들이 성공하면 자동으로 해결됨
+
 - [ ] **PAT 토큰 revoke** — 이 세션에서 사용한 ghp_ 토큰 폐기 필요
+      경로: GitHub Settings → Developer settings → Personal access tokens
+
+### 현재 프로덕션 상태
+
+| 에이전트 | GitHub Actions | 텔레그램 | 대시보드 |
+|---|---|---|---|
+| crypto-research-agent | ✅ 매일 실행 중 | ✅ 한국어 | ✅ Pages |
+| kospi-research-agent | ❌ fetcher 403 | ❌ | ❌ |
+| sp500-research-agent | ❌ fetcher 403 | ❌ | ❌ |
+| nasdaq-research-agent | ❌ fetcher 403 | ❌ | ❌ |
+| dow30-research-agent | ❌ fetcher 403 | ❌ | ❌ |
+| global-market-orchestrator | ✅ (crypto만 수집) | ✅ 한국어 | ✅ Pages |
 
 ### Cron 스케줄
 
