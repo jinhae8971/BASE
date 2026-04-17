@@ -28,6 +28,7 @@ company context, and recent news headlines.
   - `0.8+` — clear news catalyst + aligned fundamentals
   - `0.5–0.8` — plausible catalyst but mixed signals
   - `<0.5` — speculative / thin evidence / likely noise
+- **모든 분석 내용은 한국어로 작성하세요.** pump_thesis, drivers, risks는 모두 한국어.
 
 # Output format
 

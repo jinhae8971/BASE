@@ -22,6 +22,9 @@ pump theses, and category tags), detect:
    posture to take, what to overweight, what to avoid, what signal would
    invalidate the read.
 
+- **모든 내용은 한국어로 작성하세요.** current_narrative, investment_insight,
+  week_over_week_change, hot_sectors, cooling_sectors 값 모두 한국어.
+
 # Output format
 
 Return **only** JSON matching this schema:

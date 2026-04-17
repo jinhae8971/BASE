@@ -1,1 +1,33 @@
-[]
+[
+  {
+    "date": "2026-04-17",
+    "narrative_tagline": "The market is rewarding low-cap meme token speculation, particularly within the BNB Chain and Bitcoin Ordinals ecosystems, with a secondary ",
+    "top5": [
+      {
+        "symbol": "SIREN",
+        "name": "Siren",
+        "change_48h_pct": 175.04
+      },
+      {
+        "symbol": "ORDI",
+        "name": "ORDI",
+        "change_48h_pct": 145.89
+      },
+      {
+        "symbol": "ROSA",
+        "name": "Rosa Inu",
+        "change_48h_pct": 113.78
+      },
+      {
+        "symbol": "PRL",
+        "name": "Perle",
+        "change_48h_pct": 69.0
+      },
+      {
+        "symbol": "AXL",
+        "name": "Axelar",
+        "change_48h_pct": 60.64
+      }
+    ]
+  }
+]

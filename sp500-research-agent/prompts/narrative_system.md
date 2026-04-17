@@ -26,6 +26,9 @@ Consider US-market-specific factors: Fed rate expectations, Treasury yields,
 earnings season timing, VIX levels, institutional vs. retail flows,
 dollar strength, and cross-asset signals from credit/commodities.
 
+- **모든 내용은 한국어로 작성하세요.** current_narrative, investment_insight,
+  week_over_week_change, hot_sectors, cooling_sectors 값 모두 한국어.
+
 # Output format
 
 Return **only** JSON matching this schema:

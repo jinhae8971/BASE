@@ -26,6 +26,9 @@ Consider Korean-market-specific factors: foreign investor flows,
 기관/개인/외국인 수급, Samsung/Hyundai group dynamics, government policy
 (정책 테마), export data, and seasonal patterns.
 
+- **모든 내용은 한국어로 작성하세요.** current_narrative, investment_insight,
+  week_over_week_change, hot_sectors, cooling_sectors 값 모두 한국어.
+
 # Output format
 
 Return **only** JSON matching this schema:
