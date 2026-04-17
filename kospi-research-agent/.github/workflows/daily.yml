@@ -42,7 +42,15 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           DASHBOARD_URL: ${{ vars.DASHBOARD_URL }}
           MARKET: ${{ vars.MARKET || 'KOSPI' }}
-        run: python -m src.main
+        run: |
+          echo "=== Debug ==="
+          echo "ANTHROPIC_API_KEY set: $([ -n "$ANTHROPIC_API_KEY" ] && echo YES || echo NO)"
+          echo "TELEGRAM_BOT_TOKEN set: $([ -n "$TELEGRAM_BOT_TOKEN" ] && echo YES || echo NO)"
+          echo "Python: $(python --version)"
+          echo "Packages:"
+          pip list 2>/dev/null | grep -iE "yfinance|pykrx|anthropic|pandas"
+          echo "=== Running pipeline ==="
+          python -m src.main 2>&1 || { echo "::error::Pipeline failed with exit code $?"; exit 1; }
 
       - name: Commit reports & snapshots
         run: |
