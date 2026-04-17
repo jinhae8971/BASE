@@ -2,7 +2,9 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta
+from io import StringIO
 
+import httpx
 import pandas as pd
 import yfinance as yf
 from tenacity import retry, stop_after_attempt, wait_exponential
@@ -13,12 +15,15 @@ from .models import StockMarket
 log = get_logger(__name__)
 
 NASDAQ100_WIKI_URL = "https://en.wikipedia.org/wiki/Nasdaq-100"
+_WIKI_HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; nasdaq-research-agent/0.1)"}
 
 
 @retry(stop=stop_after_attempt(3), wait=wait_exponential(min=2, max=10))
 def _fetch_nasdaq100_constituents() -> pd.DataFrame:
     """Scrape current NASDAQ-100 list from Wikipedia."""
-    tables = pd.read_html(NASDAQ100_WIKI_URL)
+    resp = httpx.get(NASDAQ100_WIKI_URL, headers=_WIKI_HEADERS, follow_redirects=True, timeout=20.0)
+    resp.raise_for_status()
+    tables = pd.read_html(StringIO(resp.text))
     # The constituents table has columns: Company, Ticker, GICS Sector, GICS Sub-Industry
     df = None
     for t in tables:

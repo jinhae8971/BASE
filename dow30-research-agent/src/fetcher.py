@@ -2,7 +2,9 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta
+from io import StringIO
 
+import httpx
 import pandas as pd
 import yfinance as yf
 from tenacity import retry, stop_after_attempt, wait_exponential
@@ -13,12 +15,15 @@ from .models import StockMarket
 log = get_logger(__name__)
 
 DJIA_WIKI_URL = "https://en.wikipedia.org/wiki/Dow_Jones_Industrial_Average"
+_WIKI_HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; dow30-research-agent/0.1)"}
 
 
 @retry(stop=stop_after_attempt(3), wait=wait_exponential(min=2, max=10))
 def _fetch_djia_constituents() -> pd.DataFrame:
     """Scrape current Dow 30 list from Wikipedia."""
-    tables = pd.read_html(DJIA_WIKI_URL)
+    resp = httpx.get(DJIA_WIKI_URL, headers=_WIKI_HEADERS, follow_redirects=True, timeout=20.0)
+    resp.raise_for_status()
+    tables = pd.read_html(StringIO(resp.text))
     # Find the table with ticker/symbol column
     df = None
     for t in tables:
