@@ -15,7 +15,7 @@ from .models import StockMarket
 log = get_logger(__name__)
 
 DJIA_WIKI_URL = "https://en.wikipedia.org/wiki/Dow_Jones_Industrial_Average"
-_WIKI_HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; dow30-research-agent/0.1)"}
+_WIKI_HEADERS = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"}
 
 
 @retry(stop=stop_after_attempt(3), wait=wait_exponential(min=2, max=10))

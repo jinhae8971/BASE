@@ -43,6 +43,7 @@ jobs:
           DASHBOARD_URL: ${{ vars.DASHBOARD_URL }}
           MARKET: ${{ vars.MARKET || 'KOSPI' }}
         run: |
+          set -o pipefail
           python -m src.main 2>&1 | tee /tmp/pipeline.log || {
             ERRTAIL=$(tail -20 /tmp/pipeline.log | head -c 1000)
             MSG="⚠️ KOSPI 에러:%0A${ERRTAIL}"
