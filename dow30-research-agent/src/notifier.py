@@ -14,39 +14,41 @@ TELEGRAM_API = "https://api.telegram.org"
 MD_ESCAPE_CHARS = r"_*[]()~`>#+-=|{}.!\\"
 
 
-def _escape_md(text: str) -> str:
+def _esc(text: str) -> str:
+    """Escape text for Telegram MarkdownV2."""
     return "".join("\\" + c if c in MD_ESCAPE_CHARS else c for c in text or "")
 
 
 def _format_message(report: DailyReport, dashboard_url: str) -> str:
-    narrative = report.narrative
+    n = report.narrative
     lines: list[str] = []
-    lines.append(f"🏛️ *Dow 30 Daily — {_escape_md(report.date)}*")
+    lines.append(f"🏛️ *다우30 데일리* ┃ {_esc(report.date)}")
     lines.append("")
-    lines.append("*📊 Market Narrative*")
-    lines.append(_escape_md(narrative.current_narrative))
-    if narrative.hot_sectors:
-        lines.append("🔥 Hot: " + _escape_md(", ".join(narrative.hot_sectors)))
-    if narrative.cooling_sectors:
-        lines.append("❄️ Cooling: " + _escape_md(", ".join(narrative.cooling_sectors)))
+    lines.append(f"📊 *{_esc(n.current_narrative)}*")
+    sectors: list[str] = []
+    if n.hot_sectors:
+        sectors.append("🔥 " + _esc(", ".join(n.hot_sectors)))
+    if n.cooling_sectors:
+        sectors.append("❄️ " + _esc(", ".join(n.cooling_sectors)))
+    if sectors:
+        lines.append(" ┃ ".join(sectors))
     lines.append("")
-    lines.append("*🏆 2\\-Day Top Gainers*")
     analyses_by_ticker = {a.ticker: a for a in report.analyses}
     for i, g in enumerate(report.gainers, start=1):
-        analysis = analyses_by_ticker.get(g.ticker)
-        thesis = analysis.pump_thesis if analysis else ""
-        conf_mark = " ⚠️low" if (analysis and analysis.confidence < 0.3) else ""
+        a = analyses_by_ticker.get(g.ticker)
+        thesis = a.pump_thesis if a else ""
+        conf = a.confidence if a else 0
+        warn = " ⚠️" if conf < 0.3 else ""
+        pct = f"+{g.change_pct_nd:.1f}%"
         lines.append(
-            f"{i}\\. *{_escape_md(g.ticker)}* \\({_escape_md(g.name)}\\) "
-            f"\\+{_escape_md(f'{g.change_pct_nd:.1f}')}%  "
-            f"{_escape_md(thesis[:80])}{_escape_md(conf_mark)}"
+            f"{i}\\. *{_esc(g.ticker)}* {_esc(g.name)} {_esc(pct)}{_esc(warn)}  {_esc(thesis[:70])}"
         )
     lines.append("")
-    lines.append("*💡 Insight*")
-    lines.append(_escape_md(narrative.investment_insight))
-    lines.append("")
+    if n.investment_insight:
+        lines.append(f"💡 {_esc(n.investment_insight)}")
+        lines.append("")
     link = dashboard_url.rstrip("/") + f"/report.html?date={report.date}"
-    lines.append(f"[📈 Full Report & History]({_escape_md(link)})")
+    lines.append(f"[📈 상세보고서 보기]({_esc(link)})")
     return "\n".join(lines)
 
 

@@ -4,12 +4,12 @@ from __future__ import annotations
 from datetime import UTC, datetime
 
 from src.models import DailyReport, GainerStock, NarrativeInsight, StockAnalysis
-from src.notifier import _escape_md, _format_message
+from src.notifier import _esc, _format_message
 
 
-def test_escape_md_handles_special_chars():
-    assert _escape_md("Hello (world)!") == "Hello \\(world\\)\\!"
-    assert _escape_md("a.b") == "a\\.b"
+def test_esc_handles_special_chars():
+    assert _esc("Hello (world)!") == "Hello \\(world\\)\\!"
+    assert _esc("a.b") == "a\\.b"
 
 
 def test_format_message_includes_dashboard_link():
@@ -49,7 +49,7 @@ def test_format_message_includes_dashboard_link():
         ),
     )
     msg = _format_message(report, "https://example.github.io/nasdaq/")
-    assert "NASDAQ" in msg
+    assert "나스닥" in msg
     assert "NVDA" in msg
     assert "\\+12\\.3" in msg
     assert "report.html?date=2026-04-16" in msg.replace("\\", "")

@@ -14,46 +14,51 @@ TELEGRAM_API = "https://api.telegram.org"
 MD_ESCAPE_CHARS = r"_*[]()~`>#+-=|{}.!\\"
 
 
-def _escape_md(text: str) -> str:
-    """Escape text for Telegram MarkdownV2."""
+def _esc(text: str) -> str:
     return "".join("\\" + c if c in MD_ESCAPE_CHARS else c for c in text or "")
 
 
 def _format_message(report: DailyReport, dashboard_url: str) -> str:
-    narrative = report.narrative
+    n = report.narrative
     lines: list[str] = []
-    lines.append(f"🚀 *Crypto Daily — {_escape_md(report.date)}*")
+
+    # Header
+    lines.append(f"🚀 *크립토 데일리* ┃ {_esc(report.date)}")
     lines.append("")
-    lines.append("*📊 Narrative*")
-    lines.append(_escape_md(narrative.current_narrative))
-    if narrative.hot_sectors:
-        lines.append(
-            "🔥 Hot: " + _escape_md(", ".join(narrative.hot_sectors))
-        )
-    if narrative.cooling_sectors:
-        lines.append(
-            "❄️ Cooling: " + _escape_md(", ".join(narrative.cooling_sectors))
-        )
+
+    # Narrative — 한 줄 압축
+    lines.append(f"📊 *{_esc(n.current_narrative)}*")
+    sectors: list[str] = []
+    if n.hot_sectors:
+        sectors.append("🔥 " + _esc(", ".join(n.hot_sectors)))
+    if n.cooling_sectors:
+        sectors.append("❄️ " + _esc(", ".join(n.cooling_sectors)))
+    if sectors:
+        lines.append(" ┃ ".join(sectors))
     lines.append("")
-    lines.append("*🏆 48h Top Gainers*")
+
+    # Top 5 — 압축 포맷: 순위 심볼 +%  핵심원인
     analyses_by_symbol = {a.symbol.upper(): a for a in report.analyses}
     for i, g in enumerate(report.gainers, start=1):
-        symbol = g.symbol.upper()
-        analysis = analyses_by_symbol.get(symbol)
-        thesis = analysis.pump_thesis if analysis else ""
-        conf_mark = " ⚠️low" if (analysis and analysis.confidence < 0.3) else ""
+        sym = g.symbol.upper()
+        a = analyses_by_symbol.get(sym)
+        thesis = a.pump_thesis if a else ""
+        conf = a.confidence if a else 0
+        warn = " ⚠️" if conf < 0.3 else ""
+        pct = f"+{g.change_48h_pct:.1f}%"
         lines.append(
-            f"{i}\\. *{_escape_md(symbol)}* "
-            f"\\+{_escape_md(f'{g.change_48h_pct:.1f}')}%  "
-            f"{_escape_md(thesis[:90])}{_escape_md(conf_mark)}"
+            f"{i}\\. *{_esc(sym)}* {_esc(pct)}{_esc(warn)}  {_esc(thesis[:70])}"
         )
     lines.append("")
-    lines.append("*💡 Insight*")
-    lines.append(_escape_md(narrative.investment_insight))
-    lines.append("")
-    # Build direct link to the specific date on the dashboard
+
+    # Insight — 볼드 강조
+    if n.investment_insight:
+        lines.append(f"💡 {_esc(n.investment_insight)}")
+        lines.append("")
+
+    # Link
     link = dashboard_url.rstrip("/") + f"/report.html?date={report.date}"
-    lines.append(f"[📈 전체 보고서 · 과거 이력 보기]({_escape_md(link)})")
+    lines.append(f"[📈 상세보고서 보기]({_esc(link)})")
     return "\n".join(lines)
 
 
@@ -72,16 +77,13 @@ def send_report(report: DailyReport) -> None:
         return
 
     text = _format_message(report, settings.dashboard_url)
-    MAX_TG_LEN = 4096
-    if len(text) > MAX_TG_LEN:
-        # Truncate but keep the dashboard link at the end
+    if len(text) > 4096:
         link_line = text.rsplit("\n", 1)[-1] if "\n" in text else ""
-        text = text[: MAX_TG_LEN - len(link_line) - 20] + "\n\\.\\.\\.\n" + link_line
-    payload = {
+        text = text[: 4096 - len(link_line) - 20] + "\n\\.\\.\\.\n" + link_line
+    _send(settings.telegram_bot_token, {
         "chat_id": settings.telegram_chat_id,
         "text": text,
         "parse_mode": "MarkdownV2",
         "disable_web_page_preview": False,
-    }
-    _send(settings.telegram_bot_token, payload)
+    })
     log.info("telegram notification sent for %s", report.date)

@@ -9,12 +9,12 @@ from src.models import (
     GainerCoin,
     NarrativeInsight,
 )
-from src.notifier import _escape_md, _format_message
+from src.notifier import _esc, _format_message
 
 
 def test_escape_md_handles_special_chars():
-    assert _escape_md("Hello (world)!") == "Hello \\(world\\)\\!"
-    assert _escape_md("a.b") == "a\\.b"
+    assert _esc("Hello (world)!") == "Hello \\(world\\)\\!"
+    assert _esc("a.b") == "a\\.b"
 
 
 def test_format_message_includes_dashboard_link():
@@ -53,7 +53,7 @@ def test_format_message_includes_dashboard_link():
         ),
     )
     msg = _format_message(report, "https://example.github.io/crypto/")
-    assert "2026\\-04\\-16" in msg
+    assert "크립토 데일리" in msg
     assert "TAO" in msg
     assert "\\+42\\.3" in msg
     assert "report.html?date=2026-04-16" in msg.replace("\\", "")

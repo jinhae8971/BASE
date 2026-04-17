@@ -9,13 +9,13 @@ from src.models import (
     NarrativeInsight,
     StockAnalysis,
 )
-from src.notifier import _escape_md, _format_message
+from src.notifier import _esc, _format_message
 
 
-def test_escape_md_handles_special_chars():
-    assert _escape_md("Hello (world)!") == "Hello \\(world\\)\\!"
-    assert _escape_md("a.b") == "a\\.b"
-    assert _escape_md("S&P 500") == "S&P 500"
+def test_esc_handles_special_chars():
+    assert _esc("Hello (world)!") == "Hello \\(world\\)\\!"
+    assert _esc("a.b") == "a\\.b"
+    assert _esc("S&P 500") == "S&P 500"
 
 
 def test_format_message_includes_dashboard_link():
