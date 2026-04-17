@@ -43,14 +43,13 @@ jobs:
           DASHBOARD_URL: ${{ vars.DASHBOARD_URL }}
           MARKET: ${{ vars.MARKET || 'KOSPI' }}
         run: |
-          echo "=== Debug ==="
-          echo "ANTHROPIC_API_KEY set: $([ -n "$ANTHROPIC_API_KEY" ] && echo YES || echo NO)"
-          echo "TELEGRAM_BOT_TOKEN set: $([ -n "$TELEGRAM_BOT_TOKEN" ] && echo YES || echo NO)"
-          echo "Python: $(python --version)"
-          echo "Packages:"
-          pip list 2>/dev/null | grep -iE "yfinance|pykrx|anthropic|pandas"
-          echo "=== Running pipeline ==="
-          python -m src.main 2>&1 || { echo "::error::Pipeline failed with exit code $?"; exit 1; }
+          python -m src.main 2>&1 | tee /tmp/pipeline.log || {
+            ERRTAIL=$(tail -20 /tmp/pipeline.log | head -c 1000)
+            MSG="⚠️ KOSPI 에러:%0A${ERRTAIL}"
+            curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+              -d chat_id="${TELEGRAM_CHAT_ID}" -d text="${MSG}" || true
+            exit 1
+          }
 
       - name: Commit reports & snapshots
         run: |
