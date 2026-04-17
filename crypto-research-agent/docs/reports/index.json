@@ -1,32 +1,32 @@
 [
   {
     "date": "2026-04-17",
-    "narrative_tagline": "The market is rewarding low-cap meme token speculation, particularly within the BNB Chain and Bitcoin Ordinals ecosystems, with a secondary ",
+    "narrative_tagline": "시장은 현재 밈코인 투기 열풍과 Binance Alpha Spotlight 효과를 중심으로 저시가총액 무근거 펌프를 집중적으로 보상하고 있다.",
     "top5": [
-      {
-        "symbol": "SIREN",
-        "name": "Siren",
-        "change_48h_pct": 175.04
-      },
       {
         "symbol": "ORDI",
         "name": "ORDI",
-        "change_48h_pct": 145.89
+        "change_48h_pct": 173.85
+      },
+      {
+        "symbol": "SIREN",
+        "name": "Siren",
+        "change_48h_pct": 165.5
+      },
+      {
+        "symbol": "BASED",
+        "name": "Based",
+        "change_48h_pct": 144.87
       },
       {
         "symbol": "ROSA",
         "name": "Rosa Inu",
-        "change_48h_pct": 113.78
+        "change_48h_pct": 111.27
       },
       {
         "symbol": "PRL",
         "name": "Perle",
-        "change_48h_pct": 69.0
-      },
-      {
-        "symbol": "AXL",
-        "name": "Axelar",
-        "change_48h_pct": 60.64
+        "change_48h_pct": 77.15
       }
     ]
   }

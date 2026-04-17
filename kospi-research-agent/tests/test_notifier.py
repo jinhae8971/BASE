@@ -9,12 +9,12 @@ from src.models import (
     NarrativeInsight,
     StockAnalysis,
 )
-from src.notifier import _esc, _format_message
+from src.notifier import _h, _format_message
 
 
-def test_esc_handles_special_chars():
-    assert _esc("Hello (world)!") == "Hello \\(world\\)\\!"
-    assert _esc("a.b") == "a\\.b"
+def test_h_escapes_html_chars():
+    assert _h("a < b & c") == "a &lt; b &amp; c"
+    assert _h("use <script>") == "use &lt;script&gt;"
 
 
 def test_format_message_includes_dashboard_link():
@@ -55,8 +55,9 @@ def test_format_message_includes_dashboard_link():
         ),
     )
     msg = _format_message(report, "https://example.github.io/kospi/")
-    assert "2026\\-04\\-16" in msg
+    assert "2026-04-16" in msg
+    assert "<b>" in msg
     assert "삼성전자" in msg
     assert "005930" in msg
-    assert "\\+5\\.8" in msg
-    assert "report.html?date=2026-04-16" in msg.replace("\\", "")
+    assert "+5.8%" in msg
+    assert "report.html?date=2026-04-16" in msg

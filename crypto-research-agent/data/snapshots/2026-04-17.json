@@ -1,251 +1,251 @@
 {
   "date": "2026-04-17",
-  "fetched_at": "2026-04-17T00:16:09.539476Z",
+  "fetched_at": "2026-04-17T00:44:33.440809Z",
   "coins": [
     {
       "id": "bitcoin",
       "symbol": "btc",
-      "price": 74992.0,
-      "market_cap": 1501315373823.0,
-      "volume": 44160485179.0
+      "price": 75023.0,
+      "market_cap": 1501544551822.0,
+      "volume": 43998135640.0
     },
     {
       "id": "ethereum",
       "symbol": "eth",
-      "price": 2343.72,
-      "market_cap": 282893550498.0,
-      "volume": 20428768930.0
+      "price": 2347.64,
+      "market_cap": 283355653429.0,
+      "volume": 19497972053.0
     },
     {
       "id": "tether",
       "symbol": "usdt",
       "price": 1.0,
-      "market_cap": 185766857443.0,
-      "volume": 80262540332.0
+      "market_cap": 185777933645.0,
+      "volume": 80422745628.0
     },
     {
       "id": "ripple",
       "symbol": "xrp",
-      "price": 1.45,
-      "market_cap": 89201660441.0,
-      "volume": 3924269151.0
+      "price": 1.44,
+      "market_cap": 88898472901.0,
+      "volume": 4020244760.0
     },
     {
       "id": "binancecoin",
       "symbol": "bnb",
-      "price": 635.3,
-      "market_cap": 85640060348.0,
-      "volume": 1311172393.0
+      "price": 634.85,
+      "market_cap": 85599098762.0,
+      "volume": 1283850603.0
     },
     {
       "id": "usd-coin",
       "symbol": "usdc",
-      "price": 0.999855,
-      "market_cap": 78704683626.0,
-      "volume": 18944448913.0
+      "price": 0.999929,
+      "market_cap": 78713831945.0,
+      "volume": 18866863826.0
     },
     {
       "id": "solana",
       "symbol": "sol",
-      "price": 88.82,
-      "market_cap": 51104036540.0,
-      "volume": 5475230198.0
+      "price": 88.81,
+      "market_cap": 51081764965.0,
+      "volume": 5449926899.0
     },
     {
       "id": "tron",
       "symbol": "trx",
-      "price": 0.326719,
-      "market_cap": 30966162343.0,
-      "volume": 528033302.0
+      "price": 0.327053,
+      "market_cap": 30999488442.0,
+      "volume": 519510171.0
     },
     {
       "id": "figure-heloc",
       "symbol": "figr_heloc",
-      "price": 1.023,
-      "market_cap": 17203621736.0,
-      "volume": 98083897.0
+      "price": 1.034,
+      "market_cap": 17385292002.0,
+      "volume": 15652585.0
     },
     {
       "id": "dogecoin",
       "symbol": "doge",
-      "price": 0.098776,
-      "market_cap": 15201393696.0,
-      "volume": 2680284785.0
+      "price": 0.098788,
+      "market_cap": 15166001456.0,
+      "volume": 2673181097.0
     },
     {
       "id": "whitebit",
       "symbol": "wbt",
-      "price": 54.71,
-      "market_cap": 11676478182.0,
-      "volume": 64753630.0
+      "price": 54.77,
+      "market_cap": 11688358702.0,
+      "volume": 64421239.0
     },
     {
       "id": "usds",
       "symbol": "usds",
-      "price": 0.999823,
-      "market_cap": 11353139521.0,
-      "volume": 53853371.0
+      "price": 0.999855,
+      "market_cap": 11355405388.0,
+      "volume": 54459570.0
     },
     {
       "id": "hyperliquid",
       "symbol": "hype",
-      "price": 43.74,
-      "market_cap": 10432087823.0,
-      "volume": 348497297.0
+      "price": 44.19,
+      "market_cap": 10538954456.0,
+      "volume": 351584715.0
     },
     {
       "id": "cardano",
       "symbol": "ada",
-      "price": 0.258803,
-      "market_cap": 9570641289.0,
-      "volume": 643989892.0
+      "price": 0.258383,
+      "market_cap": 9548694741.0,
+      "volume": 616169375.0
     },
     {
       "id": "leo-token",
       "symbol": "leo",
-      "price": 10.15,
-      "market_cap": 9350293408.0,
-      "volume": 438650.0
+      "price": 10.17,
+      "market_cap": 9337633631.0,
+      "volume": 733889.0
     },
     {
       "id": "bitcoin-cash",
       "symbol": "bch",
-      "price": 456.53,
-      "market_cap": 9130389954.0,
-      "volume": 239700073.0
+      "price": 457.08,
+      "market_cap": 9157465285.0,
+      "volume": 242692192.0
     },
     {
       "id": "chainlink",
       "symbol": "link",
-      "price": 9.53,
-      "market_cap": 6931098853.0,
-      "volume": 449865707.0
+      "price": 9.52,
+      "market_cap": 6923406580.0,
+      "volume": 450115474.0
     },
     {
       "id": "memecore",
       "symbol": "m",
-      "price": 3.78,
-      "market_cap": 6637717101.0,
-      "volume": 25136903.0
+      "price": 3.85,
+      "market_cap": 6760184429.0,
+      "volume": 25698136.0
     },
     {
       "id": "monero",
       "symbol": "xmr",
-      "price": 343.04,
-      "market_cap": 6328996815.0,
-      "volume": 95369154.0
+      "price": 344.12,
+      "market_cap": 6341485460.0,
+      "volume": 92765448.0
     },
     {
       "id": "ethena-usde",
       "symbol": "usde",
-      "price": 0.999715,
-      "market_cap": 5831683370.0,
-      "volume": 72215097.0
-    },
-    {
-      "id": "zcash",
-      "symbol": "zec",
-      "price": 341.43,
-      "market_cap": 5688973722.0,
-      "volume": 351729886.0
+      "price": 0.999745,
+      "market_cap": 5831241239.0,
+      "volume": 71965838.0
     },
     {
       "id": "canton-network",
       "symbol": "cc",
-      "price": 0.147727,
-      "market_cap": 5645663151.0,
-      "volume": 17222194.0
+      "price": 0.147957,
+      "market_cap": 5681097636.0,
+      "volume": 16473668.0
+    },
+    {
+      "id": "zcash",
+      "symbol": "zec",
+      "price": 340.84,
+      "market_cap": 5677501616.0,
+      "volume": 358130476.0
     },
     {
       "id": "stellar",
       "symbol": "xlm",
-      "price": 0.168644,
-      "market_cap": 5592860323.0,
-      "volume": 154489618.0
+      "price": 0.168211,
+      "market_cap": 5575490658.0,
+      "volume": 154138518.0
     },
     {
       "id": "dai",
       "symbol": "dai",
-      "price": 0.999016,
-      "market_cap": 4342963516.0,
-      "volume": 38392094.0
+      "price": 0.999045,
+      "market_cap": 4347005489.0,
+      "volume": 38633541.0
     },
     {
       "id": "litecoin",
       "symbol": "ltc",
-      "price": 56.23,
-      "market_cap": 4335202440.0,
-      "volume": 423752667.0
-    },
-    {
-      "id": "ravedao",
-      "symbol": "rave",
-      "price": 16.99,
-      "market_cap": 4196778418.0,
-      "volume": 313035230.0
+      "price": 56.17,
+      "market_cap": 4330416113.0,
+      "volume": 421473061.0
     },
     {
       "id": "avalanche-2",
       "symbol": "avax",
-      "price": 9.7,
-      "market_cap": 4189080679.0,
-      "volume": 401213766.0
+      "price": 9.68,
+      "market_cap": 4181225890.0,
+      "volume": 391941445.0
+    },
+    {
+      "id": "ravedao",
+      "symbol": "rave",
+      "price": 16.81,
+      "market_cap": 4167804906.0,
+      "volume": 297365088.0
     },
     {
       "id": "usd1-wlfi",
       "symbol": "usd1",
       "price": 1.0,
-      "market_cap": 4131754562.0,
-      "volume": 1707476423.0
+      "market_cap": 4130941485.0,
+      "volume": 1738784521.0
     },
     {
       "id": "paypal-usd",
       "symbol": "pyusd",
       "price": 1.0,
-      "market_cap": 4127058768.0,
-      "volume": 90839703.0
+      "market_cap": 4127926382.0,
+      "volume": 100910704.0
     },
     {
       "id": "sui",
       "symbol": "sui",
-      "price": 0.999936,
-      "market_cap": 3957836265.0,
-      "volume": 587843411.0
+      "price": 1.001,
+      "market_cap": 3956352274.0,
+      "volume": 572522465.0
     },
     {
       "id": "hedera-hashgraph",
       "symbol": "hbar",
-      "price": 0.090547,
-      "market_cap": 3924018798.0,
-      "volume": 100847822.0
+      "price": 0.09016,
+      "market_cap": 3906298937.0,
+      "volume": 101845549.0
     },
     {
       "id": "rain",
       "symbol": "rain",
-      "price": 0.00774428,
-      "market_cap": 3704128661.0,
-      "volume": 10967462.0
+      "price": 0.00773002,
+      "market_cap": 3697719003.0,
+      "volume": 10956043.0
     },
     {
       "id": "shiba-inu",
       "symbol": "shib",
-      "price": 6.24e-6,
-      "market_cap": 3677195781.0,
-      "volume": 187140047.0
+      "price": 6.25e-6,
+      "market_cap": 3684093228.0,
+      "volume": 187486047.0
     },
     {
       "id": "the-open-network",
       "symbol": "ton",
-      "price": 1.43,
-      "market_cap": 3564307205.0,
-      "volume": 128162066.0
+      "price": 1.45,
+      "market_cap": 3613189794.0,
+      "volume": 130652994.0
     },
     {
       "id": "crypto-com-chain",
       "symbol": "cro",
-      "price": 0.071082,
-      "market_cap": 3010692509.0,
-      "volume": 12214351.0
+      "price": 0.071033,
+      "market_cap": 3009432677.0,
+      "volume": 12307420.0
     },
     {
       "id": "hashnote-usyc",
@@ -257,16 +257,16 @@
     {
       "id": "tether-gold",
       "symbol": "xaut",
-      "price": 4769.95,
-      "market_cap": 2670959776.0,
-      "volume": 285247439.0
+      "price": 4776.35,
+      "market_cap": 2674368188.0,
+      "volume": 284533343.0
     },
     {
       "id": "world-liberty-financial",
       "symbol": "wlfi",
-      "price": 0.081992,
-      "market_cap": 2604975631.0,
-      "volume": 67727703.0
+      "price": 0.081985,
+      "market_cap": 2602728525.0,
+      "volume": 68464162.0
     },
     {
       "id": "blackrock-usd-institutional-digital-liquidity-fund",
@@ -278,121 +278,114 @@
     {
       "id": "bittensor",
       "symbol": "tao",
-      "price": 254.02,
-      "market_cap": 2436097488.0,
-      "volume": 267108506.0
+      "price": 256.04,
+      "market_cap": 2456170070.0,
+      "volume": 279396737.0
     },
     {
       "id": "pax-gold",
       "symbol": "paxg",
-      "price": 4773.37,
-      "market_cap": 2356590408.0,
-      "volume": 197160463.0
+      "price": 4778.89,
+      "market_cap": 2359237242.0,
+      "volume": 200496129.0
     },
     {
       "id": "global-dollar",
       "symbol": "usdg",
-      "price": 0.99989,
-      "market_cap": 2242571501.0,
-      "volume": 75154194.0
-    },
-    {
-      "id": "polkadot",
-      "symbol": "dot",
-      "price": 1.32,
-      "market_cap": 2221191348.0,
-      "volume": 389226624.0
+      "price": 1.0,
+      "market_cap": 2242826977.0,
+      "volume": 71930452.0
     },
     {
       "id": "mantle",
       "symbol": "mnt",
-      "price": 0.673917,
-      "market_cap": 2206815525.0,
-      "volume": 40885382.0
+      "price": 0.674165,
+      "market_cap": 2210890498.0,
+      "volume": 41111112.0
+    },
+    {
+      "id": "polkadot",
+      "symbol": "dot",
+      "price": 1.31,
+      "market_cap": 2208806490.0,
+      "volume": 388920482.0
     },
     {
       "id": "uniswap",
       "symbol": "uni",
       "price": 3.41,
-      "market_cap": 2162789988.0,
-      "volume": 236206466.0
+      "market_cap": 2162180933.0,
+      "volume": 237895382.0
     },
     {
       "id": "near",
       "symbol": "near",
       "price": 1.43,
-      "market_cap": 1850363280.0,
-      "volume": 241237954.0
+      "market_cap": 1844986402.0,
+      "volume": 241750563.0
     },
     {
       "id": "okb",
       "symbol": "okb",
-      "price": 86.75,
-      "market_cap": 1821962395.0,
-      "volume": 20028414.0
+      "price": 87.23,
+      "market_cap": 1831689306.0,
+      "volume": 20375296.0
     },
     {
       "id": "falcon-finance",
       "symbol": "usdf",
-      "price": 0.998391,
-      "market_cap": 1786256150.0,
-      "volume": 856283.0
+      "price": 0.998445,
+      "market_cap": 1786793599.0,
+      "volume": 843930.0
     },
     {
       "id": "sky",
       "symbol": "sky",
-      "price": 0.07672,
-      "market_cap": 1775861616.0,
-      "volume": 8586045.0
-    },
-    {
-      "id": "pi-network",
-      "symbol": "pi",
-      "price": 0.171882,
-      "market_cap": 1745040947.0,
-      "volume": 21781100.0
+      "price": 0.076905,
+      "market_cap": 1782130017.0,
+      "volume": 8614545.0
     },
     {
       "id": "aave",
       "symbol": "aave",
-      "price": 114.98,
-      "market_cap": 1744432122.0,
-      "volume": 469123854.0
+      "price": 115.38,
+      "market_cap": 1749792943.0,
+      "volume": 479453049.0
+    },
+    {
+      "id": "pi-network",
+      "symbol": "pi",
+      "price": 0.172372,
+      "market_cap": 1747510498.0,
+      "volume": 21998488.0
     },
     {
       "id": "aster-2",
       "symbol": "aster",
-      "price": 0.688061,
-      "market_cap": 1690700170.0,
-      "volume": 140242590.0
+      "price": 0.691957,
+      "market_cap": 1700991043.0,
+      "volume": 143168320.0
     },
     {
       "id": "pepe",
       "symbol": "pepe",
-      "price": 3.95e-6,
-      "market_cap": 1670392200.0,
-      "volume": 837300743.0
+      "price": 3.99e-6,
+      "market_cap": 1673729106.0,
+      "volume": 844076376.0
     },
     {
       "id": "htx-dao",
       "symbol": "htx",
       "price": 1.78e-6,
-      "market_cap": 1613812707.0,
-      "volume": 11527026.0
+      "market_cap": 1615020907.0,
+      "volume": 11392102.0
     },
     {
       "id": "usdd",
       "symbol": "usdd",
       "price": 1.0,
-      "market_cap": 1543695512.0,
-      "volume": 40518417.0
-    },
-    {
-      "id": "siren-2",
-      "symbol": "siren",
-      "price": 2.16,
-      "market_cap": 1539434479.0,
-      "volume": 100613643.0
+      "market_cap": 1543817316.0,
+      "volume": 43598861.0
     },
     {
       "id": "janus-henderson-anemoy-treasury-fund",
@@ -402,165 +395,172 @@
       "volume": 0.0
     },
     {
+      "id": "siren-2",
+      "symbol": "siren",
+      "price": 2.06,
+      "market_cap": 1482196187.0,
+      "volume": 99978976.0
+    },
+    {
       "id": "ripple-usd",
       "symbol": "rlusd",
       "price": 1.0,
-      "market_cap": 1480669992.0,
-      "volume": 142938446.0
+      "market_cap": 1480661595.0,
+      "volume": 148408863.0
     },
     {
       "id": "internet-computer",
       "symbol": "icp",
       "price": 2.64,
-      "market_cap": 1455988197.0,
-      "volume": 58313780.0
+      "market_cap": 1456068398.0,
+      "volume": 58254860.0
     },
     {
       "id": "ondo-us-dollar-yield",
       "symbol": "usdy",
       "price": 1.13,
-      "market_cap": 1365190854.0,
-      "volume": 546215.0
+      "market_cap": 1369588588.0,
+      "volume": 2573060.0
     },
     {
       "id": "ethereum-classic",
       "symbol": "etc",
       "price": 8.72,
-      "market_cap": 1364160511.0,
-      "volume": 58524017.0
+      "market_cap": 1363437437.0,
+      "volume": 59717808.0
     },
     {
       "id": "bitget-token",
       "symbol": "bgb",
       "price": 1.9,
-      "market_cap": 1331433289.0,
-      "volume": 22688188.0
+      "market_cap": 1330841316.0,
+      "volume": 22017248.0
     },
     {
       "id": "bfusd",
       "symbol": "bfusd",
-      "price": 0.999702,
-      "market_cap": 1319605635.0,
-      "volume": 5213098.0
+      "price": 0.999795,
+      "market_cap": 1319728319.0,
+      "volume": 5211572.0
     },
     {
       "id": "ondo-finance",
       "symbol": "ondo",
-      "price": 0.268583,
-      "market_cap": 1309859790.0,
-      "volume": 91936190.0
+      "price": 0.268016,
+      "market_cap": 1305060138.0,
+      "volume": 90896311.0
     },
     {
       "id": "pump-fun",
       "symbol": "pump",
-      "price": 0.00200087,
-      "market_cap": 1181637711.0,
-      "volume": 81405940.0
+      "price": 0.00200708,
+      "market_cap": 1183122092.0,
+      "volume": 79254209.0
     },
     {
       "id": "kucoin-shares",
       "symbol": "kcs",
-      "price": 8.62,
-      "market_cap": 1161295792.0,
-      "volume": 16078612.0
+      "price": 8.6,
+      "market_cap": 1159030068.0,
+      "volume": 81554.0
     },
     {
       "id": "gatechain-token",
       "symbol": "gt",
-      "price": 7.19,
+      "price": 7.23,
       "market_cap": 1133103428.0,
-      "volume": 3517303.0
+      "volume": 3525178.0
     },
     {
       "id": "quant-network",
       "symbol": "qnt",
-      "price": 75.46,
-      "market_cap": 1097683397.0,
-      "volume": 8984310.0
+      "price": 75.66,
+      "market_cap": 1099472313.0,
+      "volume": 8986887.0
     },
     {
       "id": "worldcoin-wld",
       "symbol": "wld",
-      "price": 0.322991,
-      "market_cap": 1058753894.0,
-      "volume": 149816395.0
+      "price": 0.323341,
+      "market_cap": 1059747009.0,
+      "volume": 147277107.0
     },
     {
       "id": "algorand",
       "symbol": "algo",
-      "price": 0.116075,
-      "market_cap": 1033102853.0,
-      "volume": 47945407.0
+      "price": 0.11599,
+      "market_cap": 1032426903.0,
+      "volume": 48578551.0
     },
     {
       "id": "eutbl",
       "symbol": "eutbl",
       "price": 1.24,
-      "market_cap": 1008458446.0,
+      "market_cap": 1008495277.0,
       "volume": 0.0
     },
     {
       "id": "morpho",
       "symbol": "morpho",
       "price": 1.8,
-      "market_cap": 991356666.0,
-      "volume": 25049607.0
+      "market_cap": 991823221.0,
+      "volume": 24814877.0
     },
     {
       "id": "ethena",
       "symbol": "ena",
-      "price": 0.112495,
-      "market_cap": 986220439.0,
-      "volume": 170509512.0
-    },
-    {
-      "id": "united-stables",
-      "symbol": "u",
-      "price": 1.0,
-      "market_cap": 967935340.0,
-      "volume": 59279672.0
+      "price": 0.113239,
+      "market_cap": 991490216.0,
+      "volume": 172875337.0
     },
     {
       "id": "render-token",
       "symbol": "render",
       "price": 1.87,
-      "market_cap": 967924785.0,
-      "volume": 121262714.0
+      "market_cap": 972622714.0,
+      "volume": 121667378.0
+    },
+    {
+      "id": "united-stables",
+      "symbol": "u",
+      "price": 1.0,
+      "market_cap": 968636208.0,
+      "volume": 58878420.0
     },
     {
       "id": "polygon-ecosystem-token",
       "symbol": "pol",
-      "price": 0.090475,
-      "market_cap": 961879623.0,
-      "volume": 59536853.0
+      "price": 0.090503,
+      "market_cap": 962114138.0,
+      "volume": 59506645.0
     },
     {
       "id": "kaspa",
       "symbol": "kas",
-      "price": 0.03400776,
-      "market_cap": 928274599.0,
-      "volume": 22580263.0
+      "price": 0.03400525,
+      "market_cap": 928205095.0,
+      "volume": 22864223.0
     },
     {
       "id": "cosmos",
       "symbol": "atom",
-      "price": 1.81,
-      "market_cap": 909054247.0,
-      "volume": 55469283.0
+      "price": 1.82,
+      "market_cap": 914860427.0,
+      "volume": 55367651.0
     },
     {
       "id": "nexo",
       "symbol": "nexo",
-      "price": 0.904719,
-      "market_cap": 905233850.0,
-      "volume": 5861862.0
+      "price": 0.905162,
+      "market_cap": 905042805.0,
+      "volume": 5254852.0
     },
     {
       "id": "usdtb",
       "symbol": "usdtb",
-      "price": 0.999841,
-      "market_cap": 869152383.0,
-      "volume": 1073470.0
+      "price": 0.999871,
+      "market_cap": 869174896.0,
+      "volume": 1073484.0
     },
     {
       "id": "superstate-short-duration-us-government-securities-fund-ustb",
@@ -572,23 +572,23 @@
     {
       "id": "aptos",
       "symbol": "apt",
-      "price": 0.993271,
-      "market_cap": 802139852.0,
-      "volume": 142182573.0
+      "price": 0.985484,
+      "market_cap": 794620887.0,
+      "volume": 141305058.0
     },
     {
       "id": "arbitrum",
       "symbol": "arb",
-      "price": 0.128542,
-      "market_cap": 777042446.0,
-      "volume": 170096578.0
+      "price": 0.128576,
+      "market_cap": 776826859.0,
+      "volume": 169143453.0
     },
     {
       "id": "filecoin",
       "symbol": "fil",
-      "price": 0.993765,
-      "market_cap": 768714369.0,
-      "volume": 196117002.0
+      "price": 0.993442,
+      "market_cap": 767472151.0,
+      "volume": 197486199.0
     },
     {
       "id": "blockchain-capital",
@@ -600,58 +600,58 @@
     {
       "id": "official-trump",
       "symbol": "trump",
-      "price": 3.06,
-      "market_cap": 710459947.0,
-      "volume": 252502021.0
+      "price": 3.08,
+      "market_cap": 718156449.0,
+      "volume": 245715848.0
     },
     {
       "id": "flare-networks",
       "symbol": "flr",
-      "price": 0.0082467,
-      "market_cap": 707465637.0,
-      "volume": 3589387.0
+      "price": 0.00822875,
+      "market_cap": 705544471.0,
+      "volume": 3575354.0
     },
     {
       "id": "hash-2",
       "symbol": "hash",
-      "price": 0.01170996,
-      "market_cap": 670040045.0,
-      "volume": 10506.02
+      "price": 0.01166082,
+      "market_cap": 663841291.0,
+      "volume": 9248.02
     },
     {
       "id": "jupiter-exchange-solana",
       "symbol": "jup",
-      "price": 0.17999,
-      "market_cap": 639657754.0,
-      "volume": 28162281.0
+      "price": 0.180592,
+      "market_cap": 640277971.0,
+      "volume": 28407904.0
     },
     {
       "id": "vechain",
       "symbol": "vet",
-      "price": 0.00741973,
-      "market_cap": 638201149.0,
-      "volume": 21554231.0
+      "price": 0.00738652,
+      "market_cap": 634981808.0,
+      "volume": 21647617.0
     },
     {
       "id": "xdce-crowd-sale",
       "symbol": "xdc",
-      "price": 0.03125701,
-      "market_cap": 623303352.0,
-      "volume": 22426684.0
+      "price": 0.03123569,
+      "market_cap": 622915387.0,
+      "volume": 22079852.0
     },
     {
       "id": "beldex",
       "symbol": "bdx",
-      "price": 0.080261,
-      "market_cap": 621134016.0,
-      "volume": 12150366.0
+      "price": 0.080257,
+      "market_cap": 620981098.0,
+      "volume": 12224519.0
     },
     {
       "id": "midnight-3",
       "symbol": "night",
-      "price": 0.03668755,
-      "market_cap": 608602429.0,
-      "volume": 17151212.0
+      "price": 0.03699217,
+      "market_cap": 612963369.0,
+      "volume": 17405785.0
     },
     {
       "id": "ousg",
@@ -661,165 +661,165 @@
       "volume": 0.0
     },
     {
+      "id": "stable-2",
+      "symbol": "stable",
+      "price": 0.026879,
+      "market_cap": 587579413.0,
+      "volume": 24896325.0
+    },
+    {
       "id": "gho",
       "symbol": "gho",
-      "price": 0.999639,
-      "market_cap": 583777364.0,
-      "volume": 4408413.0
+      "price": 0.999702,
+      "market_cap": 583793400.0,
+      "volume": 4502795.0
     },
     {
       "id": "ylds",
       "symbol": "ylds",
-      "price": 0.999827,
-      "market_cap": 574845011.0,
-      "volume": 12632859.0
-    },
-    {
-      "id": "stable-2",
-      "symbol": "stable",
-      "price": 0.0260986,
-      "market_cap": 570263016.0,
-      "volume": 23636144.0
+      "price": 0.999912,
+      "market_cap": 574893995.0,
+      "volume": 12633944.0
     },
     {
       "id": "bonk",
       "symbol": "bonk",
-      "price": 6.47e-6,
-      "market_cap": 570192522.0,
-      "volume": 133648865.0
-    },
-    {
-      "id": "usual-usd",
-      "symbol": "usd0",
-      "price": 0.99835,
-      "market_cap": 557563068.0,
-      "volume": 156410.0
+      "price": 6.51e-6,
+      "market_cap": 571775721.0,
+      "volume": 133531786.0
     },
     {
       "id": "just",
       "symbol": "jst",
-      "price": 0.065051,
-      "market_cap": 555252042.0,
-      "volume": 90443353.0
+      "price": 0.065748,
+      "market_cap": 561103740.0,
+      "volume": 89923021.0
+    },
+    {
+      "id": "usual-usd",
+      "symbol": "usd0",
+      "price": 0.998273,
+      "market_cap": 557589987.0,
+      "volume": 156393.0
     },
     {
       "id": "fetch-ai",
       "symbol": "fet",
-      "price": 0.239128,
-      "market_cap": 540377916.0,
-      "volume": 106920970.0
+      "price": 0.238632,
+      "market_cap": 538894733.0,
+      "volume": 107225064.0
     },
     {
       "id": "pancakeswap-token",
       "symbol": "cake",
       "price": 1.62,
-      "market_cap": 531810899.0,
-      "volume": 40444049.0
+      "market_cap": 531348488.0,
+      "volume": 40581307.0
     },
     {
       "id": "dexe",
       "symbol": "dexe",
-      "price": 11.18,
-      "market_cap": 521720348.0,
-      "volume": 17111587.0
+      "price": 11.22,
+      "market_cap": 524520068.0,
+      "volume": 17148149.0
     },
     {
       "id": "layerzero",
       "symbol": "zro",
-      "price": 1.99,
-      "market_cap": 502346025.0,
-      "volume": 39114689.0
+      "price": 2.0,
+      "market_cap": 503956926.0,
+      "volume": 36540250.0
     },
     {
       "id": "true-usd",
       "symbol": "tusd",
-      "price": 0.999265,
-      "market_cap": 494062550.0,
-      "volume": 9834850.0
+      "price": 0.999398,
+      "market_cap": 494186627.0,
+      "volume": 9896992.0
     },
     {
       "id": "pudgy-penguins",
       "symbol": "pengu",
-      "price": 0.00783074,
-      "market_cap": 492662666.0,
-      "volume": 184069652.0
+      "price": 0.00784877,
+      "market_cap": 493095994.0,
+      "volume": 186570368.0
     },
     {
       "id": "a7a5",
       "symbol": "a7a5",
-      "price": 0.01251815,
-      "market_cap": 490742874.0,
-      "volume": 1015.01
+      "price": 0.01251853,
+      "market_cap": 490758677.0,
+      "volume": 1015.04
     },
     {
       "id": "virtual-protocol",
       "symbol": "virtual",
-      "price": 0.735402,
-      "market_cap": 483112520.0,
-      "volume": 105213255.0
+      "price": 0.742197,
+      "market_cap": 487107095.0,
+      "volume": 106630030.0
     },
     {
       "id": "dash",
       "symbol": "dash",
-      "price": 37.0,
-      "market_cap": 468452570.0,
-      "volume": 104819867.0
+      "price": 37.07,
+      "market_cap": 469127569.0,
+      "volume": 86568237.0
     },
     {
       "id": "adi-token",
       "symbol": "adi",
-      "price": 4.32,
-      "market_cap": 449904499.0,
-      "volume": 1050813.0
+      "price": 4.33,
+      "market_cap": 450217006.0,
+      "volume": 1049139.0
     },
     {
       "id": "blockstack",
       "symbol": "stx",
-      "price": 0.241151,
-      "market_cap": 444369175.0,
-      "volume": 24403910.0
+      "price": 0.241315,
+      "market_cap": 444223332.0,
+      "volume": 23933999.0
     },
     {
       "id": "chiliz",
       "symbol": "chz",
-      "price": 0.04266205,
-      "market_cap": 440057309.0,
-      "volume": 113245140.0
+      "price": 0.04244964,
+      "market_cap": 437691107.0,
+      "volume": 109796492.0
     },
     {
       "id": "euro-coin",
       "symbol": "eurc",
       "price": 1.18,
-      "market_cap": 425710290.0,
-      "volume": 34889119.0
-    },
-    {
-      "id": "first-digital-usd",
-      "symbol": "fdusd",
-      "price": 0.999272,
-      "market_cap": 410991914.0,
-      "volume": 75346267.0
-    },
-    {
-      "id": "tezos",
-      "symbol": "xtz",
-      "price": 0.374217,
-      "market_cap": 404807541.0,
-      "volume": 14088203.0
+      "market_cap": 425732147.0,
+      "volume": 32744300.0
     },
     {
       "id": "edgex",
       "symbol": "edge",
-      "price": 1.15,
-      "market_cap": 403452300.0,
-      "volume": 40004441.0
+      "price": 1.18,
+      "market_cap": 414613661.0,
+      "volume": 38639148.0
+    },
+    {
+      "id": "first-digital-usd",
+      "symbol": "fdusd",
+      "price": 1.0,
+      "market_cap": 410776139.0,
+      "volume": 75011789.0
     },
     {
       "id": "monad",
       "symbol": "mon",
-      "price": 0.03410307,
-      "market_cap": 403133982.0,
-      "volume": 111555115.0
+      "price": 0.03449843,
+      "market_cap": 407224576.0,
+      "volume": 111717855.0
+    },
+    {
+      "id": "tezos",
+      "symbol": "xtz",
+      "price": 0.376634,
+      "market_cap": 407105279.0,
+      "volume": 14139036.0
     },
     {
       "id": "janus-henderson-anemoy-aaa-clo-fund",
@@ -831,296 +831,296 @@
     {
       "id": "ether-fi",
       "symbol": "ethfi",
-      "price": 0.478634,
-      "market_cap": 398426770.0,
-      "volume": 44133947.0
+      "price": 0.481005,
+      "market_cap": 399837086.0,
+      "volume": 44356093.0
     },
     {
       "id": "sei-network",
       "symbol": "sei",
-      "price": 0.058495,
-      "market_cap": 394162361.0,
-      "volume": 37011137.0
+      "price": 0.058583,
+      "market_cap": 394425784.0,
+      "volume": 37110886.0
     },
     {
       "id": "venice-token",
       "symbol": "vvv",
-      "price": 8.55,
-      "market_cap": 389883472.0,
-      "volume": 13076933.0
+      "price": 8.61,
+      "market_cap": 391885576.0,
+      "volume": 13032649.0
     },
     {
       "id": "usx",
       "symbol": "usx",
-      "price": 0.999774,
-      "market_cap": 378326472.0,
-      "volume": 5255181.0
+      "price": 0.999699,
+      "market_cap": 378297900.0,
+      "volume": 5398689.0
     },
     {
       "id": "aerodrome-finance",
       "symbol": "aero",
-      "price": 0.408499,
-      "market_cap": 377139171.0,
-      "volume": 23675463.0
+      "price": 0.407479,
+      "market_cap": 375940195.0,
+      "volume": 23591052.0
     },
     {
       "id": "lido-dao",
       "symbol": "ldo",
-      "price": 0.434331,
-      "market_cap": 369193395.0,
-      "volume": 103658388.0
+      "price": 0.441892,
+      "market_cap": 375206292.0,
+      "volume": 105452193.0
     },
     {
       "id": "celestia",
       "symbol": "tia",
-      "price": 0.405941,
-      "market_cap": 368392380.0,
-      "volume": 149871575.0
+      "price": 0.409702,
+      "market_cap": 369193094.0,
+      "volume": 153733873.0
     },
     {
       "id": "kinesis-gold",
       "symbol": "kau",
-      "price": 153.29,
-      "market_cap": 365795291.0,
-      "volume": 19424.28
+      "price": 153.56,
+      "market_cap": 366438728.0,
+      "volume": 30657.0
     },
     {
       "id": "hastra-prime",
       "symbol": "prime",
       "price": 1.031,
-      "market_cap": 360886010.0,
-      "volume": 16331691.0
+      "market_cap": 360865597.0,
+      "volume": 16435861.0
     },
     {
       "id": "decred",
       "symbol": "dcr",
-      "price": 20.54,
-      "market_cap": 356922923.0,
-      "volume": 1377310.0
+      "price": 20.55,
+      "market_cap": 356636061.0,
+      "volume": 1406939.0
     },
     {
       "id": "sun-token",
       "symbol": "sun",
-      "price": 0.01839451,
-      "market_cap": 353464079.0,
-      "volume": 72266846.0
+      "price": 0.0184185,
+      "market_cap": 354230490.0,
+      "volume": 72379298.0
     },
     {
       "id": "conflux-token",
       "symbol": "cfx",
-      "price": 0.067097,
-      "market_cap": 349569323.0,
-      "volume": 67031862.0
+      "price": 0.068084,
+      "market_cap": 351971087.0,
+      "volume": 67731859.0
     },
     {
       "id": "curve-dao-token",
       "symbol": "crv",
-      "price": 0.232529,
-      "market_cap": 348708050.0,
-      "volume": 74433844.0
-    },
-    {
-      "id": "bianrensheng",
-      "symbol": "币安人生",
-      "price": 0.339665,
-      "market_cap": 341326076.0,
-      "volume": 138220995.0
+      "price": 0.233595,
+      "market_cap": 350090735.0,
+      "volume": 75018837.0
     },
     {
       "id": "injective-protocol",
       "symbol": "inj",
-      "price": 3.39,
-      "market_cap": 339682740.0,
-      "volume": 90417188.0
+      "price": 3.4,
+      "market_cap": 339899183.0,
+      "volume": 90067069.0
+    },
+    {
+      "id": "bianrensheng",
+      "symbol": "币安人生",
+      "price": 0.336843,
+      "market_cap": 337072946.0,
+      "volume": 134377314.0
     },
     {
       "id": "plasma",
       "symbol": "xpl",
-      "price": 0.141403,
-      "market_cap": 335274530.0,
-      "volume": 104430959.0
-    },
-    {
-      "id": "spx6900",
-      "symbol": "spx",
-      "price": 0.355485,
-      "market_cap": 330939123.0,
-      "volume": 9886241.0
+      "price": 0.141304,
+      "market_cap": 335534187.0,
+      "volume": 105406329.0
     },
     {
       "id": "apenft",
       "symbol": "nft",
-      "price": 3.33715e-7,
-      "market_cap": 330385802.0,
-      "volume": 8861623.0
+      "price": 3.33714e-7,
+      "market_cap": 330433304.0,
+      "volume": 8791553.0
+    },
+    {
+      "id": "spx6900",
+      "symbol": "spx",
+      "price": 0.354663,
+      "market_cap": 330008294.0,
+      "volume": 9971159.0
     },
     {
       "id": "mantra-dao",
       "symbol": "om",
-      "price": 0.066929,
-      "market_cap": 325906696.0,
-      "volume": 6496.14
+      "price": 0.066932,
+      "market_cap": 325919925.0,
+      "volume": 6498.16
     },
     {
       "id": "bittorrent",
       "symbol": "btt",
-      "price": 3.27755e-7,
-      "market_cap": 324036433.0,
-      "volume": 7996551.0
+      "price": 3.27968e-7,
+      "market_cap": 323716994.0,
+      "volume": 8030623.0
     },
     {
       "id": "bitcoin-cash-sv",
       "symbol": "bsv",
-      "price": 15.98,
-      "market_cap": 320393034.0,
-      "volume": 8222300.0
+      "price": 16.02,
+      "market_cap": 320400587.0,
+      "volume": 7450816.0
     },
     {
       "id": "doublezero",
       "symbol": "2z",
-      "price": 0.091349,
-      "market_cap": 316445087.0,
-      "volume": 16086695.0
+      "price": 0.092111,
+      "market_cap": 319835007.0,
+      "volume": 16332920.0
     },
     {
       "id": "gnosis",
       "symbol": "gno",
-      "price": 119.78,
-      "market_cap": 316235092.0,
-      "volume": 3570911.0
+      "price": 119.53,
+      "market_cap": 315499125.0,
+      "volume": 3577079.0
     },
     {
       "id": "floki",
       "symbol": "floki",
-      "price": 0.00003192,
-      "market_cap": 308863494.0,
-      "volume": 77922989.0
+      "price": 0.00003205,
+      "market_cap": 309360534.0,
+      "volume": 78921904.0
     },
     {
       "id": "usdai",
       "symbol": "usdai",
-      "price": 0.999746,
-      "market_cap": 299340151.0,
-      "volume": 350527.0
+      "price": 0.999836,
+      "market_cap": 299367094.0,
+      "volume": 350774.0
     },
     {
       "id": "kinesis-silver",
       "symbol": "kag",
-      "price": 78.75,
-      "market_cap": 297408137.0,
-      "volume": 626385.0
-    },
-    {
-      "id": "zebec-network",
-      "symbol": "zbcn",
-      "price": 0.0028887,
-      "market_cap": 283088140.0,
-      "volume": 8428424.0
-    },
-    {
-      "id": "kaia",
-      "symbol": "kaia",
-      "price": 0.04825105,
-      "market_cap": 282580063.0,
-      "volume": 6222537.0
-    },
-    {
-      "id": "syrup",
-      "symbol": "syrup",
-      "price": 0.242924,
-      "market_cap": 281546732.0,
-      "volume": 10066032.0
-    },
-    {
-      "id": "optimism",
-      "symbol": "op",
-      "price": 0.131697,
-      "market_cap": 280736049.0,
-      "volume": 94988262.0
-    },
-    {
-      "id": "pyth-network",
-      "symbol": "pyth",
-      "price": 0.04859602,
-      "market_cap": 279760788.0,
-      "volume": 18790821.0
-    },
-    {
-      "id": "jasmycoin",
-      "symbol": "jasmy",
-      "price": 0.005653,
-      "market_cap": 279646752.0,
-      "volume": 15364439.0
-    },
-    {
-      "id": "the-graph",
-      "symbol": "grt",
-      "price": 0.02567034,
-      "market_cap": 276826207.0,
-      "volume": 17919835.0
+      "price": 78.77,
+      "market_cap": 297892761.0,
+      "volume": 622771.0
     },
     {
       "id": "kite-2",
       "symbol": "kite",
-      "price": 0.154269,
-      "market_cap": 276676731.0,
-      "volume": 52214468.0
+      "price": 0.158452,
+      "market_cap": 284533923.0,
+      "volume": 53210603.0
+    },
+    {
+      "id": "kaia",
+      "symbol": "kaia",
+      "price": 0.04834529,
+      "market_cap": 283138846.0,
+      "volume": 6289426.0
+    },
+    {
+      "id": "zebec-network",
+      "symbol": "zbcn",
+      "price": 0.0028742,
+      "market_cap": 282347236.0,
+      "volume": 8464419.0
+    },
+    {
+      "id": "optimism",
+      "symbol": "op",
+      "price": 0.132426,
+      "market_cap": 282065331.0,
+      "volume": 96061631.0
+    },
+    {
+      "id": "syrup",
+      "symbol": "syrup",
+      "price": 0.242818,
+      "market_cap": 281770778.0,
+      "volume": 10847395.0
+    },
+    {
+      "id": "pyth-network",
+      "symbol": "pyth",
+      "price": 0.04878592,
+      "market_cap": 280585924.0,
+      "volume": 18877328.0
+    },
+    {
+      "id": "jasmycoin",
+      "symbol": "jasmy",
+      "price": 0.00565234,
+      "market_cap": 279471329.0,
+      "volume": 15257156.0
+    },
+    {
+      "id": "the-graph",
+      "symbol": "grt",
+      "price": 0.02566641,
+      "market_cap": 276709011.0,
+      "volume": 17764747.0
     },
     {
       "id": "crvusd",
       "symbol": "crvusd",
-      "price": 0.999821,
-      "market_cap": 275816421.0,
-      "volume": 13387591.0
+      "price": 0.999886,
+      "market_cap": 275803997.0,
+      "volume": 13382650.0
     },
     {
       "id": "frax",
       "symbol": "frax",
-      "price": 0.993123,
-      "market_cap": 274042514.0,
-      "volume": 1240546.0
+      "price": 0.993155,
+      "market_cap": 274050285.0,
+      "volume": 1230067.0
     },
     {
       "id": "ape-and-pepe",
       "symbol": "apepe",
       "price": 1.29e-6,
-      "market_cap": 270221949.0,
-      "volume": 35171351.0
+      "market_cap": 270498984.0,
+      "volume": 35116048.0
     },
     {
       "id": "official-fo",
       "symbol": "fo",
-      "price": 0.263896,
-      "market_cap": 263284866.0,
-      "volume": 220716.0
-    },
-    {
-      "id": "lighter",
-      "symbol": "lit",
-      "price": 1.035,
-      "market_cap": 258902686.0,
-      "volume": 23865063.0
+      "price": 0.263918,
+      "market_cap": 263316559.0,
+      "volume": 221808.0
     },
     {
       "id": "iota",
       "symbol": "iota",
-      "price": 0.05875,
-      "market_cap": 258305211.0,
-      "volume": 10117562.0
+      "price": 0.058845,
+      "market_cap": 258839281.0,
+      "volume": 10228694.0
     },
     {
-      "id": "olympus",
-      "symbol": "ohm",
-      "price": 16.22,
-      "market_cap": 253802384.0,
-      "volume": 70963.0
+      "id": "lighter",
+      "symbol": "lit",
+      "price": 1.034,
+      "market_cap": 258718073.0,
+      "volume": 23461817.0
     },
     {
       "id": "terra-luna",
       "symbol": "lunc",
-      "price": 0.00004511,
-      "market_cap": 246734973.0,
-      "volume": 14688822.0
+      "price": 0.00004677,
+      "market_cap": 255825355.0,
+      "volume": 16353894.0
+    },
+    {
+      "id": "olympus",
+      "symbol": "ohm",
+      "price": 16.19,
+      "market_cap": 252655727.0,
+      "volume": 70136.0
     },
     {
       "id": "lido-earn-eth",
@@ -1133,57 +1133,57 @@
       "id": "ethereum-name-service",
       "symbol": "ens",
       "price": 6.2,
-      "market_cap": 238154919.0,
-      "volume": 27526771.0
-    },
-    {
-      "id": "compound-governance-token",
-      "symbol": "comp",
-      "price": 23.58,
-      "market_cap": 227910242.0,
-      "volume": 27259557.0
-    },
-    {
-      "id": "reallink",
-      "symbol": "real",
-      "price": 0.070571,
-      "market_cap": 225710983.0,
-      "volume": 5403205.0
+      "market_cap": 237933071.0,
+      "volume": 27252607.0
     },
     {
       "id": "genius-3",
       "symbol": "genius",
-      "price": 0.680956,
-      "market_cap": 224231373.0,
-      "volume": 45651128.0
-    },
-    {
-      "id": "fartcoin",
-      "symbol": "fartcoin",
-      "price": 0.223781,
-      "market_cap": 223898126.0,
-      "volume": 60954687.0
-    },
-    {
-      "id": "the-sandbox",
-      "symbol": "sand",
-      "price": 0.083676,
-      "market_cap": 222946856.0,
-      "volume": 35499477.0
+      "price": 0.68626,
+      "market_cap": 231981076.0,
+      "volume": 46384940.0
     },
     {
       "id": "story-2",
       "symbol": "ip",
-      "price": 0.621744,
-      "market_cap": 218021478.0,
-      "volume": 106691867.0
+      "price": 0.655482,
+      "market_cap": 231026790.0,
+      "volume": 139407784.0
+    },
+    {
+      "id": "compound-governance-token",
+      "symbol": "comp",
+      "price": 23.78,
+      "market_cap": 229883923.0,
+      "volume": 26942625.0
+    },
+    {
+      "id": "reallink",
+      "symbol": "real",
+      "price": 0.070667,
+      "market_cap": 226027845.0,
+      "volume": 5423089.0
+    },
+    {
+      "id": "fartcoin",
+      "symbol": "fartcoin",
+      "price": 0.224613,
+      "market_cap": 224507509.0,
+      "volume": 61152651.0
+    },
+    {
+      "id": "the-sandbox",
+      "symbol": "sand",
+      "price": 0.083614,
+      "market_cap": 222973548.0,
+      "volume": 35393701.0
     },
     {
       "id": "dogwifcoin",
       "symbol": "wif",
-      "price": 0.217683,
-      "market_cap": 217960061.0,
-      "volume": 156909263.0
+      "price": 0.218151,
+      "market_cap": 217857500.0,
+      "volume": 158392972.0
     },
     {
       "id": "usda-2",
@@ -1195,65 +1195,72 @@
     {
       "id": "the9bit",
       "symbol": "9bit",
-      "price": 0.02648181,
-      "market_cap": 217119170.0,
-      "volume": 4583318.0
+      "price": 0.02648757,
+      "market_cap": 217166426.0,
+      "volume": 4611403.0
     },
     {
       "id": "agora-dollar",
       "symbol": "ausd",
-      "price": 0.999877,
-      "market_cap": 216432263.0,
-      "volume": 52092500.0
-    },
-    {
-      "id": "starknet",
-      "symbol": "strk",
-      "price": 0.03666318,
-      "market_cap": 214605397.0,
-      "volume": 41478224.0
-    },
-    {
-      "id": "telcoin",
-      "symbol": "tel",
-      "price": 0.00224201,
-      "market_cap": 213306360.0,
-      "volume": 1186869.0
+      "price": 0.999866,
+      "market_cap": 216427348.0,
+      "volume": 50481102.0
     },
     {
       "id": "pendle",
       "symbol": "pendle",
-      "price": 1.28,
-      "market_cap": 213268042.0,
-      "volume": 54582063.0
+      "price": 1.29,
+      "market_cap": 215156825.0,
+      "volume": 55157641.0
+    },
+    {
+      "id": "starknet",
+      "symbol": "strk",
+      "price": 0.03658258,
+      "market_cap": 214208594.0,
+      "volume": 42010020.0
+    },
+    {
+      "id": "telcoin",
+      "symbol": "tel",
+      "price": 0.00224221,
+      "market_cap": 213184483.0,
+      "volume": 1189441.0
     },
     {
       "id": "humanity",
       "symbol": "h",
-      "price": 0.114578,
-      "market_cap": 209911204.0,
-      "volume": 21239043.0
+      "price": 0.11531,
+      "market_cap": 210606041.0,
+      "volume": 21587689.0
     },
     {
       "id": "undeads-games",
       "symbol": "uds",
-      "price": 1.67,
-      "market_cap": 208612682.0,
-      "volume": 247605.0
+      "price": 1.68,
+      "market_cap": 208160456.0,
+      "volume": 245907.0
     },
     {
       "id": "neo",
       "symbol": "neo",
-      "price": 2.94,
-      "market_cap": 207693877.0,
-      "volume": 8787149.0
+      "price": 2.95,
+      "market_cap": 208012975.0,
+      "volume": 8748338.0
+    },
+    {
+      "id": "ordinals",
+      "symbol": "ordi",
+      "price": 9.58,
+      "market_cap": 205150958.0,
+      "volume": 1402690926.0
     },
     {
       "id": "vision-3",
       "symbol": "vsn",
-      "price": 0.055579,
-      "market_cap": 203636941.0,
-      "volume": 2795503.0
+      "price": 0.055557,
+      "market_cap": 203637922.0,
+      "volume": 2773204.0
     },
     {
       "id": "tradable-na-rent-financing-platform-sstn",
@@ -1265,114 +1272,107 @@
     {
       "id": "axie-infinity",
       "symbol": "axs",
-      "price": 1.18,
-      "market_cap": 201082335.0,
-      "volume": 29973181.0
+      "price": 1.19,
+      "market_cap": 201707558.0,
+      "volume": 30510874.0
     },
     {
       "id": "grass",
       "symbol": "grass",
-      "price": 0.35404,
-      "market_cap": 200153542.0,
-      "volume": 13142038.0
+      "price": 0.355186,
+      "market_cap": 200560494.0,
+      "volume": 13063116.0
     },
     {
       "id": "theta-token",
       "symbol": "theta",
-      "price": 0.200227,
-      "market_cap": 199726910.0,
-      "volume": 55424125.0
+      "price": 0.198082,
+      "market_cap": 198058759.0,
+      "volume": 55447885.0
     },
     {
       "id": "helium",
       "symbol": "hnt",
-      "price": 1.05,
-      "market_cap": 193287865.0,
-      "volume": 3551154.0
+      "price": 1.052,
+      "market_cap": 193519222.0,
+      "volume": 3580757.0
     },
     {
       "id": "swissborg",
       "symbol": "borg",
-      "price": 0.196014,
-      "market_cap": 192457075.0,
-      "volume": 392422.0
+      "price": 0.193528,
+      "market_cap": 189922546.0,
+      "volume": 391566.0
     },
     {
       "id": "re-protocol-reusd",
       "symbol": "reusd",
       "price": 1.072,
-      "market_cap": 186284643.0,
-      "volume": 7074020.0
+      "market_cap": 186297550.0,
+      "volume": 7075355.0
     },
     {
       "id": "raydium",
       "symbol": "ray",
-      "price": 0.690388,
-      "market_cap": 185789788.0,
-      "volume": 24271531.0
+      "price": 0.687649,
+      "market_cap": 184801568.0,
+      "volume": 23204749.0
     },
     {
       "id": "decentraland",
       "symbol": "mana",
-      "price": 0.094641,
-      "market_cap": 183285466.0,
-      "volume": 23445498.0
+      "price": 0.094337,
+      "market_cap": 182569385.0,
+      "volume": 23368215.0
     },
     {
       "id": "chain-2",
       "symbol": "xcn",
-      "price": 0.00478868,
-      "market_cap": 180846786.0,
-      "volume": 7986329.0
+      "price": 0.00479958,
+      "market_cap": 181364302.0,
+      "volume": 8034584.0
     },
     {
       "id": "trust-wallet-token",
       "symbol": "twt",
-      "price": 0.426241,
-      "market_cap": 177634012.0,
-      "volume": 11379741.0
+      "price": 0.425858,
+      "market_cap": 177430953.0,
+      "volume": 10289121.0
     },
     {
       "id": "walrus-2",
       "symbol": "wal",
-      "price": 0.077049,
-      "market_cap": 177480044.0,
-      "volume": 115544347.0
-    },
-    {
-      "id": "ordinals",
-      "symbol": "ordi",
-      "price": 8.44,
-      "market_cap": 176508045.0,
-      "volume": 1258863620.0
-    },
-    {
-      "id": "btse-token",
-      "symbol": "btse",
-      "price": 1.082,
-      "market_cap": 175374701.0,
-      "volume": 6960316.0
+      "price": 0.076766,
+      "market_cap": 176996661.0,
+      "volume": 115668268.0
     },
     {
       "id": "falcon-finance-ff",
       "symbol": "ff",
-      "price": 0.074695,
-      "market_cap": 174989611.0,
-      "volume": 26690073.0
+      "price": 0.07489,
+      "market_cap": 175297568.0,
+      "volume": 22564337.0
+    },
+    {
+      "id": "btse-token",
+      "symbol": "btse",
+      "price": 1.081,
+      "market_cap": 175243281.0,
+      "volume": 7005709.0
     },
     {
       "id": "sonic-3",
       "symbol": "s",
-      "price": 0.04611426,
-      "market_cap": 174573192.0,
-      "volume": 27670257.0
+      "price": 0.04620744,
+      "market_cap": 174714881.0,
+      "volume": 27763187.0
     },
     {
       "id": "wefi",
       "symbol": "wfi",
       "price": 2.07,
-      "market_cap": 171172446.0,
-      "volume": 1453710.0
+      "market_cap": 171133218.0,
+      "volume": 1460639.0
     },
     {
       "id": "spiko-us-t-bills-money-market-fund",
@@ -1384,37 +1384,37 @@
     {
       "id": "circle-internet-group-ondo-tokenized-stock",
       "symbol": "crclon",
-      "price": 106.56,
-      "market_cap": 167874686.0,
-      "volume": 7638130.0
+      "price": 106.44,
+      "market_cap": 167643371.0,
+      "volume": 7440017.0
     },
     {
       "id": "convex-finance",
       "symbol": "cvx",
       "price": 1.84,
-      "market_cap": 165170850.0,
-      "volume": 6661340.0
-    },
-    {
-      "id": "nusd-2",
-      "symbol": "nusd",
-      "price": 0.997762,
-      "market_cap": 162843679.0,
-      "volume": 373828.0
+      "market_cap": 165425601.0,
+      "volume": 6650962.0
     },
     {
       "id": "mx-token",
       "symbol": "mx",
       "price": 1.77,
-      "market_cap": 162818467.0,
-      "volume": 5866753.0
+      "market_cap": 162968033.0,
+      "volume": 8275593.0
     },
     {
-      "id": "gala",
-      "symbol": "gala",
-      "price": 0.00341225,
-      "market_cap": 162542466.0,
-      "volume": 59781238.0
+      "id": "skyai",
+      "symbol": "skyai",
+      "price": 0.162254,
+      "market_cap": 162879735.0,
+      "volume": 80637455.0
+    },
+    {
+      "id": "nusd-2",
+      "symbol": "nusd",
+      "price": 0.997793,
+      "market_cap": 162848923.0,
+      "volume": 373839.0
     },
     {
       "id": "tradable-apac-diversified-finance-provider-sstn",
@@ -1424,67 +1424,74 @@
       "volume": 0.0
     },
     {
+      "id": "gala",
+      "symbol": "gala",
+      "price": 0.00341384,
+      "market_cap": 162481064.0,
+      "volume": 59995552.0
+    },
+    {
       "id": "bnb48-club-token",
       "symbol": "koge",
-      "price": 48.0,
-      "market_cap": 162255178.0,
-      "volume": 70980754.0
+      "price": 48.01,
+      "market_cap": 162266596.0,
+      "volume": 58776206.0
     },
     {
       "id": "ultima",
       "symbol": "ultima",
-      "price": 4280.16,
-      "market_cap": 161558555.0,
-      "volume": 15585683.0
-    },
-    {
-      "id": "skyai",
-      "symbol": "skyai",
-      "price": 0.162976,
-      "market_cap": 161100286.0,
-      "volume": 80012114.0
+      "price": 4285.34,
+      "market_cap": 161855732.0,
+      "volume": 11836649.0
     },
     {
       "id": "satoshi-stablecoin",
       "symbol": "satusd",
-      "price": 0.991776,
-      "market_cap": 157889561.0,
-      "volume": 11085.09
+      "price": 0.995827,
+      "market_cap": 158534581.0,
+      "volume": 11128.87
     },
     {
       "id": "zksync",
       "symbol": "zk",
-      "price": 0.01638881,
-      "market_cap": 157497222.0,
-      "volume": 35586955.0
+      "price": 0.0164658,
+      "market_cap": 157977570.0,
+      "volume": 36554255.0
     },
     {
       "id": "jito-governance-token",
       "symbol": "jto",
-      "price": 0.337213,
-      "market_cap": 155625327.0,
-      "volume": 13881136.0
+      "price": 0.339096,
+      "market_cap": 155856280.0,
+      "volume": 13913072.0
     },
     {
       "id": "safepal",
       "symbol": "sfp",
-      "price": 0.309824,
-      "market_cap": 154847910.0,
-      "volume": 2053562.0
+      "price": 0.308909,
+      "market_cap": 154467155.0,
+      "volume": 1910726.0
     },
     {
       "id": "basic-attention-token",
       "symbol": "bat",
-      "price": 0.10314,
-      "market_cap": 154241636.0,
-      "volume": 14310974.0
+      "price": 0.103159,
+      "market_cap": 154318730.0,
+      "volume": 14167014.0
+    },
+    {
+      "id": "river",
+      "symbol": "river",
+      "price": 7.86,
+      "market_cap": 154149459.0,
+      "volume": 29229445.0
     },
     {
       "id": "newton-project",
       "symbol": "ab",
-      "price": 0.00155214,
-      "market_cap": 153411060.0,
-      "volume": 3409546.0
+      "price": 0.00155289,
+      "market_cap": 153419556.0,
+      "volume": 3418514.0
     },
     {
       "id": "fidelity-digital-interest-token",
@@ -1494,179 +1501,172 @@
       "volume": 0.0
     },
     {
-      "id": "river",
-      "symbol": "river",
-      "price": 7.75,
-      "market_cap": 151929340.0,
-      "volume": 30735330.0
-    },
-    {
-      "id": "ethgas-2",
-      "symbol": "gwei",
-      "price": 0.072174,
-      "market_cap": 151295708.0,
-      "volume": 5511945.0
-    },
-    {
       "id": "stasis-eurs",
       "symbol": "eurs",
       "price": 1.21,
-      "market_cap": 150487281.0,
-      "volume": 2302.62
+      "market_cap": 150492512.0,
+      "volume": 2329.13
     },
     {
       "id": "apxusd",
       "symbol": "apxusd",
-      "price": 0.999966,
-      "market_cap": 150251757.0,
-      "volume": 7085623.0
-    },
-    {
-      "id": "enjincoin",
-      "symbol": "enj",
-      "price": 0.076903,
-      "market_cap": 149895190.0,
-      "volume": 468857375.0
+      "price": 0.999815,
+      "market_cap": 150229288.0,
+      "volume": 7050290.0
     },
     {
       "id": "gusd",
       "symbol": "gusd",
-      "price": 0.999815,
-      "market_cap": 149783268.0,
-      "volume": 4212620.0
+      "price": 0.999525,
+      "market_cap": 149717559.0,
+      "volume": 4185477.0
     },
     {
       "id": "usa",
       "symbol": "usat",
-      "price": 0.999547,
-      "market_cap": 149676627.0,
-      "volume": 4016183.0
+      "price": 0.999615,
+      "market_cap": 149693286.0,
+      "volume": 4042344.0
+    },
+    {
+      "id": "ethgas-2",
+      "symbol": "gwei",
+      "price": 0.071112,
+      "market_cap": 149278255.0,
+      "volume": 5534518.0
     },
     {
       "id": "thorchain",
       "symbol": "rune",
-      "price": 0.418056,
-      "market_cap": 146816811.0,
-      "volume": 19802317.0
+      "price": 0.419075,
+      "market_cap": 147093581.0,
+      "volume": 22070095.0
+    },
+    {
+      "id": "enjincoin",
+      "symbol": "enj",
+      "price": 0.075008,
+      "market_cap": 146645787.0,
+      "volume": 457192121.0
     },
     {
       "id": "zano",
       "symbol": "zano",
       "price": 9.61,
-      "market_cap": 146450011.0,
-      "volume": 920923.0
+      "market_cap": 146454857.0,
+      "volume": 907478.0
     },
     {
       "id": "ecash",
       "symbol": "xec",
-      "price": 7.28e-6,
-      "market_cap": 145530410.0,
-      "volume": 6467010.0
+      "price": 7.29e-6,
+      "market_cap": 145881302.0,
+      "volume": 6377612.0
     },
     {
       "id": "arweave",
       "symbol": "ar",
-      "price": 2.19,
-      "market_cap": 143702700.0,
-      "volume": 106577521.0
+      "price": 2.2,
+      "market_cap": 144676587.0,
+      "volume": 107946065.0
     },
     {
       "id": "onyc",
       "symbol": "onyc",
       "price": 1.094,
-      "market_cap": 142102779.0,
-      "volume": 5764848.0
+      "market_cap": 142122104.0,
+      "volume": 5978177.0
     },
     {
       "id": "ribbita-by-virtuals",
       "symbol": "tibbir",
-      "price": 0.142059,
-      "market_cap": 142064753.0,
-      "volume": 1448336.0
+      "price": 0.14204,
+      "market_cap": 142037662.0,
+      "volume": 1450596.0
     },
     {
       "id": "immutable-x",
       "symbol": "imx",
-      "price": 0.168346,
-      "market_cap": 141897255.0,
-      "volume": 17466020.0
+      "price": 0.168488,
+      "market_cap": 141932280.0,
+      "volume": 16733201.0
     },
     {
       "id": "gekko",
       "symbol": "gekko",
-      "price": 7.02654e-7,
-      "market_cap": 140544738.0,
-      "volume": 82429.0
+      "price": 7.02067e-7,
+      "market_cap": 140543569.0,
+      "volume": 81030.0
     },
     {
       "id": "luxxcoin",
       "symbol": "lux",
-      "price": 0.00139857,
-      "market_cap": 140062495.0,
-      "volume": 1186530.0
+      "price": 0.0013992,
+      "market_cap": 139890596.0,
+      "volume": 1156464.0
     },
     {
       "id": "golem",
       "symbol": "glm",
-      "price": 0.138619,
-      "market_cap": 139179996.0,
-      "volume": 17268141.0
-    },
-    {
-      "id": "centrifuge-2",
-      "symbol": "cfg",
-      "price": 0.23978,
-      "market_cap": 138228610.0,
-      "volume": 46886351.0
-    },
-    {
-      "id": "origintrail",
-      "symbol": "trac",
-      "price": 0.308987,
-      "market_cap": 138206020.0,
-      "volume": 9195511.0
-    },
-    {
-      "id": "vaulta",
-      "symbol": "a",
-      "price": 0.084064,
-      "market_cap": 137520420.0,
-      "volume": 18014001.0
-    },
-    {
-      "id": "1inch",
-      "symbol": "1inch",
-      "price": 0.097577,
-      "market_cap": 137031129.0,
-      "volume": 15022853.0
+      "price": 0.139076,
+      "market_cap": 138930841.0,
+      "volume": 18010376.0
     },
     {
       "id": "eigenlayer",
       "symbol": "eigen",
-      "price": 0.19736,
-      "market_cap": 136536851.0,
-      "volume": 50759379.0
+      "price": 0.201111,
+      "market_cap": 138894478.0,
+      "volume": 52234280.0
+    },
+    {
+      "id": "origintrail",
+      "symbol": "trac",
+      "price": 0.309818,
+      "market_cap": 138530069.0,
+      "volume": 9178065.0
+    },
+    {
+      "id": "centrifuge-2",
+      "symbol": "cfg",
+      "price": 0.23876,
+      "market_cap": 137722811.0,
+      "volume": 47775022.0
+    },
+    {
+      "id": "vaulta",
+      "symbol": "a",
+      "price": 0.084223,
+      "market_cap": 137665558.0,
+      "volume": 17960680.0
+    },
+    {
+      "id": "1inch",
+      "symbol": "1inch",
+      "price": 0.097494,
+      "market_cap": 136954851.0,
+      "volume": 14766917.0
     },
     {
       "id": "sosovalue",
       "symbol": "soso",
-      "price": 0.431781,
-      "market_cap": 134793785.0,
-      "volume": 4947910.0
+      "price": 0.431913,
+      "market_cap": 134675773.0,
+      "volume": 4920370.0
     },
     {
       "id": "theo-short-duration-us-treasury-fund",
       "symbol": "thbill",
-      "price": 1.019,
-      "market_cap": 134180923.0,
-      "volume": 80800.0
+      "price": 1.02,
+      "market_cap": 134384113.0,
+      "volume": 81388.0
     },
     {
       "id": "frax-usd",
       "symbol": "frxusd",
-      "price": 0.999939,
-      "market_cap": 134089979.0,
-      "volume": 3777154.0
+      "price": 0.999882,
+      "market_cap": 134067563.0,
+      "volume": 2913843.0
     },
     {
       "id": "tradable-latam-fintech-sstn",
@@ -1676,95 +1676,95 @@
       "volume": 0.0
     },
     {
-      "id": "akash-network",
-      "symbol": "akt",
-      "price": 0.506266,
-      "market_cap": 133173821.0,
-      "volume": 7866384.0
-    },
-    {
       "id": "instadapp",
       "symbol": "fluid",
       "price": 1.7,
-      "market_cap": 132510109.0,
-      "volume": 3171838.0
+      "market_cap": 132739237.0,
+      "volume": 3210123.0
     },
     {
       "id": "apollo-diversified-credit-securitize-fund",
       "symbol": "acred",
-      "price": 1094.76,
-      "market_cap": 132405629.0,
+      "price": 1094.78,
+      "market_cap": 132407634.0,
       "volume": 0.0
+    },
+    {
+      "id": "akash-network",
+      "symbol": "akt",
+      "price": 0.503099,
+      "market_cap": 132308218.0,
+      "volume": 7861217.0
     },
     {
       "id": "zero-gravity",
       "symbol": "0g",
-      "price": 0.608082,
-      "market_cap": 129661617.0,
-      "volume": 19242385.0
+      "price": 0.608511,
+      "market_cap": 129723907.0,
+      "volume": 18679189.0
     },
     {
       "id": "avant-usd",
       "symbol": "avusd",
-      "price": 0.998609,
-      "market_cap": 127937797.0,
-      "volume": 19823.85
+      "price": 0.999067,
+      "market_cap": 127934105.0,
+      "volume": 19852.99
     },
     {
       "id": "elrond-erd-2",
       "symbol": "egld",
-      "price": 4.28,
-      "market_cap": 127201450.0,
-      "volume": 16353732.0
+      "price": 4.27,
+      "market_cap": 127003707.0,
+      "volume": 15751486.0
     },
     {
       "id": "societe-generale-forge-eurcv",
       "symbol": "eurcv",
       "price": 1.18,
-      "market_cap": 126225472.0,
-      "volume": 8943750.0
+      "market_cap": 126215430.0,
+      "volume": 8812630.0
     },
     {
       "id": "ozone-chain",
       "symbol": "ozo",
-      "price": 0.130426,
-      "market_cap": 125491896.0,
-      "volume": 198718.0
+      "price": 0.130198,
+      "market_cap": 125248414.0,
+      "volume": 200330.0
     },
     {
       "id": "cash-4",
       "symbol": "cash",
-      "price": 0.998758,
-      "market_cap": 124776177.0,
-      "volume": 40368240.0
-    },
-    {
-      "id": "shuffle-2",
-      "symbol": "shfl",
-      "price": 0.306005,
-      "market_cap": 124182216.0,
-      "volume": 540412.0
-    },
-    {
-      "id": "gmt-token",
-      "symbol": "gomining",
-      "price": 0.301131,
-      "market_cap": 123696931.0,
-      "volume": 3436727.0
+      "price": 1.0,
+      "market_cap": 124937260.0,
+      "volume": 40599347.0
     },
     {
       "id": "sentient",
       "symbol": "sent",
-      "price": 0.01706641,
-      "market_cap": 123539381.0,
-      "volume": 16265903.0
+      "price": 0.01717842,
+      "market_cap": 124157177.0,
+      "volume": 17942486.0
+    },
+    {
+      "id": "shuffle-2",
+      "symbol": "shfl",
+      "price": 0.301169,
+      "market_cap": 122369558.0,
+      "volume": 570142.0
+    },
+    {
+      "id": "gmt-token",
+      "symbol": "gomining",
+      "price": 0.301046,
+      "market_cap": 121890454.0,
+      "volume": 3448174.0
     },
     {
       "id": "aethir",
       "symbol": "ath",
-      "price": 0.00625948,
-      "market_cap": 120644365.0,
-      "volume": 52990578.0
+      "price": 0.00628978,
+      "market_cap": 121008292.0,
+      "volume": 52994060.0
     },
     {
       "id": "pleasing-usd",
@@ -1776,30 +1776,30 @@
     {
       "id": "astherus-usdf",
       "symbol": "usdf",
-      "price": 0.998838,
-      "market_cap": 118197130.0,
-      "volume": 52012.0
+      "price": 0.99873,
+      "market_cap": 118184558.0,
+      "volume": 52035.0
     },
     {
       "id": "tokenize-xchange",
       "symbol": "tkx",
       "price": 1.47,
-      "market_cap": 117280605.0,
-      "volume": 2357.7
-    },
-    {
-      "id": "cheems-token",
-      "symbol": "cheems",
-      "price": 5.66022e-7,
-      "market_cap": 115025245.0,
-      "volume": 1985359.0
+      "market_cap": 117286143.0,
+      "volume": 2357.53
     },
     {
       "id": "kaito",
       "symbol": "kaito",
-      "price": 0.475591,
-      "market_cap": 114627139.0,
-      "volume": 15606969.0
+      "price": 0.477081,
+      "market_cap": 115090810.0,
+      "volume": 15669243.0
+    },
+    {
+      "id": "cheems-token",
+      "symbol": "cheems",
+      "price": 5.64684e-7,
+      "market_cap": 114871940.0,
+      "volume": 1983514.0
     },
     {
       "id": "tradable-singapore-fintech-ssl-2",
@@ -1813,42 +1813,49 @@
       "symbol": "cusd",
       "price": 0.999879,
       "market_cap": 114467860.0,
-      "volume": 483.35
+      "volume": 485.0
     },
     {
       "id": "gas",
       "symbol": "gas",
       "price": 1.75,
-      "market_cap": 114201529.0,
-      "volume": 6825489.0
+      "market_cap": 114170521.0,
+      "volume": 6866128.0
     },
     {
       "id": "bitmart-token",
       "symbol": "bmx",
-      "price": 0.33297,
-      "market_cap": 113061969.0,
-      "volume": 9611047.0
+      "price": 0.33251,
+      "market_cap": 112822383.0,
+      "volume": 9544260.0
     },
     {
       "id": "quantum-resistant-ledger",
       "symbol": "qrl",
-      "price": 1.43,
-      "market_cap": 112000687.0,
-      "volume": 43981.0
+      "price": 1.42,
+      "market_cap": 111369340.0,
+      "volume": 43608.0
     },
     {
-      "id": "livepeer",
-      "symbol": "lpt",
-      "price": 2.22,
-      "market_cap": 110262623.0,
-      "volume": 23511406.0
+      "id": "dydx-chain",
+      "symbol": "dydx",
+      "price": 0.132448,
+      "market_cap": 110664971.0,
+      "volume": 29098557.0
+    },
+    {
+      "id": "safe",
+      "symbol": "safe",
+      "price": 0.151774,
+      "market_cap": 110401574.0,
+      "volume": 3848836.0
     },
     {
       "id": "pieverse",
       "symbol": "pieverse",
-      "price": 0.480576,
-      "market_cap": 110246725.0,
-      "volume": 5559494.0
+      "price": 0.479972,
+      "market_cap": 110232279.0,
+      "volume": 5627399.0
     },
     {
       "id": "tradable-na-third-party-online-merchant-sstn",
@@ -1858,81 +1865,74 @@
       "volume": 0.0
     },
     {
-      "id": "wemix-token",
-      "symbol": "wemix",
-      "price": 0.236903,
-      "market_cap": 109562751.0,
-      "volume": 962121.0
-    },
-    {
-      "id": "safe",
-      "symbol": "safe",
-      "price": 0.150455,
-      "market_cap": 109403641.0,
-      "volume": 3723293.0
-    },
-    {
-      "id": "nxm",
-      "symbol": "nxm",
-      "price": 59.85,
-      "market_cap": 109333750.0,
-      "volume": 0.0
+      "id": "tradoor",
+      "symbol": "tradoor",
+      "price": 7.65,
+      "market_cap": 109811763.0,
+      "volume": 26352479.0
     },
     {
       "id": "stp-network",
       "symbol": "awe",
-      "price": 0.056268,
-      "market_cap": 109299876.0,
-      "volume": 3982623.0
+      "price": 0.056547,
+      "market_cap": 109659055.0,
+      "volume": 6857139.0
     },
     {
-      "id": "dydx-chain",
-      "symbol": "dydx",
-      "price": 0.129957,
-      "market_cap": 109270907.0,
-      "volume": 27909652.0
+      "id": "livepeer",
+      "symbol": "lpt",
+      "price": 2.21,
+      "market_cap": 109656971.0,
+      "volume": 23731309.0
     },
     {
-      "id": "cow-protocol",
-      "symbol": "cow",
-      "price": 0.196574,
-      "market_cap": 108807729.0,
-      "volume": 13597879.0
+      "id": "wemix-token",
+      "symbol": "wemix",
+      "price": 0.237172,
+      "market_cap": 109572842.0,
+      "volume": 978558.0
+    },
+    {
+      "id": "nxm",
+      "symbol": "nxm",
+      "price": 59.94,
+      "market_cap": 109487833.0,
+      "volume": 0.0
     },
     {
       "id": "four",
       "symbol": "form",
-      "price": 0.282944,
-      "market_cap": 108192919.0,
-      "volume": 11780847.0
+      "price": 0.284477,
+      "market_cap": 108564644.0,
+      "volume": 11890279.0
     },
     {
       "id": "flying-tulip",
       "symbol": "ft",
-      "price": 0.076314,
-      "market_cap": 107900499.0,
-      "volume": 136294.0
+      "price": 0.076333,
+      "market_cap": 108167749.0,
+      "volume": 136544.0
+    },
+    {
+      "id": "cow-protocol",
+      "symbol": "cow",
+      "price": 0.19478,
+      "market_cap": 107781215.0,
+      "volume": 13630695.0
     },
     {
       "id": "zencash",
       "symbol": "zen",
-      "price": 5.98,
-      "market_cap": 107487277.0,
-      "volume": 15184427.0
+      "price": 5.99,
+      "market_cap": 107440125.0,
+      "volume": 15196134.0
     },
     {
       "id": "qubic-network",
       "symbol": "qubic",
-      "price": 7.84083e-7,
-      "market_cap": 107272341.0,
-      "volume": 2212355.0
-    },
-    {
-      "id": "tradoor",
-      "symbol": "tradoor",
-      "price": 7.46,
-      "market_cap": 106987873.0,
-      "volume": 26363351.0
+      "price": 7.82159e-7,
+      "market_cap": 107296978.0,
+      "volume": 2207769.0
     },
     {
       "id": "tradable-latam-middle-market-lender-sstl",
@@ -1945,134 +1945,134 @@
       "id": "jusd",
       "symbol": "jusd",
       "price": 1.0,
-      "market_cap": 106241054.0,
-      "volume": 108520.0
-    },
-    {
-      "id": "havven",
-      "symbol": "snx",
-      "price": 0.307403,
-      "market_cap": 105972482.0,
-      "volume": 12884128.0
+      "market_cap": 106244473.0,
+      "volume": 111634.0
     },
     {
       "id": "seeker",
       "symbol": "skr",
-      "price": 0.01725049,
-      "market_cap": 105729852.0,
-      "volume": 4113734.0
+      "price": 0.01731337,
+      "market_cap": 105892543.0,
+      "volume": 4123456.0
     },
     {
       "id": "melania-meme",
       "symbol": "melania",
-      "price": 0.110984,
-      "market_cap": 105620222.0,
-      "volume": 22496025.0
+      "price": 0.111223,
+      "market_cap": 105689482.0,
+      "volume": 22151994.0
+    },
+    {
+      "id": "havven",
+      "symbol": "snx",
+      "price": 0.305905,
+      "market_cap": 105403791.0,
+      "volume": 13034695.0
     },
     {
       "id": "reserve-rights-token",
       "symbol": "rsr",
-      "price": 0.00168516,
-      "market_cap": 105433364.0,
-      "volume": 10416936.0
+      "price": 0.00167862,
+      "market_cap": 105017190.0,
+      "volume": 10494027.0
     },
     {
       "id": "banana-for-scale-2",
       "symbol": "bananas31",
-      "price": 0.010474,
-      "market_cap": 105065933.0,
-      "volume": 18026939.0
+      "price": 0.01055367,
+      "market_cap": 104957495.0,
+      "volume": 18216507.0
     },
     {
       "id": "securitize-tokenized-aaa-clo-fund",
       "symbol": "stac",
-      "price": 1012.22,
-      "market_cap": 104876100.0,
+      "price": 1012.37,
+      "market_cap": 104889258.0,
       "volume": 0.0
     },
     {
       "id": "beam-2",
       "symbol": "beam",
-      "price": 0.00201789,
-      "market_cap": 103512494.0,
-      "volume": 6588663.0
-    },
-    {
-      "id": "usdu",
-      "symbol": "usdu",
-      "price": 0.99982,
-      "market_cap": 103132514.0,
-      "volume": 105007.0
+      "price": 0.00203364,
+      "market_cap": 104295570.0,
+      "volume": 6670868.0
     },
     {
       "id": "berachain-bera",
       "symbol": "bera",
-      "price": 0.419436,
-      "market_cap": 102934938.0,
-      "volume": 26667560.0
-    },
-    {
-      "id": "mnee-usd-stablecoin",
-      "symbol": "mnee",
-      "price": 1.0,
-      "market_cap": 102440223.0,
-      "volume": 148121.0
+      "price": 0.424827,
+      "market_cap": 104161806.0,
+      "volume": 27446236.0
     },
     {
       "id": "grx-chain",
       "symbol": "grx",
-      "price": 10.79,
-      "market_cap": 102427162.0,
-      "volume": 28119187.0
+      "price": 10.91,
+      "market_cap": 103907991.0,
+      "volume": 26988043.0
     },
     {
-      "id": "apecoin",
-      "symbol": "ape",
-      "price": 0.101866,
-      "market_cap": 101895878.0,
-      "volume": 25254432.0
+      "id": "usdu",
+      "symbol": "usdu",
+      "price": 0.999904,
+      "market_cap": 103141236.0,
+      "volume": 104976.0
     },
     {
       "id": "build-on",
       "symbol": "b",
-      "price": 0.101947,
-      "market_cap": 101810991.0,
-      "volume": 7630824.0
+      "price": 0.102768,
+      "market_cap": 102829212.0,
+      "volume": 7668544.0
     },
     {
       "id": "chutes",
       "symbol": "sn64",
-      "price": 21.15,
-      "market_cap": 101718094.0,
-      "volume": 2323114.0
+      "price": 21.32,
+      "market_cap": 102575035.0,
+      "volume": 2345156.0
+    },
+    {
+      "id": "mnee-usd-stablecoin",
+      "symbol": "mnee",
+      "price": 0.9997,
+      "market_cap": 102389014.0,
+      "volume": 147496.0
+    },
+    {
+      "id": "apecoin",
+      "symbol": "ape",
+      "price": 0.101876,
+      "market_cap": 101902649.0,
+      "volume": 25058284.0
     },
     {
       "id": "palm-usd",
       "symbol": "pusd",
-      "price": 0.999945,
-      "market_cap": 101280339.0,
-      "volume": 123510.0
+      "price": 0.999927,
+      "market_cap": 101278577.0,
+      "volume": 123669.0
     },
     {
       "id": "infinifi-usd",
       "symbol": "iusd",
-      "price": 0.99998,
-      "market_cap": 100753372.0,
-      "volume": 82274.0
+      "price": 0.999987,
+      "market_cap": 100754154.0,
+      "volume": 82282.0
+    },
+    {
+      "id": "lombard-protocol",
+      "symbol": "bard",
+      "price": 0.333675,
+      "market_cap": 100634126.0,
+      "volume": 1166310471.0
     },
     {
       "id": "ring-usd",
       "symbol": "usdr",
-      "price": 0.999725,
-      "market_cap": 100379488.0,
-      "volume": 9980.13
-    },
-    {
-      "id": "unity-usd",
-      "symbol": "uusd",
-      "price": 0.999249,
-      "market_cap": 100001340.0,
-      "volume": 1626252.0
+      "price": 0.999752,
+      "market_cap": 100375097.0,
+      "volume": 9980.4
     },
     {
       "id": "tradable-singapore-fintech-ssl",
@@ -2082,74 +2082,74 @@
       "volume": 0.0
     },
     {
+      "id": "unity-usd",
+      "symbol": "uusd",
+      "price": 0.999697,
+      "market_cap": 99915841.0,
+      "volume": 1631061.0
+    },
+    {
       "id": "kamino",
       "symbol": "kmno",
-      "price": 0.02273761,
-      "market_cap": 99839723.0,
-      "volume": 9774977.0
-    },
-    {
-      "id": "standx-dusd",
-      "symbol": "dusd",
-      "price": 0.999567,
-      "market_cap": 99620255.0,
-      "volume": 833888.0
-    },
-    {
-      "id": "qtum",
-      "symbol": "qtum",
-      "price": 0.936716,
-      "market_cap": 99336057.0,
-      "volume": 7120776.0
-    },
-    {
-      "id": "lombard-protocol",
-      "symbol": "bard",
-      "price": 0.328896,
-      "market_cap": 99183482.0,
-      "volume": 1146722855.0
-    },
-    {
-      "id": "precious-metals-usd",
-      "symbol": "pmusd",
-      "price": 0.988558,
-      "market_cap": 99054216.0,
-      "volume": 839882.0
+      "price": 0.02266861,
+      "market_cap": 99663850.0,
+      "volume": 9703817.0
     },
     {
       "id": "rollbit-coin",
       "symbol": "rlb",
-      "price": 0.058132,
-      "market_cap": 99022912.0,
-      "volume": 143405.0
+      "price": 0.05847,
+      "market_cap": 99637661.0,
+      "volume": 147825.0
+    },
+    {
+      "id": "standx-dusd",
+      "symbol": "dusd",
+      "price": 0.999685,
+      "market_cap": 99633632.0,
+      "volume": 837006.0
+    },
+    {
+      "id": "qtum",
+      "symbol": "qtum",
+      "price": 0.937339,
+      "market_cap": 99393320.0,
+      "volume": 7157297.0
+    },
+    {
+      "id": "precious-metals-usd",
+      "symbol": "pmusd",
+      "price": 0.988683,
+      "market_cap": 99057234.0,
+      "volume": 839826.0
     },
     {
       "id": "yearn-finance",
       "symbol": "yfi",
-      "price": 2734.64,
-      "market_cap": 97702632.0,
-      "volume": 7430472.0
-    },
-    {
-      "id": "dai-on-pulsechain",
-      "symbol": "dai",
-      "price": 0.00217136,
-      "market_cap": 97014152.0,
-      "volume": 799512.0
+      "price": 2738.39,
+      "market_cap": 97791878.0,
+      "volume": 7171508.0
     },
     {
       "id": "ravencoin",
       "symbol": "rvn",
-      "price": 0.00597881,
-      "market_cap": 96818290.0,
-      "volume": 8653959.0
+      "price": 0.00602709,
+      "market_cap": 97511488.0,
+      "volume": 8992751.0
+    },
+    {
+      "id": "dai-on-pulsechain",
+      "symbol": "dai",
+      "price": 0.00214159,
+      "market_cap": 94630058.0,
+      "volume": 801529.0
     },
     {
       "id": "0x",
       "symbol": "zrx",
-      "price": 0.111085,
-      "market_cap": 94252490.0,
-      "volume": 9656001.0
+      "price": 0.111304,
+      "market_cap": 94425287.0,
+      "volume": 9712092.0
     },
     {
       "id": "pleasing-gold",
@@ -2161,226 +2161,240 @@
     {
       "id": "keeta",
       "symbol": "kta",
-      "price": 0.177534,
-      "market_cap": 92360497.0,
-      "volume": 1874564.0
+      "price": 0.177439,
+      "market_cap": 92377257.0,
+      "volume": 1796760.0
     },
     {
       "id": "xdai",
       "symbol": "xdai",
       "price": 1.0,
-      "market_cap": 92343920.0,
-      "volume": 812554.0
+      "market_cap": 92349452.0,
+      "volume": 32732.0
     },
     {
       "id": "oasis-network",
       "symbol": "rose",
-      "price": 0.01175287,
-      "market_cap": 89206400.0,
-      "volume": 17489866.0
+      "price": 0.01184328,
+      "market_cap": 89858222.0,
+      "volume": 17722459.0
     },
     {
       "id": "vicicoin",
       "symbol": "vcnt",
-      "price": 18.22,
-      "market_cap": 89050362.0,
-      "volume": 1068230.0
-    },
-    {
-      "id": "usda-3",
-      "symbol": "usda",
-      "price": 0.999443,
-      "market_cap": 87860746.0,
-      "volume": 2469632.0
-    },
-    {
-      "id": "turbo",
-      "symbol": "turbo",
-      "price": 0.00126848,
-      "market_cap": 87721206.0,
-      "volume": 71154243.0
+      "price": 18.26,
+      "market_cap": 88744433.0,
+      "volume": 1078819.0
     },
     {
       "id": "mag7-ssi",
       "symbol": "mag7.ssi",
-      "price": 0.514239,
-      "market_cap": 87147693.0,
-      "volume": 1012805.0
+      "price": 0.523537,
+      "market_cap": 88721298.0,
+      "volume": 1006011.0
+    },
+    {
+      "id": "turbo",
+      "symbol": "turbo",
+      "price": 0.00128259,
+      "market_cap": 88277539.0,
+      "volume": 71993116.0
+    },
+    {
+      "id": "usda-3",
+      "symbol": "usda",
+      "price": 0.999236,
+      "market_cap": 87666579.0,
+      "volume": 2479837.0
     },
     {
       "id": "unibase",
       "symbol": "ub",
-      "price": 0.03484867,
-      "market_cap": 86630283.0,
-      "volume": 2590008.0
+      "price": 0.03481678,
+      "market_cap": 87094497.0,
+      "volume": 15078909.0
     },
     {
       "id": "lovebit",
       "symbol": "lb",
-      "price": 2.0603e-7,
-      "market_cap": 86531815.0,
+      "price": 2.06029e-7,
+      "market_cap": 86532368.0,
       "volume": 23936.0
-    },
-    {
-      "id": "linea",
-      "symbol": "linea",
-      "price": 0.00347345,
-      "market_cap": 86504641.0,
-      "volume": 21008838.0
     },
     {
       "id": "theta-fuel",
       "symbol": "tfuel",
-      "price": 0.01184105,
-      "market_cap": 86424720.0,
-      "volume": 2620440.0
+      "price": 0.01186745,
+      "market_cap": 86528448.0,
+      "volume": 2612309.0
+    },
+    {
+      "id": "linea",
+      "symbol": "linea",
+      "price": 0.00347416,
+      "market_cap": 86490408.0,
+      "volume": 20933624.0
     },
     {
       "id": "digibyte",
       "symbol": "dgb",
-      "price": 0.0047029,
-      "market_cap": 85765548.0,
-      "volume": 2056469.0
+      "price": 0.00471246,
+      "market_cap": 85947127.0,
+      "volume": 2064927.0
     },
     {
-      "id": "axelar",
-      "symbol": "axl",
-      "price": 0.074662,
-      "market_cap": 85199438.0,
-      "volume": 272569815.0
+      "id": "dog-go-to-the-moon-rune",
+      "symbol": "dog",
+      "price": 0.00086391,
+      "market_cap": 85714622.0,
+      "volume": 3633722.0
     },
     {
       "id": "ini",
       "symbol": "ini",
-      "price": 0.103031,
-      "market_cap": 84755038.0,
-      "volume": 817508.0
+      "price": 0.103058,
+      "market_cap": 84784539.0,
+      "volume": 818435.0
     },
     {
       "id": "kusama",
       "symbol": "ksm",
       "price": 4.68,
-      "market_cap": 84643424.0,
-      "volume": 12813215.0
-    },
-    {
-      "id": "dog-go-to-the-moon-rune",
-      "symbol": "dog",
-      "price": 0.0008428,
-      "market_cap": 84296894.0,
-      "volume": 3539449.0
-    },
-    {
-      "id": "everything",
-      "symbol": "ev",
-      "price": 0.00083655,
-      "market_cap": 83438823.0,
-      "volume": 93.41
-    },
-    {
-      "id": "would",
-      "symbol": "would",
-      "price": 0.082366,
-      "market_cap": 82325333.0,
-      "volume": 29838.0
+      "market_cap": 84499955.0,
+      "volume": 12637752.0
     },
     {
       "id": "creditcoin-2",
       "symbol": "ctc",
-      "price": 0.153738,
-      "market_cap": 82282533.0,
-      "volume": 3886565.0
+      "price": 0.156138,
+      "market_cap": 83684712.0,
+      "volume": 3924510.0
+    },
+    {
+      "id": "everything",
+      "symbol": "ev",
+      "price": 0.00083828,
+      "market_cap": 83576432.0,
+      "volume": 93.6
     },
     {
       "id": "impossible-cloud-network-token",
       "symbol": "icnt",
-      "price": 0.324643,
-      "market_cap": 82111077.0,
-      "volume": 4570085.0
+      "price": 0.324493,
+      "market_cap": 82071200.0,
+      "volume": 4476907.0
+    },
+    {
+      "id": "would",
+      "symbol": "would",
+      "price": 0.0817,
+      "market_cap": 81715316.0,
+      "volume": 31366.0
     },
     {
       "id": "baby-doge-coin",
       "symbol": "babydoge",
-      "price": 4.44145e-10,
-      "market_cap": 80586294.0,
-      "volume": 5967756.0
-    },
-    {
-      "id": "zilliqa",
-      "symbol": "zil",
-      "price": 0.0041038,
-      "market_cap": 80038709.0,
-      "volume": 7665890.0
+      "price": 4.43063e-10,
+      "market_cap": 80399306.0,
+      "volume": 5878493.0
     },
     {
       "id": "bitcastle-token",
       "symbol": "bce",
-      "price": 0.19971,
-      "market_cap": 79967952.0,
-      "volume": 94019.0
-    },
-    {
-      "id": "deep",
-      "symbol": "deep",
-      "price": 0.0318691,
-      "market_cap": 79755531.0,
-      "volume": 13071674.0
-    },
-    {
-      "id": "based-brett",
-      "symbol": "brett",
-      "price": 0.00797779,
-      "market_cap": 79310240.0,
-      "volume": 20053410.0
+      "price": 0.200187,
+      "market_cap": 80118737.0,
+      "volume": 92021.0
     },
     {
       "id": "toshi",
       "symbol": "toshi",
-      "price": 0.00018846,
-      "market_cap": 79305113.0,
-      "volume": 11952534.0
+      "price": 0.00019024,
+      "market_cap": 80015856.0,
+      "volume": 11986920.0
     },
     {
-      "id": "mimblewimblecoin",
-      "symbol": "mwc",
-      "price": 7.15,
-      "market_cap": 78698063.0,
-      "volume": 141340.0
+      "id": "zilliqa",
+      "symbol": "zil",
+      "price": 0.00410136,
+      "market_cap": 79984690.0,
+      "volume": 7781068.0
+    },
+    {
+      "id": "deep",
+      "symbol": "deep",
+      "price": 0.03194373,
+      "market_cap": 79821983.0,
+      "volume": 12913143.0
+    },
+    {
+      "id": "based-brett",
+      "symbol": "brett",
+      "price": 0.00799251,
+      "market_cap": 79173495.0,
+      "volume": 20131217.0
+    },
+    {
+      "id": "axelar",
+      "symbol": "axl",
+      "price": 0.068552,
+      "market_cap": 79105242.0,
+      "volume": 264434117.0
     },
     {
       "id": "derive",
       "symbol": "drv",
-      "price": 0.078303,
-      "market_cap": 78367956.0,
-      "volume": 457070.0
+      "price": 0.078393,
+      "market_cap": 78341553.0,
+      "volume": 467803.0
     },
     {
-      "id": "amp-token",
-      "symbol": "amp",
-      "price": 0.00089863,
-      "market_cap": 78015441.0,
-      "volume": 6538776.0
-    },
-    {
-      "id": "meteora",
-      "symbol": "met",
-      "price": 0.151486,
-      "market_cap": 77844606.0,
-      "volume": 16342176.0
+      "id": "dusk-network",
+      "symbol": "dusk",
+      "price": 0.156645,
+      "market_cap": 78229115.0,
+      "volume": 17229253.0
     },
     {
       "id": "superfarm",
       "symbol": "super",
-      "price": 0.122347,
-      "market_cap": 77800500.0,
-      "volume": 10537210.0
+      "price": 0.122497,
+      "market_cap": 78001972.0,
+      "volume": 10433520.0
+    },
+    {
+      "id": "amp-token",
+      "symbol": "amp",
+      "price": 0.00089828,
+      "market_cap": 77970112.0,
+      "volume": 5851016.0
+    },
+    {
+      "id": "mimblewimblecoin",
+      "symbol": "mwc",
+      "price": 7.1,
+      "market_cap": 77930354.0,
+      "volume": 138306.0
+    },
+    {
+      "id": "mina-protocol",
+      "symbol": "mina",
+      "price": 0.060758,
+      "market_cap": 77901572.0,
+      "volume": 9074817.0
+    },
+    {
+      "id": "zetachain",
+      "symbol": "zeta",
+      "price": 0.057,
+      "market_cap": 77742444.0,
+      "volume": 11518520.0
     },
     {
       "id": "nexpace",
       "symbol": "nxpc",
-      "price": 0.292898,
-      "market_cap": 77781670.0,
-      "volume": 8098758.0
+      "price": 0.292793,
+      "market_cap": 77700342.0,
+      "volume": 5172989.0
     },
     {
       "id": "gauntlet-usd-alpha",
@@ -2390,81 +2404,74 @@
       "volume": 4.12
     },
     {
-      "id": "mina-protocol",
-      "symbol": "mina",
-      "price": 0.060224,
-      "market_cap": 77255592.0,
-      "volume": 9626537.0
+      "id": "tagger",
+      "symbol": "tag",
+      "price": 0.00071093,
+      "market_cap": 77600617.0,
+      "volume": 7658829.0
     },
     {
-      "id": "dusk-network",
-      "symbol": "dusk",
-      "price": 0.15426,
-      "market_cap": 77115253.0,
-      "volume": 17028119.0
+      "id": "meteora",
+      "symbol": "met",
+      "price": 0.150847,
+      "market_cap": 77494313.0,
+      "volume": 16144677.0
     },
     {
       "id": "verge",
       "symbol": "xvg",
-      "price": 0.00466577,
-      "market_cap": 77103998.0,
-      "volume": 3974227.0
+      "price": 0.00468721,
+      "market_cap": 77392578.0,
+      "volume": 3986811.0
+    },
+    {
+      "id": "nervos-network",
+      "symbol": "ckb",
+      "price": 0.00159156,
+      "market_cap": 77099282.0,
+      "volume": 9233857.0
     },
     {
       "id": "helio-protocol-hay",
       "symbol": "lisusd",
-      "price": 0.99913,
-      "market_cap": 76244688.0,
-      "volume": 51182.0
+      "price": 0.999413,
+      "market_cap": 76266566.0,
+      "volume": 55586.0
+    },
+    {
+      "id": "holotoken",
+      "symbol": "hot",
+      "price": 0.00042831,
+      "market_cap": 76078932.0,
+      "volume": 5766072.0
     },
     {
       "id": "railgun",
       "symbol": "rail",
       "price": 1.32,
-      "market_cap": 76106959.0,
-      "volume": 644610.0
-    },
-    {
-      "id": "holotoken",
-      "symbol": "hot",
-      "price": 0.00042812,
-      "market_cap": 76098843.0,
-      "volume": 5766705.0
+      "market_cap": 75987827.0,
+      "volume": 646311.0
     },
     {
       "id": "coinex-token",
       "symbol": "cet",
-      "price": 0.02996758,
-      "market_cap": 75719962.0,
-      "volume": 48993.0
-    },
-    {
-      "id": "wormhole",
-      "symbol": "w",
-      "price": 0.01305999,
-      "market_cap": 75434826.0,
-      "volume": 32297537.0
+      "price": 0.02996703,
+      "market_cap": 75742997.0,
+      "volume": 48913.0
     },
     {
       "id": "ontology",
       "symbol": "ont",
-      "price": 0.075413,
-      "market_cap": 75398191.0,
-      "volume": 14369653.0
+      "price": 0.075372,
+      "market_cap": 75436194.0,
+      "volume": 14253517.0
     },
     {
       "id": "matrixdock-gold",
       "symbol": "xaum",
-      "price": 4812.92,
-      "market_cap": 75353828.0,
-      "volume": 11018869.0
-    },
-    {
-      "id": "nervos-network",
-      "symbol": "ckb",
-      "price": 0.00154923,
-      "market_cap": 75339418.0,
-      "volume": 8686227.0
+      "price": 4812.37,
+      "market_cap": 75341484.0,
+      "volume": 11056186.0
     },
     {
       "id": "exod",
@@ -2474,18 +2481,32 @@
       "volume": 0.0
     },
     {
-      "id": "aioz-network",
-      "symbol": "aioz",
-      "price": 0.060308,
-      "market_cap": 75089735.0,
-      "volume": 3343501.0
+      "id": "bc-token",
+      "symbol": "bc",
+      "price": 0.00751651,
+      "market_cap": 75142332.0,
+      "volume": 240200.0
+    },
+    {
+      "id": "arkham",
+      "symbol": "arkm",
+      "price": 0.124438,
+      "market_cap": 75104507.0,
+      "volume": 122127013.0
     },
     {
       "id": "cygnus-finance-global-usd",
       "symbol": "cgusd",
-      "price": 0.995151,
-      "market_cap": 75048417.0,
+      "price": 0.995248,
+      "market_cap": 75048442.0,
       "volume": 8.24
+    },
+    {
+      "id": "jupusd",
+      "symbol": "jupusd",
+      "price": 0.999955,
+      "market_cap": 75032003.0,
+      "volume": 1651997.0
     },
     {
       "id": "tradable-na-neobank-sstl",
@@ -2495,102 +2516,88 @@
       "volume": 0.0
     },
     {
-      "id": "jupusd",
-      "symbol": "jupusd",
-      "price": 0.998501,
-      "market_cap": 74961519.0,
-      "volume": 1562236.0
+      "id": "fogo",
+      "symbol": "fogo",
+      "price": 0.0196678,
+      "market_cap": 74872463.0,
+      "volume": 6045700.0
     },
     {
-      "id": "arkham",
-      "symbol": "arkm",
-      "price": 0.123533,
-      "market_cap": 74829018.0,
-      "volume": 121993643.0
+      "id": "aioz-network",
+      "symbol": "aioz",
+      "price": 0.060095,
+      "market_cap": 74857626.0,
+      "volume": 3330647.0
     },
     {
-      "id": "bc-token",
-      "symbol": "bc",
-      "price": 0.00747969,
-      "market_cap": 74764199.0,
-      "volume": 240068.0
+      "id": "wormhole",
+      "symbol": "w",
+      "price": 0.01305832,
+      "market_cap": 74847971.0,
+      "volume": 32467514.0
     },
     {
       "id": "felix-feusd",
       "symbol": "feusd",
-      "price": 0.995007,
-      "market_cap": 74643842.0,
-      "volume": 69094.0
+      "price": 0.99509,
+      "market_cap": 74756037.0,
+      "volume": 63081.0
     },
     {
-      "id": "fogo",
-      "symbol": "fogo",
-      "price": 0.0196117,
-      "market_cap": 74563280.0,
-      "volume": 6093280.0
-    },
-    {
-      "id": "zetachain",
-      "symbol": "zeta",
-      "price": 0.054816,
-      "market_cap": 74380049.0,
-      "volume": 7347464.0
-    },
-    {
-      "id": "tagger",
-      "symbol": "tag",
-      "price": 0.00067927,
-      "market_cap": 73815259.0,
-      "volume": 7354359.0
+      "id": "peanut-the-squirrel",
+      "symbol": "pnut",
+      "price": 0.073098,
+      "market_cap": 73788463.0,
+      "volume": 293706678.0
     },
     {
       "id": "sahara-ai",
       "symbol": "sahara",
-      "price": 0.02347561,
-      "market_cap": 73812836.0,
-      "volume": 15545183.0
+      "price": 0.02349138,
+      "market_cap": 73718674.0,
+      "volume": 16914163.0
     },
     {
       "id": "chainopera-ai",
       "symbol": "coai",
-      "price": 0.389535,
-      "market_cap": 73294106.0,
-      "volume": 17898890.0
+      "price": 0.391215,
+      "market_cap": 73567756.0,
+      "volume": 17482518.0
     },
     {
       "id": "ai-rig-complex",
       "symbol": "arc",
-      "price": 0.072905,
-      "market_cap": 73018364.0,
-      "volume": 10118405.0
-    },
-    {
-      "id": "comedian",
-      "symbol": "ban",
-      "price": 0.072562,
-      "market_cap": 72575869.0,
-      "volume": 6797656.0
+      "price": 0.07332,
+      "market_cap": 73462754.0,
+      "volume": 9774998.0
     },
     {
       "id": "ronin",
       "symbol": "ron",
-      "price": 0.093995,
-      "market_cap": 72458982.0,
-      "volume": 5299250.0
+      "price": 0.094318,
+      "market_cap": 72851715.0,
+      "volume": 5529860.0
+    },
+    {
+      "id": "comedian",
+      "symbol": "ban",
+      "price": 0.072666,
+      "market_cap": 72676693.0,
+      "volume": 6744697.0
+    },
+    {
+      "id": "threshold-network-token",
+      "symbol": "t",
+      "price": 0.00641026,
+      "market_cap": 71505758.0,
+      "volume": 4443090.0
     },
     {
       "id": "gamer-tag",
       "symbol": "gmrt",
       "price": 0.201081,
       "market_cap": 71474504.0,
-      "volume": 3545.09
-    },
-    {
-      "id": "threshold-network-token",
-      "symbol": "t",
-      "price": 0.00638232,
-      "market_cap": 71225570.0,
-      "volume": 4441907.0
+      "volume": 3550.52
     },
     {
       "id": "temple",
@@ -2600,39 +2607,32 @@
       "volume": 63.6
     },
     {
-      "id": "peanut-the-squirrel",
-      "symbol": "pnut",
-      "price": 0.070813,
-      "market_cap": 71044104.0,
-      "volume": 287981787.0
+      "id": "blur",
+      "symbol": "blur",
+      "price": 0.02558239,
+      "market_cap": 71088968.0,
+      "volume": 98578087.0
     },
     {
       "id": "loaded-lions",
       "symbol": "lion",
-      "price": 0.0023024,
-      "market_cap": 70533115.0,
-      "volume": 904278.0
-    },
-    {
-      "id": "blur",
-      "symbol": "blur",
-      "price": 0.02531449,
-      "market_cap": 70078914.0,
-      "volume": 100313252.0
+      "price": 0.00231736,
+      "market_cap": 70794353.0,
+      "volume": 910221.0
     },
     {
       "id": "astar",
       "symbol": "astr",
-      "price": 0.00812756,
-      "market_cap": 69808390.0,
-      "volume": 6115029.0
+      "price": 0.00814125,
+      "market_cap": 69884954.0,
+      "volume": 6207398.0
     },
     {
-      "id": "home",
-      "symbol": "home",
-      "price": 0.01881604,
-      "market_cap": 69567535.0,
-      "volume": 4397635.0
+      "id": "aztec",
+      "symbol": "aztec",
+      "price": 0.02333818,
+      "market_cap": 69514993.0,
+      "volume": 7671820.0
     },
     {
       "id": "fasttoken",
@@ -2642,53 +2642,46 @@
       "volume": 64819.0
     },
     {
+      "id": "cysic",
+      "symbol": "cys",
+      "price": 0.426362,
+      "market_cap": 69299990.0,
+      "volume": 20032836.0
+    },
+    {
       "id": "midas-mf-one",
       "symbol": "mf-one",
       "price": 1.077,
-      "market_cap": 69261513.0,
+      "market_cap": 69266283.0,
       "volume": 0.0
     },
     {
-      "id": "zama",
-      "symbol": "zama",
-      "price": 0.03114153,
-      "market_cap": 68514205.0,
-      "volume": 61020839.0
-    },
-    {
-      "id": "metal-blockchain",
-      "symbol": "metal",
-      "price": 0.135623,
-      "market_cap": 68263940.0,
-      "volume": 593899.0
+      "id": "home",
+      "symbol": "home",
+      "price": 0.01860179,
+      "market_cap": 68981599.0,
+      "volume": 4561019.0
     },
     {
       "id": "movement",
       "symbol": "move",
-      "price": 0.01858113,
-      "market_cap": 68258115.0,
-      "volume": 16806840.0
+      "price": 0.01869129,
+      "market_cap": 68593977.0,
+      "volume": 16885600.0
     },
     {
-      "id": "alchemist-ai",
-      "symbol": "alch",
-      "price": 0.08004,
-      "market_cap": 68218238.0,
-      "volume": 14827077.0
-    },
-    {
-      "id": "aztec",
-      "symbol": "aztec",
-      "price": 0.02294622,
-      "market_cap": 68159288.0,
-      "volume": 8584776.0
+      "id": "zama",
+      "symbol": "zama",
+      "price": 0.03116542,
+      "market_cap": 68480187.0,
+      "volume": 45926669.0
     },
     {
       "id": "basedhype",
       "symbol": "basedhype",
-      "price": 0.00680652,
-      "market_cap": 68104488.0,
-      "volume": 19.32
+      "price": 0.00684017,
+      "market_cap": 68401726.0,
+      "volume": 25.14
     },
     {
       "id": "vaneck-treasury-fund",
@@ -2700,163 +2693,170 @@
     {
       "id": "usdgo",
       "symbol": "usdgo",
-      "price": 0.999971,
-      "market_cap": 67997955.0,
-      "volume": 3736326.0
+      "price": 0.999827,
+      "market_cap": 68001824.0,
+      "volume": 3770420.0
     },
     {
-      "id": "apes-2-2",
-      "symbol": "apes",
-      "price": 0.075317,
-      "market_cap": 67821209.0,
-      "volume": 317011.0
-    },
-    {
-      "id": "cysic",
-      "symbol": "cys",
-      "price": 0.420614,
-      "market_cap": 67667531.0,
-      "volume": 21050597.0
+      "id": "alchemist-ai",
+      "symbol": "alch",
+      "price": 0.080021,
+      "market_cap": 68001478.0,
+      "volume": 14499349.0
     },
     {
       "id": "polymesh",
       "symbol": "polyx",
-      "price": 0.053375,
-      "market_cap": 67663248.0,
-      "volume": 4708740.0
+      "price": 0.053592,
+      "market_cap": 67886477.0,
+      "volume": 4770419.0
+    },
+    {
+      "id": "apes-2-2",
+      "symbol": "apes",
+      "price": 0.075339,
+      "market_cap": 67864974.0,
+      "volume": 281300.0
+    },
+    {
+      "id": "metal-blockchain",
+      "symbol": "metal",
+      "price": 0.13361,
+      "market_cap": 67825997.0,
+      "volume": 585476.0
     },
     {
       "id": "dola-usd",
       "symbol": "dola",
-      "price": 0.992643,
-      "market_cap": 67338488.0,
-      "volume": 78998.0
+      "price": 0.992881,
+      "market_cap": 67348049.0,
+      "volume": 78864.0
     },
     {
       "id": "megausd",
       "symbol": "usdm",
-      "price": 0.999859,
-      "market_cap": 67211030.0,
-      "volume": 1076108.0
-    },
-    {
-      "id": "proton",
-      "symbol": "xpr",
-      "price": 0.00232732,
-      "market_cap": 66684876.0,
-      "volume": 1561443.0
-    },
-    {
-      "id": "mindwavedao",
-      "symbol": "nila",
-      "price": 0.078921,
-      "market_cap": 66511755.0,
-      "volume": 103577.0
+      "price": 1.002,
+      "market_cap": 67217871.0,
+      "volume": 1078745.0
     },
     {
       "id": "zora",
       "symbol": "zora",
-      "price": 0.01492634,
-      "market_cap": 66434261.0,
-      "volume": 8916056.0
+      "price": 0.01495943,
+      "market_cap": 66786779.0,
+      "volume": 9131904.0
+    },
+    {
+      "id": "mindwavedao",
+      "symbol": "nila",
+      "price": 0.07886,
+      "market_cap": 66460450.0,
+      "volume": 103500.0
+    },
+    {
+      "id": "proton",
+      "symbol": "xpr",
+      "price": 0.00231614,
+      "market_cap": 66367356.0,
+      "volume": 1525540.0
+    },
+    {
+      "id": "bio-protocol",
+      "symbol": "bio",
+      "price": 0.03749325,
+      "market_cap": 66131336.0,
+      "volume": 541733592.0
+    },
+    {
+      "id": "puff-the-dragon",
+      "symbol": "puff",
+      "price": 0.074306,
+      "market_cap": 66119384.0,
+      "volume": 21755.0
     },
     {
       "id": "gmx",
       "symbol": "gmx",
       "price": 6.36,
-      "market_cap": 66082712.0,
-      "volume": 6134302.0
-    },
-    {
-      "id": "puff-the-dragon",
-      "symbol": "puff",
-      "price": 0.074305,
-      "market_cap": 65978340.0,
-      "volume": 21732.0
+      "market_cap": 66071648.0,
+      "volume": 6092119.0
     },
     {
       "id": "aelf",
       "symbol": "elf",
-      "price": 0.080569,
-      "market_cap": 65641931.0,
-      "volume": 639080.0
-    },
-    {
-      "id": "nano",
-      "symbol": "xno",
-      "price": 0.485358,
-      "market_cap": 64672610.0,
-      "volume": 228771.0
-    },
-    {
-      "id": "bio-protocol",
-      "symbol": "bio",
-      "price": 0.03608715,
-      "market_cap": 64359913.0,
-      "volume": 553509107.0
-    },
-    {
-      "id": "debridge",
-      "symbol": "dbr",
-      "price": 0.01362594,
-      "market_cap": 64290534.0,
-      "volume": 5488414.0
-    },
-    {
-      "id": "unit-pump",
-      "symbol": "upump",
-      "price": 0.0020086,
-      "market_cap": 64039173.0,
-      "volume": 2780253.0
+      "price": 0.080787,
+      "market_cap": 66031802.0,
+      "volume": 678898.0
     },
     {
       "id": "audiera",
       "symbol": "beat",
-      "price": 0.459129,
-      "market_cap": 63948390.0,
-      "volume": 21784064.0
-    },
-    {
-      "id": "mbg-by-multibank-group",
-      "symbol": "mbg",
-      "price": 0.344245,
-      "market_cap": 63794922.0,
-      "volume": 5777413.0
-    },
-    {
-      "id": "tria",
-      "symbol": "tria",
-      "price": 0.02977605,
-      "market_cap": 63599776.0,
-      "volume": 10241878.0
+      "price": 0.468152,
+      "market_cap": 65187321.0,
+      "volume": 21821313.0
     },
     {
       "id": "plume",
       "symbol": "plume",
-      "price": 0.01191647,
-      "market_cap": 63567427.0,
-      "volume": 23213973.0
+      "price": 0.01226786,
+      "market_cap": 64839537.0,
+      "volume": 24655737.0
+    },
+    {
+      "id": "nano",
+      "symbol": "xno",
+      "price": 0.484315,
+      "market_cap": 64535065.0,
+      "volume": 227229.0
+    },
+    {
+      "id": "debridge",
+      "symbol": "dbr",
+      "price": 0.01366282,
+      "market_cap": 64511872.0,
+      "volume": 5372735.0
+    },
+    {
+      "id": "tria",
+      "symbol": "tria",
+      "price": 0.02974246,
+      "market_cap": 63996433.0,
+      "volume": 9918513.0
+    },
+    {
+      "id": "unit-pump",
+      "symbol": "upump",
+      "price": 0.00200504,
+      "market_cap": 63882522.0,
+      "volume": 2829629.0
     },
     {
       "id": "non-playable-coin",
       "symbol": "npc",
-      "price": 0.00784734,
-      "market_cap": 63186130.0,
-      "volume": 4766136.0
+      "price": 0.0079311,
+      "market_cap": 63846237.0,
+      "volume": 4812320.0
+    },
+    {
+      "id": "mbg-by-multibank-group",
+      "symbol": "mbg",
+      "price": 0.344578,
+      "market_cap": 63797548.0,
+      "volume": 5797775.0
     },
     {
       "id": "tronbank",
       "symbol": "tbk",
-      "price": 0.631934,
-      "market_cap": 63152945.0,
-      "volume": 379799.0
+      "price": 0.631594,
+      "market_cap": 63205917.0,
+      "volume": 379937.0
     },
     {
       "id": "pythia",
       "symbol": "pythia",
-      "price": 0.062863,
-      "market_cap": 62760233.0,
-      "volume": 804695.0
+      "price": 0.062896,
+      "market_cap": 62732444.0,
+      "volume": 796660.0
     },
     {
       "id": "tradable-north-america-pos-lender-sstn",
@@ -2866,60 +2866,67 @@
       "volume": 0.0
     },
     {
-      "id": "ondo-u-s-dollar-token",
-      "symbol": "usdon",
-      "price": 1.0,
-      "market_cap": 62143159.0,
-      "volume": 21430754.0
+      "id": "targon",
+      "symbol": "sn4",
+      "price": 13.83,
+      "market_cap": 62310617.0,
+      "volume": 4690471.0
     },
     {
       "id": "agentfun-ai",
       "symbol": "agentfun",
-      "price": 0.619897,
-      "market_cap": 61968796.0,
-      "volume": 294.28
+      "price": 0.621849,
+      "market_cap": 62201399.0,
+      "volume": 295.2
+    },
+    {
+      "id": "ondo-u-s-dollar-token",
+      "symbol": "usdon",
+      "price": 1.0,
+      "market_cap": 62143159.0,
+      "volume": 21285076.0
     },
     {
       "id": "usdx",
       "symbol": "usdx",
-      "price": 0.553153,
-      "market_cap": 61712650.0,
-      "volume": 5202.11
-    },
-    {
-      "id": "targon",
-      "symbol": "sn4",
-      "price": 13.61,
-      "market_cap": 61290493.0,
-      "volume": 4399082.0
-    },
-    {
-      "id": "world-mobile-token",
-      "symbol": "wmtx",
-      "price": 0.071918,
-      "market_cap": 61088172.0,
-      "volume": 26891880.0
+      "price": 0.553704,
+      "market_cap": 61775664.0,
+      "volume": 5334.95
     },
     {
       "id": "flow",
       "symbol": "flow",
-      "price": 0.03681028,
-      "market_cap": 61030683.0,
-      "volume": 8706239.0
+      "price": 0.03715402,
+      "market_cap": 61514555.0,
+      "volume": 8787673.0
     },
     {
-      "id": "dual",
-      "symbol": "dual",
-      "price": 0.0080025,
-      "market_cap": 60682061.0,
-      "volume": 507256.0
+      "id": "kava",
+      "symbol": "kava",
+      "price": 0.056812,
+      "market_cap": 61409438.0,
+      "volume": 4301621.0
+    },
+    {
+      "id": "world-mobile-token",
+      "symbol": "wmtx",
+      "price": 0.071992,
+      "market_cap": 61200808.0,
+      "volume": 26866193.0
     },
     {
       "id": "tellor",
       "symbol": "trb",
-      "price": 21.8,
-      "market_cap": 60604433.0,
-      "volume": 101214852.0
+      "price": 22.02,
+      "market_cap": 61128642.0,
+      "volume": 108920213.0
+    },
+    {
+      "id": "velo",
+      "symbol": "velo",
+      "price": 0.00345402,
+      "market_cap": 60660846.0,
+      "volume": 3689988.0
     },
     {
       "id": "swop-2",
@@ -2931,107 +2938,107 @@
     {
       "id": "verus-coin",
       "symbol": "vrsc",
-      "price": 0.755136,
-      "market_cap": 60556744.0,
-      "volume": 4993.08
+      "price": 0.755238,
+      "market_cap": 60564878.0,
+      "volume": 4993.18
     },
     {
       "id": "yooldo-games",
       "symbol": "esports",
-      "price": 0.398837,
-      "market_cap": 60556587.0,
-      "volume": 2700158.0
+      "price": 0.398714,
+      "market_cap": 60524101.0,
+      "volume": 1814339.0
     },
     {
-      "id": "velo",
-      "symbol": "velo",
-      "price": 0.00345098,
-      "market_cap": 60545893.0,
-      "volume": 3450682.0
-    },
-    {
-      "id": "kava",
-      "symbol": "kava",
-      "price": 0.05589,
-      "market_cap": 60519294.0,
-      "volume": 3945818.0
+      "id": "popcat",
+      "symbol": "popcat",
+      "price": 0.061667,
+      "market_cap": 60462391.0,
+      "volume": 22067978.0
     },
     {
       "id": "numeraire",
       "symbol": "nmr",
-      "price": 8.56,
-      "market_cap": 60199099.0,
-      "volume": 6780773.0
+      "price": 8.58,
+      "market_cap": 60418704.0,
+      "volume": 6805007.0
     },
     {
       "id": "eurite",
       "symbol": "euri",
       "price": 1.18,
-      "market_cap": 60047406.0,
-      "volume": 2675077.0
-    },
-    {
-      "id": "popcat",
-      "symbol": "popcat",
-      "price": 0.060931,
-      "market_cap": 59748021.0,
-      "volume": 21835780.0
+      "market_cap": 60034769.0,
+      "volume": 2669675.0
     },
     {
       "id": "sushi",
       "symbol": "sushi",
-      "price": 0.217914,
-      "market_cap": 59490791.0,
-      "volume": 17891655.0
+      "price": 0.217908,
+      "market_cap": 59458826.0,
+      "volume": 17946878.0
     },
     {
       "id": "babylon",
       "symbol": "baby",
-      "price": 0.01585108,
-      "market_cap": 59050486.0,
-      "volume": 14634146.0
-    },
-    {
-      "id": "bitkub-coin",
-      "symbol": "kub",
-      "price": 0.851645,
-      "market_cap": 58738845.0,
-      "volume": 238847.0
-    },
-    {
-      "id": "concordium",
-      "symbol": "ccd",
-      "price": 0.00487964,
-      "market_cap": 58690077.0,
-      "volume": 394763.0
-    },
-    {
-      "id": "vethor-token",
-      "symbol": "vtho",
-      "price": 0.00059023,
-      "market_cap": 58617998.0,
-      "volume": 1661240.0
-    },
-    {
-      "id": "spark-2",
-      "symbol": "spk",
-      "price": 0.0229457,
-      "market_cap": 58496813.0,
-      "volume": 13997693.0
+      "price": 0.01586779,
+      "market_cap": 59099544.0,
+      "volume": 16785059.0
     },
     {
       "id": "moo-deng",
       "symbol": "moodeng",
-      "price": 0.05871,
-      "market_cap": 58208410.0,
-      "volume": 91392648.0
+      "price": 0.059388,
+      "market_cap": 59087735.0,
+      "volume": 92930584.0
     },
     {
-      "id": "myx-finance",
-      "symbol": "myx",
-      "price": 0.302938,
-      "market_cap": 57933427.0,
-      "volume": 22782422.0
+      "id": "dual",
+      "symbol": "dual",
+      "price": 0.00799576,
+      "market_cap": 58897967.0,
+      "volume": 511431.0
+    },
+    {
+      "id": "bitkub-coin",
+      "symbol": "kub",
+      "price": 0.852932,
+      "market_cap": 58830751.0,
+      "volume": 239439.0
+    },
+    {
+      "id": "concordium",
+      "symbol": "ccd",
+      "price": 0.00487809,
+      "market_cap": 58665360.0,
+      "volume": 390703.0
+    },
+    {
+      "id": "vethor-token",
+      "symbol": "vtho",
+      "price": 0.00058989,
+      "market_cap": 58591026.0,
+      "volume": 1642019.0
+    },
+    {
+      "id": "irys",
+      "symbol": "irys",
+      "price": 0.02922417,
+      "market_cap": 58428864.0,
+      "volume": 8454586.0
+    },
+    {
+      "id": "spark-2",
+      "symbol": "spk",
+      "price": 0.02284858,
+      "market_cap": 58254477.0,
+      "volume": 14065560.0
+    },
+    {
+      "id": "mog-coin",
+      "symbol": "mog",
+      "price": 1.48341e-7,
+      "market_cap": 57911969.0,
+      "volume": 10799097.0
     },
     {
       "id": "apyusd",
@@ -3041,144 +3048,158 @@
       "volume": 27794.0
     },
     {
-      "id": "mog-coin",
-      "symbol": "mog",
-      "price": 1.4775e-7,
-      "market_cap": 57681567.0,
-      "volume": 10464122.0
-    },
-    {
-      "id": "irys",
-      "symbol": "irys",
-      "price": 0.02883147,
-      "market_cap": 57604618.0,
-      "volume": 8345899.0
+      "id": "myx-finance",
+      "symbol": "myx",
+      "price": 0.301082,
+      "market_cap": 57500289.0,
+      "volume": 22702945.0
     },
     {
       "id": "quantixai",
       "symbol": "qfi",
-      "price": 57.53,
-      "market_cap": 57527578.0,
-      "volume": 726188.0
+      "price": 57.49,
+      "market_cap": 57491130.0,
+      "volume": 730408.0
+    },
+    {
+      "id": "orca",
+      "symbol": "orca",
+      "price": 0.942532,
+      "market_cap": 57304349.0,
+      "volume": 11811059.0
+    },
+    {
+      "id": "rekt-4",
+      "symbol": "rekt",
+      "price": 1.35868e-7,
+      "market_cap": 57170850.0,
+      "volume": 733616.0
     },
     {
       "id": "vvs-finance",
       "symbol": "vvs",
       "price": 1.31e-6,
-      "market_cap": 57043719.0,
-      "volume": 256124.0
-    },
-    {
-      "id": "orca",
-      "symbol": "orca",
-      "price": 0.937121,
-      "market_cap": 56966251.0,
-      "volume": 11706334.0
-    },
-    {
-      "id": "bitdca",
-      "symbol": "bdca",
-      "price": 0.693583,
-      "market_cap": 56871513.0,
-      "volume": 126323.0
-    },
-    {
-      "id": "rekt-4",
-      "symbol": "rekt",
-      "price": 1.34611e-7,
-      "market_cap": 56631271.0,
-      "volume": 692396.0
+      "market_cap": 57140002.0,
+      "volume": 247814.0
     },
     {
       "id": "affine",
       "symbol": "sn120",
-      "price": 19.39,
-      "market_cap": 56459844.0,
-      "volume": 534909.0
+      "price": 19.59,
+      "market_cap": 57034750.0,
+      "volume": 581664.0
     },
     {
-      "id": "pay-coin",
-      "symbol": "pci",
-      "price": 0.055041,
-      "market_cap": 56076381.0,
-      "volume": 816689.0
-    },
-    {
-      "id": "wiki-cat",
-      "symbol": "wkc",
-      "price": 1.03654e-7,
-      "market_cap": 56045552.0,
-      "volume": 315805.0
+      "id": "bitdca",
+      "symbol": "bdca",
+      "price": 0.693578,
+      "market_cap": 56872758.0,
+      "volume": 126357.0
     },
     {
       "id": "geodnet",
       "symbol": "geod",
-      "price": 0.130397,
-      "market_cap": 55979077.0,
-      "volume": 1724133.0
+      "price": 0.133259,
+      "market_cap": 56438771.0,
+      "volume": 1736412.0
+    },
+    {
+      "id": "pay-coin",
+      "symbol": "pci",
+      "price": 0.055004,
+      "market_cap": 56235281.0,
+      "volume": 820289.0
     },
     {
       "id": "mocaverse",
       "symbol": "moca",
-      "price": 0.0136321,
-      "market_cap": 55801547.0,
-      "volume": 4083969.0
-    },
-    {
-      "id": "tdccp",
-      "symbol": "tdccp",
-      "price": 0.086946,
-      "market_cap": 55674651.0,
-      "volume": 134874.0
+      "price": 0.01367145,
+      "market_cap": 55902779.0,
+      "volume": 4029482.0
     },
     {
       "id": "cat-in-a-dogs-world",
       "symbol": "mew",
-      "price": 0.00062522,
-      "market_cap": 55618293.0,
-      "volume": 13413903.0
+      "price": 0.00062845,
+      "market_cap": 55845088.0,
+      "volume": 13525225.0
+    },
+    {
+      "id": "wiki-cat",
+      "symbol": "wkc",
+      "price": 1.03518e-7,
+      "market_cap": 55785320.0,
+      "volume": 316483.0
+    },
+    {
+      "id": "block-street",
+      "symbol": "bsb",
+      "price": 0.259585,
+      "market_cap": 55753915.0,
+      "volume": 8966573.0
+    },
+    {
+      "id": "tdccp",
+      "symbol": "tdccp",
+      "price": 0.086886,
+      "market_cap": 55587249.0,
+      "volume": 135638.0
     },
     {
       "id": "magic-eden",
       "symbol": "me",
-      "price": 0.109427,
-      "market_cap": 54883698.0,
-      "volume": 9918301.0
+      "price": 0.109247,
+      "market_cap": 55042363.0,
+      "volume": 10057872.0
+    },
+    {
+      "id": "perle",
+      "symbol": "prl",
+      "price": 0.317201,
+      "market_cap": 54921939.0,
+      "volume": 33517212.0
     },
     {
       "id": "mantra",
       "symbol": "mantra",
-      "price": 0.01120434,
-      "market_cap": 54645370.0,
-      "volume": 8251185.0
+      "price": 0.01117962,
+      "market_cap": 54487733.0,
+      "volume": 8144841.0
     },
     {
       "id": "unifai-network",
       "symbol": "uai",
-      "price": 0.227572,
-      "market_cap": 54563013.0,
-      "volume": 5037204.0
+      "price": 0.226772,
+      "market_cap": 54211570.0,
+      "volume": 5036040.0
+    },
+    {
+      "id": "soon-2",
+      "symbol": "soon",
+      "price": 0.159391,
+      "market_cap": 54121313.0,
+      "volume": 16377104.0
     },
     {
       "id": "tesla-xstock",
       "symbol": "tslax",
-      "price": 388.08,
-      "market_cap": 54186066.0,
-      "volume": 27046759.0
-    },
-    {
-      "id": "escoin-token",
-      "symbol": "elg",
-      "price": 0.291494,
-      "market_cap": 53803896.0,
-      "volume": 523381.0
+      "price": 387.67,
+      "market_cap": 54118230.0,
+      "volume": 27030033.0
     },
     {
       "id": "hashkey-ecopoints",
       "symbol": "hsk",
-      "price": 0.155661,
-      "market_cap": 53583507.0,
-      "volume": 945344.0
+      "price": 0.156587,
+      "market_cap": 53970919.0,
+      "volume": 932780.0
+    },
+    {
+      "id": "escoin-token",
+      "symbol": "elg",
+      "price": 0.291183,
+      "market_cap": 53638621.0,
+      "volume": 523478.0
     },
     {
       "id": "tradable-na-legal-receivables-ssl",
@@ -3188,130 +3209,116 @@
       "volume": 0.0
     },
     {
-      "id": "perle",
-      "symbol": "prl",
-      "price": 0.304186,
-      "market_cap": 53151092.0,
-      "volume": 31655883.0
-    },
-    {
       "id": "brz",
       "symbol": "brz",
-      "price": 0.199494,
-      "market_cap": 52988140.0,
-      "volume": 132892.0
+      "price": 0.199765,
+      "market_cap": 53052374.0,
+      "volume": 134489.0
     },
     {
       "id": "circle-xstock",
       "symbol": "crclx",
-      "price": 106.29,
-      "market_cap": 52892643.0,
-      "volume": 14676400.0
-    },
-    {
-      "id": "soon-2",
-      "symbol": "soon",
-      "price": 0.155631,
-      "market_cap": 52799090.0,
-      "volume": 16060508.0
-    },
-    {
-      "id": "block-street",
-      "symbol": "bsb",
-      "price": 0.245723,
-      "market_cap": 52731244.0,
-      "volume": 8654026.0
+      "price": 106.3,
+      "market_cap": 52773439.0,
+      "volume": 14638754.0
     },
     {
       "id": "ankr",
       "symbol": "ankr",
-      "price": 0.0052323,
-      "market_cap": 52331631.0,
-      "volume": 11715581.0
-    },
-    {
-      "id": "celo",
-      "symbol": "celo",
-      "price": 0.086272,
-      "market_cap": 51718579.0,
-      "volume": 6720700.0
+      "price": 0.00524359,
+      "market_cap": 52440675.0,
+      "volume": 11681379.0
     },
     {
       "id": "rosa-inu",
       "symbol": "rosa",
-      "price": 0.00051644,
-      "market_cap": 51643971.0,
-      "volume": 5211242.0
+      "price": 0.00052102,
+      "market_cap": 52101622.0,
+      "volume": 5448258.0
     },
     {
-      "id": "redstone-oracles",
-      "symbol": "red",
-      "price": 0.145476,
-      "market_cap": 51595414.0,
-      "volume": 21057711.0
+      "id": "celo",
+      "symbol": "celo",
+      "price": 0.086203,
+      "market_cap": 51624188.0,
+      "volume": 6681548.0
     },
     {
       "id": "xyo-network",
       "symbol": "xyo",
-      "price": 0.00370222,
-      "market_cap": 51586887.0,
-      "volume": 5676912.0
+      "price": 0.00370453,
+      "market_cap": 51600968.0,
+      "volume": 5645810.0
+    },
+    {
+      "id": "redstone-oracles",
+      "symbol": "red",
+      "price": 0.144557,
+      "market_cap": 51507699.0,
+      "volume": 17922022.0
     },
     {
       "id": "request-network",
       "symbol": "req",
-      "price": 0.069126,
-      "market_cap": 51455201.0,
-      "volume": 1483636.0
+      "price": 0.068862,
+      "market_cap": 51254208.0,
+      "volume": 1509228.0
+    },
+    {
+      "id": "unit-plasma",
+      "symbol": "uxpl",
+      "price": 0.141372,
+      "market_cap": 50902482.0,
+      "volume": 503490.0
     },
     {
       "id": "fidelity-digital-dollar",
       "symbol": "fidd",
-      "price": 0.999686,
-      "market_cap": 50831327.0,
-      "volume": 22233899.0
+      "price": 0.999935,
+      "market_cap": 50841076.0,
+      "volume": 22080006.0
+    },
+    {
+      "id": "deso",
+      "symbol": "deso",
+      "price": 4.82,
+      "market_cap": 50794291.0,
+      "volume": 28010.0
     },
     {
       "id": "meta-2-2",
       "symbol": "meta",
       "price": 2.24,
-      "market_cap": 50762183.0,
-      "volume": 1029790.0
-    },
-    {
-      "id": "unit-plasma",
-      "symbol": "uxpl",
-      "price": 0.140941,
-      "market_cap": 50732136.0,
-      "volume": 475348.0
-    },
-    {
-      "id": "deso",
-      "symbol": "deso",
-      "price": 4.81,
-      "market_cap": 50696033.0,
-      "volume": 27357.0
+      "market_cap": 50711619.0,
+      "volume": 1013035.0
     },
     {
       "id": "jelly-my-jelly",
       "symbol": "jellyjelly",
-      "price": 0.050279,
-      "market_cap": 50591729.0,
-      "volume": 5100120.0
+      "price": 0.050329,
+      "market_cap": 50320519.0,
+      "volume": 5142725.0
     },
     {
       "id": "straitsx-xusd",
       "symbol": "xusd",
-      "price": 0.999987,
-      "market_cap": 50307105.0,
-      "volume": 13258724.0
+      "price": 0.999991,
+      "market_cap": 50310875.0,
+      "volume": 13172140.0
+    },
+    {
+      "id": "neiro-3",
+      "symbol": "neiro",
+      "price": 0.00012063,
+      "market_cap": 50293506.0,
+      "volume": 265223908.0
     },
     {
       "id": "usdkg",
       "symbol": "usdkg",
-      "price": 0.999905,
-      "market_cap": 49994735.0,
-      "volume": 162718.0
+      "price": 1.0,
+      "market_cap": 50001179.0,
+      "volume": 163880.0
     },
     {
       "id": "alloy-tether",
@@ -3323,16 +3330,30 @@
     {
       "id": "avantis",
       "symbol": "avnt",
-      "price": 0.14272,
-      "market_cap": 49549743.0,
-      "volume": 24989555.0
+      "price": 0.143484,
+      "market_cap": 49848802.0,
+      "volume": 25324036.0
+    },
+    {
+      "id": "purr-2",
+      "symbol": "purr",
+      "price": 0.084088,
+      "market_cap": 49805428.0,
+      "volume": 662500.0
+    },
+    {
+      "id": "celium",
+      "symbol": "sn51",
+      "price": 12.84,
+      "market_cap": 49720685.0,
+      "volume": 744862.0
     },
     {
       "id": "law-blocks",
       "symbol": "lbt",
-      "price": 0.201726,
-      "market_cap": 49421628.0,
-      "volume": 385364.0
+      "price": 0.201608,
+      "market_cap": 49393615.0,
+      "volume": 390840.0
     },
     {
       "id": "tradable-eu-latam-pos-financing-sstl",
@@ -3342,74 +3363,53 @@
       "volume": 0.0
     },
     {
-      "id": "celium",
-      "symbol": "sn51",
-      "price": 12.75,
-      "market_cap": 49271354.0,
-      "volume": 1000256.0
-    },
-    {
-      "id": "purr-2",
-      "symbol": "purr",
-      "price": 0.08328,
-      "market_cap": 49229359.0,
-      "volume": 551907.0
-    },
-    {
       "id": "siacoin",
       "symbol": "sc",
-      "price": 0.00098606,
-      "market_cap": 49056317.0,
-      "volume": 3109270.0
+      "price": 0.00098812,
+      "market_cap": 49143675.0,
+      "volume": 3122433.0
     },
     {
       "id": "palladium-network",
       "symbol": "plld",
-      "price": 0.94136,
-      "market_cap": 48812122.0,
-      "volume": 449305.0
-    },
-    {
-      "id": "neiro-3",
-      "symbol": "neiro",
-      "price": 0.0001143,
-      "market_cap": 48765229.0,
-      "volume": 252295258.0
+      "price": 0.94229,
+      "market_cap": 48860372.0,
+      "volume": 462880.0
     },
     {
       "id": "main-street-usd",
       "symbol": "msusd",
-      "price": 0.999931,
-      "market_cap": 48579555.0,
-      "volume": 1079092.0
-    },
-    {
-      "id": "fractal-bitcoin",
-      "symbol": "fb",
-      "price": 0.485844,
-      "market_cap": 48529286.0,
-      "volume": 2921935.0
+      "price": 0.999876,
+      "market_cap": 48587915.0,
+      "volume": 571775.0
     },
     {
       "id": "casper-network",
       "symbol": "cspr",
-      "price": 0.00305894,
-      "market_cap": 48450140.0,
-      "volume": 1721620.0
+      "price": 0.00305493,
+      "market_cap": 48422508.0,
+      "volume": 1712423.0
     },
     {
       "id": "useless-3",
       "symbol": "useless",
-      "price": 0.04779587,
-      "market_cap": 48081221.0,
-      "volume": 16122320.0
+      "price": 0.04835314,
+      "market_cap": 48362901.0,
+      "volume": 16232941.0
     },
     {
       "id": "get-ai",
       "symbol": "get",
-      "price": 0.087706,
-      "market_cap": 47953220.0,
-      "volume": 6303.77
+      "price": 0.088401,
+      "market_cap": 48085693.0,
+      "volume": 6399.74
+    },
+    {
+      "id": "fractal-bitcoin",
+      "symbol": "fb",
+      "price": 0.479946,
+      "market_cap": 47943174.0,
+      "volume": 2910741.0
     },
     {
       "id": "midas-mtbill",
@@ -3426,25 +3426,18 @@
       "volume": 0.0
     },
     {
-      "id": "aleo",
-      "symbol": "aleo",
-      "price": 0.04566513,
-      "market_cap": 47496001.0,
-      "volume": 1179464.0
-    },
-    {
-      "id": "robo-token-2",
-      "symbol": "robo",
-      "price": 0.02128881,
-      "market_cap": 47471962.0,
-      "volume": 28266319.0
+      "id": "mask-network",
+      "symbol": "mask",
+      "price": 0.477207,
+      "market_cap": 47712506.0,
+      "volume": 10198994.0
     },
     {
       "id": "mimbogamegroup",
       "symbol": "mgg",
-      "price": 0.00301319,
-      "market_cap": 47457146.0,
-      "volume": 597208.0
+      "price": 0.00301302,
+      "market_cap": 47454458.0,
+      "volume": 595383.0
     },
     {
       "id": "sygnum-fiusd-liquidity-fund",
@@ -3454,53 +3447,60 @@
       "volume": 0.0
     },
     {
-      "id": "mask-network",
-      "symbol": "mask",
-      "price": 0.472167,
-      "market_cap": 47278435.0,
-      "volume": 9916980.0
+      "id": "based-one",
+      "symbol": "based",
+      "price": 0.214133,
+      "market_cap": 47294101.0,
+      "volume": 441969875.0
+    },
+    {
+      "id": "aleo",
+      "symbol": "aleo",
+      "price": 0.04543832,
+      "market_cap": 47257889.0,
+      "volume": 1320182.0
+    },
+    {
+      "id": "robo-token-2",
+      "symbol": "robo",
+      "price": 0.0210628,
+      "market_cap": 46960633.0,
+      "volume": 28480182.0
     },
     {
       "id": "burnedfi",
       "symbol": "burn",
-      "price": 3.8,
-      "market_cap": 47019383.0,
-      "volume": 132929.0
+      "price": 3.77,
+      "market_cap": 46745118.0,
+      "volume": 131549.0
+    },
+    {
+      "id": "merlin-chain",
+      "symbol": "merl",
+      "price": 0.03848008,
+      "market_cap": 46624256.0,
+      "volume": 40952867.0
     },
     {
       "id": "succinct",
       "symbol": "prove",
-      "price": 0.238701,
-      "market_cap": 46552833.0,
-      "volume": 7621401.0
+      "price": 0.238485,
+      "market_cap": 46487130.0,
+      "volume": 7622520.0
     },
     {
       "id": "changenow",
       "symbol": "now",
-      "price": 0.549235,
-      "market_cap": 45914820.0,
-      "volume": 107203.0
+      "price": 0.549447,
+      "market_cap": 45947951.0,
+      "volume": 107245.0
     },
     {
       "id": "gohome",
       "symbol": "gohome",
-      "price": 87.49,
-      "market_cap": 45866544.0,
-      "volume": 723782.0
-    },
-    {
-      "id": "iotex",
-      "symbol": "iotx",
-      "price": 0.00481016,
-      "market_cap": 45396412.0,
-      "volume": 3021316.0
-    },
-    {
-      "id": "altlayer",
-      "symbol": "alt",
-      "price": 0.00749922,
-      "market_cap": 45210663.0,
-      "volume": 57195642.0
+      "price": 87.58,
+      "market_cap": 45920331.0,
+      "volume": 757510.0
     }
   ]
 }

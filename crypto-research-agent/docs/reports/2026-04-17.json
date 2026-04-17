@@ -1,31 +1,44 @@
 {
   "date": "2026-04-17",
-  "generated_at": "2026-04-17T00:17:10.953943Z",
+  "generated_at": "2026-04-17T00:45:45.918774Z",
   "gainers": [
-    {
-      "id": "siren-2",
-      "symbol": "siren",
-      "name": "Siren",
-      "image": "https://coin-images.coingecko.com/coins/images/54479/large/siren.png?1739960056",
-      "current_price": 2.16,
-      "market_cap": 1539434479.0,
-      "market_cap_rank": 59,
-      "total_volume": 100613643.0,
-      "change_24h_pct": 175.03947,
-      "change_48h_pct": 175.03947,
-      "price_48h_ago": null
-    },
     {
       "id": "ordinals",
       "symbol": "ordi",
       "name": "ORDI",
       "image": "https://coin-images.coingecko.com/coins/images/30162/large/ordi.png?1696529082",
-      "current_price": 8.44,
-      "market_cap": 176508045.0,
-      "market_cap_rank": 192,
-      "total_volume": 1258863620.0,
-      "change_24h_pct": 145.89002,
-      "change_48h_pct": 145.89002,
+      "current_price": 9.58,
+      "market_cap": 205150958.0,
+      "market_cap_rank": 179,
+      "total_volume": 1402690926.0,
+      "change_24h_pct": 173.84899,
+      "change_48h_pct": 173.84899,
+      "price_48h_ago": null
+    },
+    {
+      "id": "siren-2",
+      "symbol": "siren",
+      "name": "Siren",
+      "image": "https://coin-images.coingecko.com/coins/images/54479/large/siren.png?1739960056",
+      "current_price": 2.06,
+      "market_cap": 1482196187.0,
+      "market_cap_rank": 55,
+      "total_volume": 99978976.0,
+      "change_24h_pct": 165.49952,
+      "change_48h_pct": 165.49952,
+      "price_48h_ago": null
+    },
+    {
+      "id": "based-one",
+      "symbol": "based",
+      "name": "Based",
+      "image": "https://coin-images.coingecko.com/coins/images/71361/large/based-logo-200x200.png?1774599745",
+      "current_price": 0.214133,
+      "market_cap": 47294101.0,
+      "market_cap_rank": 493,
+      "total_volume": 441969875.0,
+      "change_24h_pct": 144.87253,
+      "change_48h_pct": 144.87253,
       "price_48h_ago": null
     },
     {
@@ -33,12 +46,12 @@
       "symbol": "rosa",
       "name": "Rosa Inu",
       "image": "https://coin-images.coingecko.com/coins/images/37963/large/ROSA_TOKEN_3.png?1716183016",
-      "current_price": 0.00051644,
-      "market_cap": 51643971.0,
-      "market_cap_rank": 463,
-      "total_volume": 5211242.0,
-      "change_24h_pct": 113.77691,
-      "change_48h_pct": 113.77691,
+      "current_price": 0.00052102,
+      "market_cap": 52101622.0,
+      "market_cap_rank": 461,
+      "total_volume": 5448258.0,
+      "change_24h_pct": 111.26612,
+      "change_48h_pct": 111.26612,
       "price_48h_ago": null
     },
     {
@@ -46,69 +59,82 @@
       "symbol": "prl",
       "name": "Perle",
       "image": "https://coin-images.coingecko.com/coins/images/102172470/large/Symbol_-_Mango_%281%29.png?1773500485",
-      "current_price": 0.304186,
-      "market_cap": 53151092.0,
-      "market_cap_rank": 462,
-      "total_volume": 31655883.0,
-      "change_24h_pct": 69.00017,
-      "change_48h_pct": 69.00017,
-      "price_48h_ago": null
-    },
-    {
-      "id": "axelar",
-      "symbol": "axl",
-      "name": "Axelar",
-      "image": "https://coin-images.coingecko.com/coins/images/27277/large/V-65_xQ1_400x400.jpeg?1696526329",
-      "current_price": 0.074662,
-      "market_cap": 85199438.0,
-      "market_cap_rank": 335,
-      "total_volume": 272569815.0,
-      "change_24h_pct": 60.64125,
-      "change_48h_pct": 60.64125,
+      "current_price": 0.317201,
+      "market_cap": 54921939.0,
+      "market_cap_rank": 452,
+      "total_volume": 33517212.0,
+      "change_24h_pct": 77.15113,
+      "change_48h_pct": 77.15113,
       "price_48h_ago": null
     }
   ],
   "analyses": [
     {
-      "coin_id": "siren-2",
-      "symbol": "SIREN",
-      "pump_thesis": "SIREN is experiencing a speculative meme-driven pump on BNB Chain, likely amplified by its Binance Alpha Spotlight listing which funnels retail attention and potential airdrop/reward incentives toward low-cap BNB memes.",
+      "coin_id": "ordinals",
+      "symbol": "ORDI",
+      "pump_thesis": "비트코인 BRC-20 생태계에 대한 투기적 재관심과 밈코인 섹터 로테이션이 결합되어 ORDI의 급격한 단기 상승을 견인했다.",
       "drivers": [
-        "Binance Alpha Spotlight designation dramatically increases visibility and retail access, historically triggering sharp price spikes in featured tokens",
-        "Four.meme ecosystem narrative on BNB Chain has driven coordinated buying in dog/meme-themed BNB tokens during broader crypto market upswings",
-        "Volume-to-market-cap ratio (~6.5%) suggests genuine speculative trading activity rather than pure wash trading, indicating real retail participation",
-        "No fundamental catalyst identified — move is entirely narrative and listing-driven"
+        "시장 내 저시가총액 밈코인 및 BRC-20 토큰에 대한 투기적 수요 급증 — 어제의 시장 내러티브와 직접 부합",
+        "거래량(24h $1.4B)이 시총($205M)의 약 6.8배에 달해 단기 투기 세력의 대규모 유입을 시사",
+        "비트코인 생태계 관련 서사 재점화로 BRC-20 대표 토큰으로서 ORDI가 수혜를 집중적으로 받는 구조",
+        "솔라나 생태계 카테고리 중복 태깅으로 크로스체인 투기 자금 유입 가능성"
       ],
       "risks": [
-        "Binance Alpha Spotlight pumps are historically short-lived; rapid mean reversion is common once spotlight attention fades",
-        "Zero project description or verifiable fundamentals — token is effectively pure speculation with no disclosed utility",
-        "High concentration risk typical of BNB meme launches (team/early wallets likely hold large supply)",
-        "Regulatory risk: BNB Chain meme tokens face scrutiny as potential unregistered securities or pump-and-dump vehicles"
+        "압도적인 거래량 대비 시총 비율은 전형적인 단기 펌프 앤 덤프 패턴으로, 유동성 급감 시 급격한 가격 되돌림 위험",
+        "BRC-20 생태계는 실질적인 온체인 사용 지표나 프로토콜 펀더멘털 개선 없이 내러티브에만 의존하여 지속 가능성 낮음",
+        "비트코인 네트워크 수수료 변동성으로 BRC-20 거래 비용 급등 시 수요 급감 가능",
+        "최근 관련 뉴스 및 공식 개발 발표가 전무하여 펀더멘털 근거 없는 순수 투기적 이동으로 판단"
       ],
       "category_tags": [
-        "Meme"
+        "Meme",
+        "L1"
       ],
-      "confidence": 0.62,
+      "confidence": 0.52,
       "news_used": []
     },
     {
-      "coin_id": "ordinals",
-      "symbol": "ORDI",
-      "pump_thesis": "ORDI is surging on an extreme volume-to-market-cap ratio (~7x), suggesting a coordinated or exchange-driven speculative squeeze on the leading BRC-20/Bitcoin Ordinals token amid renewed Bitcoin ecosystem narrative momentum.",
+      "coin_id": "siren-2",
+      "symbol": "SIREN",
+      "pump_thesis": "Binance Alpha Spotlight 선정 및 Four.meme BNB 밈코인 생태계 내 투기적 밈코인 열풍이 SIREN의 폭발적 상승을 촉발했다.",
       "drivers": [
-        "Volume of $1.26B against a $176M market cap (~7x ratio) is a classic signature of a short squeeze or leveraged long cascade on derivatives markets",
-        "Bitcoin ecosystem narrative tends to re-activate during BTC price strength, drawing speculative flows into BRC-20 tokens as high-beta Bitcoin proxies",
-        "ORDI retains first-mover brand recognition as the original BRC-20 token, making it the default vehicle for Ordinals/inscription speculation",
-        "Multi-chain listing (Solana ecosystem tag suggests wrapped/bridged versions) increases accessibility and speculative surface area"
+        "Binance Alpha Spotlight 카테고리 포함으로 바이낸스 플랫폼 내 노출도 및 투자자 관심 급증",
+        "BNB Chain 및 Four.meme 생태계 밈코인 섹터 전반의 투기적 자금 집중 — 어제의 시장 내러티브와 직접 일치",
+        "시총 $1.48B 규모에도 불구하고 24h 거래량 약 $100M 수준으로 상대적으로 건전한 거래량/시총 비율 유지",
+        "BNB Chain 생태계 내 밈코인 유동성 집중 현상으로 대표 토큰에 자금 쏠림 효과 발생"
       ],
       "risks": [
-        "Volume wildly exceeds market cap — move is almost certainly leverage/derivative-driven and subject to violent reversal once funding rates normalize",
-        "BRC-20 protocol has no intrinsic utility beyond speculation; any sustained rally depends entirely on continued narrative momentum",
-        "Bitcoin network congestion or a shift in miner fee economics could dampen Ordinals activity fundamentally",
-        "Thin order books at these price levels amplify both upside and downside; liquidity can evaporate rapidly"
+        "Binance Alpha 선정 효과는 단기적이며, 후속 펀더멘털 개선 없이는 급격한 차익실현 매물 출회 위험",
+        "밈코인 특성상 팀 구성, 로드맵, 실사용 사례 등 프로젝트 기초체력에 대한 정보가 전무하여 내재가치 평가 불가",
+        "바이낸스 정책 변경 또는 규제 개입 시 BNB 밈코인 생태계 전반 유동성 급감 위험",
+        "단일 거래소(바이낸스) 생태계 의존도가 높아 중앙화 리스크 및 플랫폼 집중 위험 존재"
       ],
       "category_tags": [
         "Meme"
+      ],
+      "confidence": 0.61,
+      "news_used": []
+    },
+    {
+      "coin_id": "based-one",
+      "symbol": "BASED",
+      "pump_thesis": "Hyperliquid 생태계 기반 크로스에셋 금융 슈퍼앱으로서의 서사와 Binance Alpha Spotlight 선정이 복합적으로 작용하여 BASED의 급등을 이끌었다.",
+      "drivers": [
+        "Binance Alpha Spotlight 선정으로 바이낸스 생태계 내 대규모 노출 및 신규 투자자 유입",
+        "Hyperliquid 생태계 토큰으로서 HyperEVM 및 퍼페추얼 DEX 서사의 수혜를 동시에 받는 구조",
+        "거래량($442M)이 시총($47M)의 약 9.4배에 달하는 극단적 비율로 단기 투기 자금 대규모 유입 확인",
+        "크립토, 주식, 원자재를 단일 인터페이스에서 거래하고 Visa 카드 연동 등 실용적 제품 서사가 투자자 관심 자극",
+        "어제의 크로스체인 상호운용성 내러티브와 부합하는 멀티체인(이더리움·BNB·Hyperliquid) 포지셔닝"
+      ],
+      "risks": [
+        "시총 대비 거래량 비율이 9배 이상으로 과도한 레버리지성 투기 수요 반영, 가격 되돌림 시 낙폭 심화 위험",
+        "Binance Alpha 선정 효과 소멸 후 지속적인 유저 유입 및 실제 제품 채택 없이는 가격 유지 불가",
+        "Visa 카드 연동, 주식 거래 등 복잡한 기능 구현에 따른 규제 리스크(증권법, 결제 라이선스 등) 잠재",
+        "Hyperliquid 생태계 의존도가 높아 해당 생태계 침체 또는 보안 사고 발생 시 연쇄 하락 위험",
+        "관련 공식 뉴스 및 개발 업데이트 부재로 펀더멘털 기반 상승인지 순수 투기인지 검증 불가"
+      ],
+      "category_tags": [
+        "DeFi",
+        "DEX"
       ],
       "confidence": 0.55,
       "news_used": []
@@ -116,77 +142,56 @@
     {
       "coin_id": "rosa-inu",
       "symbol": "ROSA",
-      "pump_thesis": "ROSA is a low-cap dog-themed meme token experiencing a community/social-media-driven speculative pump with no identifiable fundamental catalyst, consistent with coordinated retail buying in the broader meme token rotation.",
+      "pump_thesis": "카테고리, 설명, 뉴스 정보가 전무한 상태에서 저시가총액 밈코인 투기 열풍에 편승한 무근거 유동성 펌프로 판단된다.",
       "drivers": [
-        "Broader meme coin sector rotation — when leading memes pump, retail capital cascades into lower-cap alternatives seeking higher multiples",
-        "Multi-chain presence (Solana, BNB, Arbitrum) increases discoverability across different retail ecosystems and DEX aggregators",
-        "Community-driven narrative (exclusive holder events, merchandise) provides social cohesion that can temporarily amplify buying coordination",
-        "Volume-to-market-cap ratio (~10%) indicates active speculative trading, not wash trading alone"
+        "시장 전반의 저시가총액 밈코인 투기 심리 확산으로 관련 토큰에 무차별적 자금 유입",
+        "24h 거래량($5.4M) 대비 시총($52M) 비율은 약 0.1배로, 소수 세력의 집중 매수로 인한 가격 조작 가능성 시사",
+        "개 이름(Inu) 계열 밈코인에 대한 반복적 투기 사이클 내에서 순환 자금 유입 가능성"
       ],
       "risks": [
-        "No verifiable development milestones, revenue, or protocol utility — the entire value proposition is community sentiment, which is highly volatile",
-        "Small market cap ($51M) makes the token trivially easy to manipulate; whale exits can cause 50%+ drawdowns within hours",
-        "Multi-chain fragmentation can create arbitrage inefficiencies and liquidity fragmentation, increasing slippage risk for larger holders",
-        "Merchandise and event promises are unverifiable soft commitments with no on-chain accountability mechanism"
+        "프로젝트 설명, 팀, 로드맵, 공식 뉴스 등 기초 정보가 전무하여 러그풀 및 사기 가능성 배제 불가",
+        "낮은 거래량과 극단적 가격 상승의 조합은 전형적인 소규모 세력에 의한 시세 조종 패턴으로, 일반 투자자 피해 위험 높음",
+        "카테고리 미분류로 생태계 지원 또는 거래소 추가 상장 등 외부 촉매 기대 불가",
+        "유동성 극히 낮아 소량 매도에도 가격 급락 가능성 존재"
       ],
       "category_tags": [
         "Meme"
       ],
-      "confidence": 0.35,
+      "confidence": 0.22,
       "news_used": []
     },
     {
       "coin_id": "perle",
       "symbol": "PRL",
-      "pump_thesis": "PRL is experiencing a low-liquidity speculative pump with no identifiable news catalyst, category classification, or project description — consistent with a coordinated micro-cap manipulation or early-stage social media-driven rotation.",
+      "pump_thesis": "카테고리와 뉴스 정보가 전무한 상황에서 시장 밈코인 투기 열풍에 편승한 근거 불명확 상승으로, 저유동성 환경에서의 투기적 펌프로 추정된다.",
       "drivers": [
-        "Volume-to-market-cap ratio (~60%) is extremely elevated, suggesting intense short-term speculative interest relative to project size",
-        "Absence of any project description or category tags suggests very early-stage or stealth project, which often attracts degenerate speculative capital seeking asymmetric returns",
-        "Broader altcoin risk-on environment may be lifting all low-cap tokens indiscriminately during market upswings"
+        "시장 전반의 저시가총액 토큰 투기 심리 확산 속 소규모 유동성 토큰에 대한 무차별적 자금 유입",
+        "24h 거래량($33.5M) 대비 시총($54.9M) 비율 약 0.6배로 비교적 활발한 거래 활동 확인되나 펀더멘털 근거 불명확",
+        "거래소 상장 확대 또는 인플루언서 언급 등 외부 촉매 가능성 있으나 검증 불가"
       ],
       "risks": [
-        "Complete absence of project metadata, description, and news makes this effectively uninvestigable — highest possible information risk",
-        "60% volume-to-market-cap in 24h with no news is a hallmark pattern of pump-and-dump schemes; exit liquidity risk is extreme",
-        "No category tags suggest possible exchange listing issues, regulatory ambiguity, or deliberate opacity by developers",
-        "Concentration risk is unknowable without on-chain analysis but statistically very high for anonymous micro-cap tokens"
+        "프로젝트 설명, 사용 사례, 팀 정보 등 기초 데이터 전무로 투자 의사결정에 필요한 최소한의 검증 불가",
+        "카테고리 미분류로 어떤 생태계나 섹터에도 속하지 않아 지속적인 관심 유지 어려움",
+        "급등 후 차익실현 매물 집중 출회 시 유동성 부족으로 가격 급락 위험",
+        "관련 뉴스 및 개발 업데이트 부재로 지속적 상승 모멘텀 유지 근거 없음"
       ],
       "category_tags": [
         "Meme"
       ],
       "confidence": 0.2,
       "news_used": []
-    },
-    {
-      "coin_id": "axelar",
-      "symbol": "AXL",
-      "pump_thesis": "AXL is surging primarily on speculative momentum and potential renewed interest in cross-chain interoperability infrastructure, with an unusually high volume-to-market-cap ratio suggesting possible exchange listing, derivatives activity, or sector rotation into Interop protocols.",
-      "drivers": [
-        "Volume of $272M against an $85M market cap (~3.2x ratio) indicates significant derivatives or spot speculation well beyond organic usage, possibly triggered by an exchange listing announcement or futures open interest expansion",
-        "Interoperability sector benefits from broader multi-chain adoption narratives; renewed institutional interest in cross-chain messaging could drive re-rating",
-        "Axelar is an established protocol with real cross-chain infrastructure used by major DeFi applications, giving speculative flows a fundamental peg to anchor to",
-        "Potential macro catalyst: any major ecosystem (e.g., a large L1 or L2) integrating Axelar's General Message Passing would serve as a legitimate fundamental driver, though no specific news is confirmed in the provided data"
-      ],
-      "risks": [
-        "No news headline confirmed — without a verifiable catalyst, the move may be pure technical/derivative squeeze that reverses quickly",
-        "Axelar competes with well-funded rivals (LayerZero, Wormhole, Chainlink CCIP); any competitive announcement from peers could deflate the narrative",
-        "Market cap has declined significantly from previous cycle highs, suggesting structural selling pressure from early investors and possible ongoing token unlocks",
-        "Cross-chain bridge protocols carry persistent smart contract and validator security risk; a security incident would be severely punitive to price"
-      ],
-      "category_tags": [
-        "Interop"
-      ],
-      "confidence": 0.48,
-      "news_used": []
     }
   ],
   "narrative": {
-    "current_narrative": "The market is rewarding low-cap meme token speculation, particularly within the BNB Chain and Bitcoin Ordinals ecosystems, with a secondary signal emerging in cross-chain interoperability.",
+    "current_narrative": "시장은 현재 밈코인 투기 열풍과 Binance Alpha Spotlight 효과를 중심으로 저시가총액 무근거 펌프를 집중적으로 보상하고 있다.",
     "hot_sectors": [
       "Meme",
+      "DeFi/DEX"
+    ],
+    "cooling_sectors": [
       "Interop"
     ],
-    "cooling_sectors": [],
-    "investment_insight": "Only a single day of data is available, which sharply limits conviction — any read here should be treated as directional noise rather than a confirmed trend. The meme sector dominates today's gainers (4 of 5 tokens) with low-to-moderate confidence scores across the board, suggesting fragile, momentum-driven moves rather than structural accumulation; avoid chasing these without confirmation over multiple sessions. Watch for AXL and the Interop category to either sustain volume or fade — a second consecutive day of Interop representation would be the minimum signal needed to warrant an overweight consideration.",
-    "week_over_week_change": "Insufficient historical data to assess week-over-week rotation; today's snapshot is the only available data point."
+    "investment_insight": "밈코인 섹터가 이틀 연속 탑게이너 대부분을 차지하고 있으나 신뢰도 점수가 전반적으로 낮아(0.20~0.62) 촉매 없는 투기성 유동성 펌프 성격이 강하므로, 단기 모멘텀 트레이딩 외 포지션 보유는 위험하다. Binance Alpha Spotlight 연계 토큰(SIREN, BASED)은 상대적으로 명확한 촉매가 있어 밈 섹터 내 선별적 초단기 익스포저는 가능하나, 비중은 최소화해야 한다. 밈 로테이션 둔화 또는 BTC 도미넌스 급등 시 해당 포지션을 즉시 청산하는 것이 유효한 리스크 관리 신호가 될 것이다.",
+    "week_over_week_change": "전일 대비 Interop(AXL) 섹터가 탑게이너에서 사라지고, DeFi/DEX(BASED)가 새롭게 진입하며 밈코인 지배력은 유지되는 가운데 섹터 다양성이 소폭 확대되었다."
   }
 }

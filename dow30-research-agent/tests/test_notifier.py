@@ -4,11 +4,12 @@ from __future__ import annotations
 from datetime import UTC, datetime
 
 from src.models import DailyReport, GainerStock, NarrativeInsight, StockAnalysis
-from src.notifier import _esc, _format_message
+from src.notifier import _h, _format_message
 
 
-def test_esc():
-    assert _esc("Hello (world)!") == "Hello \\(world\\)\\!"
+def test_h_escapes_html_chars():
+    assert _h("a < b & c") == "a &lt; b &amp; c"
+    assert _h("use <script>") == "use &lt;script&gt;"
 
 
 def test_format_message():
@@ -28,6 +29,7 @@ def test_format_message():
     )
     msg = _format_message(report, "https://example.github.io/dow30/")
     assert "다우30" in msg
+    assert "<b>" in msg
     assert "UNH" in msg
-    assert "\\+6\\.5" in msg
-    assert "report.html?date=2026-04-16" in msg.replace("\\", "")
+    assert "+6.5%" in msg
+    assert "report.html?date=2026-04-16" in msg
