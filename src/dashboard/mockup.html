@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<title>MAIS Terminal — Bloomberg-Style Mockup</title>
+<style>
+  :root {
+    --bg: #000000;
+    --bg-alt: #0b0b0b;
+    --bg-panel: #0f0f0f;
+    --border: #2a2a2a;
+    --border-hot: #ff8a00;
+    --amber: #ff8a00;
+    --amber-dim: #b86200;
+    --text: #e9d9b8;
+    --text-dim: #9a8a6a;
+    --up: #2ecc71;
+    --down: #ff4d4d;
+    --blue: #4aa3ff;
+    --violet: #c792ea;
+    --yellow: #f5d76e;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Consolas", "Menlo", "DejaVu Sans Mono", "Courier New", monospace;
+    font-size: 12px;
+    line-height: 1.35;
+  }
+  a { color: var(--amber); text-decoration: none; }
+
+  /* Top header */
+  .topbar {
+    display: grid;
+    grid-template-columns: 200px 1fr 280px;
+    align-items: center;
+    height: 28px;
+    background: #1a1206;
+    border-bottom: 1px solid var(--border-hot);
+    padding: 0 8px;
+    color: var(--amber);
+    font-weight: bold;
+    letter-spacing: 0.5px;
+  }
+  .topbar .brand { display: flex; gap: 8px; align-items: center; }
+  .topbar .brand .dot { width: 10px; height: 10px; background: var(--amber); display: inline-block; }
+  .topbar .clock { text-align: right; color: var(--text); font-weight: normal; }
+
+  /* Command line */
+  .cmdline {
+    display: grid;
+    grid-template-columns: 60px 1fr 120px;
+    align-items: center;
+    height: 26px;
+    background: #150d03;
+    border-bottom: 1px solid var(--border);
+    padding: 0 8px;
+    color: var(--amber);
+  }
+  .cmdline input {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--amber);
+    font-family: inherit;
+    font-size: 12px;
+    width: 100%;
+  }
+  .cmdline .hint { color: var(--text-dim); text-align: right; }
+
+  /* Ticker tape */
+  .tape {
+    display: flex;
+    overflow: hidden;
+    height: 22px;
+    background: #0a0603;
+    border-bottom: 1px solid var(--border);
+    align-items: center;
+    white-space: nowrap;
+    font-size: 11px;
+  }
+  .tape .item { padding: 0 12px; border-right: 1px dashed #1a1a1a; }
+  .tape .sym { color: var(--amber); font-weight: bold; }
+  .up { color: var(--up); }
+  .down { color: var(--down); }
+  .dim { color: var(--text-dim); }
+
+  /* Grid */
+  .grid {
+    display: grid;
+    grid-template-columns: 1.1fr 1.4fr 1.1fr;
+    grid-template-rows: 230px 230px 230px;
+    gap: 4px;
+    padding: 4px;
+    height: calc(100vh - 28px - 26px - 22px - 22px);
+    min-height: 720px;
+  }
+
+  .panel {
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+  .panel .title {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 3px 8px;
+    background: #160f04;
+    border-bottom: 1px solid var(--amber-dim);
+    color: var(--amber);
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    font-size: 11px;
+  }
+  .panel .title .code { color: var(--text-dim); font-weight: normal; }
+  .panel .body { padding: 6px 8px; overflow: auto; flex: 1; }
+
+  /* Panel spans */
+  .span-col-2 { grid-column: span 2; }
+  .span-row-2 { grid-row: span 2; }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  th, td { padding: 2px 6px; text-align: right; }
+  th:first-child, td:first-child { text-align: left; }
+  th { color: var(--text-dim); font-weight: normal; border-bottom: 1px dotted #333; }
+  tbody tr:hover { background: #1a1405; }
+  tbody tr.sel { background: #241801; }
+
+  /* Agent cards */
+  .agents { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+  .agent {
+    border: 1px solid var(--border);
+    padding: 4px 6px;
+    background: #0a0a0a;
+  }
+  .agent .hdr { display: flex; justify-content: space-between; color: var(--amber); font-weight: bold; }
+  .agent .row { display: flex; justify-content: space-between; }
+  .agent .conf { height: 4px; background: #222; margin-top: 3px; position: relative; }
+  .agent .conf > div { height: 100%; background: var(--amber); }
+  .badge { display: inline-block; padding: 0 4px; border: 1px solid; font-size: 10px; }
+  .badge.buy { color: var(--up); border-color: var(--up); }
+  .badge.sell { color: var(--down); border-color: var(--down); }
+  .badge.hold { color: var(--yellow); border-color: var(--yellow); }
+
+  /* Risk gauges */
+  .gauges { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .gauge { border: 1px solid var(--border); padding: 4px 6px; }
+  .gauge .lbl { color: var(--text-dim); font-size: 10px; }
+  .gauge .val { font-size: 16px; color: var(--amber); font-weight: bold; }
+  .gauge .bar { height: 5px; background: #222; margin-top: 3px; position: relative; }
+  .gauge .bar > div { height: 100%; background: linear-gradient(90deg, var(--up), var(--yellow), var(--down)); }
+  .gauge .bar .marker { position: absolute; top: -2px; width: 2px; height: 9px; background: var(--text); }
+
+  /* Chart */
+  .chart {
+    width: 100%; height: 100%;
+    background:
+      linear-gradient(rgba(255,138,0,.06) 1px, transparent 1px) 0 0 / 100% 20px,
+      linear-gradient(90deg, rgba(255,138,0,.06) 1px, transparent 1px) 0 0 / 40px 100%;
+  }
+
+  /* Heatmap */
+  .heatmap { display: grid; grid-template-columns: repeat(5, 1fr); grid-auto-rows: 34px; gap: 2px; }
+  .cell { display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 2px; font-size: 10px; }
+  .cell .s { font-weight: bold; }
+
+  /* News */
+  .news .row { padding: 3px 0; border-bottom: 1px dotted #262626; display: grid; grid-template-columns: 52px 54px 1fr; gap: 6px; }
+  .news .row .t { color: var(--text-dim); }
+  .news .row .src { color: var(--violet); }
+
+  /* Log */
+  .log .line { font-size: 11px; }
+  .log .line .t { color: var(--text-dim); }
+  .log .line .lvl-info { color: var(--blue); }
+  .log .line .lvl-warn { color: var(--yellow); }
+  .log .line .lvl-err { color: var(--down); }
+  .log .line .lvl-exec { color: var(--amber); }
+
+  /* Footer */
+  .footer {
+    height: 22px;
+    background: #0a0603;
+    border-top: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0 8px;
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+  .footer .env { color: var(--amber); font-weight: bold; }
+
+  /* F-key menu */
+  .fkeys {
+    display: flex; gap: 4px;
+  }
+  .fkey { border: 1px solid var(--border); padding: 0 6px; color: var(--text-dim); }
+  .fkey b { color: var(--amber); margin-right: 4px; }
+</style>
+</head>
+<body>
+
+<!-- ============ TOP BAR ============ -->
+<div class="topbar">
+  <div class="brand"><span class="dot"></span>MAIS&nbsp;TERMINAL</div>
+  <div class="fkeys">
+    <span class="fkey"><b>F1</b>HELP</span>
+    <span class="fkey"><b>F2</b>MKT</span>
+    <span class="fkey"><b>F3</b>PORT</span>
+    <span class="fkey"><b>F4</b>AGENT</span>
+    <span class="fkey"><b>F5</b>RISK</span>
+    <span class="fkey"><b>F6</b>NEWS</span>
+    <span class="fkey"><b>F7</b>BACKTEST</span>
+    <span class="fkey"><b>F8</b>REFLECT</span>
+    <span class="fkey"><b>F9</b>EXEC</span>
+  </div>
+  <div class="clock">2026-04-17 FRI&nbsp;&nbsp;15:30:14 KST&nbsp;&nbsp;<span class="up">●</span> LIVE</div>
+</div>
+
+<!-- ============ COMMAND LINE ============ -->
+<div class="cmdline">
+  <div>&lt;GO&gt;</div>
+  <input value="005930 KS EQUITY DES" spellcheck="false"/>
+  <div class="hint">TYPE &amp; PRESS &lt;ENTER&gt;</div>
+</div>
+
+<!-- ============ TICKER TAPE ============ -->
+<div class="tape">
+  <div class="item"><span class="sym">KOSPI</span> 2,712.40 <span class="up">+0.84%</span></div>
+  <div class="item"><span class="sym">KOSDAQ</span> 872.10 <span class="down">-0.31%</span></div>
+  <div class="item"><span class="sym">USD/KRW</span> 1,378.20 <span class="up">+0.12%</span></div>
+  <div class="item"><span class="sym">005930 삼성전자</span> 78,900 <span class="up">+1.29%</span></div>
+  <div class="item"><span class="sym">000660 SK하이닉스</span> 184,500 <span class="up">+2.39%</span></div>
+  <div class="item"><span class="sym">035420 NAVER</span> 201,000 <span class="down">-0.74%</span></div>
+  <div class="item"><span class="sym">051910 LG화학</span> 412,500 <span class="down">-0.48%</span></div>
+  <div class="item"><span class="sym">207940 삼성바이오</span> 891,000 <span class="up">+1.02%</span></div>
+  <div class="item"><span class="sym">KS10Y</span> 3.184 <span class="down">-0.3bp</span></div>
+  <div class="item"><span class="sym">WTI</span> 79.42 <span class="up">+0.6%</span></div>
+  <div class="item"><span class="sym">BTC/KRW</span> 98.1M <span class="down">-1.1%</span></div>
+</div>
+
+<!-- ============ MAIN GRID ============ -->
+<div class="grid">
+
+  <!-- 1. PORTFOLIO OVERVIEW -->
+  <div class="panel">
+    <div class="title">PORTFOLIO NAV &amp; P&amp;L <span class="code">PORT&lt;GO&gt;</span></div>
+    <div class="body">
+      <div style="display:flex; justify-content:space-between;">
+        <div>
+          <div class="dim" style="font-size:10px;">NAV (KRW)</div>
+          <div style="font-size:18px; color:var(--amber); font-weight:bold;">₩ 112,480,300</div>
+        </div>
+        <div style="text-align:right;">
+          <div class="dim" style="font-size:10px;">DAY P&amp;L</div>
+          <div class="up" style="font-size:16px; font-weight:bold;">+₩ 945,120 (+0.85%)</div>
+        </div>
+      </div>
+      <div class="gauges" style="margin-top:6px;">
+        <div class="gauge"><div class="lbl">CAGR vs KOSPI</div><div class="val up">+7.4%p</div></div>
+        <div class="gauge"><div class="lbl">MTD RETURN</div><div class="val up">+3.12%</div></div>
+        <div class="gauge"><div class="lbl">SHARPE (90d)</div><div class="val">1.42</div></div>
+        <div class="gauge"><div class="lbl">INFO RATIO</div><div class="val">0.71</div></div>
+      </div>
+      <table style="margin-top:6px;">
+        <tr><td class="dim">Gross Exp.</td><td>98.2%</td><td class="dim">Net Exp.</td><td>94.8%</td></tr>
+        <tr><td class="dim">Cash</td><td>5.2%</td><td class="dim">Leverage</td><td>1.00x</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- 2. KOSPI vs PORTFOLIO CHART (spans 2 cols) -->
+  <div class="panel">
+    <div class="title">PORTFOLIO vs KOSPI <span class="code">GIP&lt;GO&gt;</span></div>
+    <div class="body" style="padding:0;">
+      <svg viewBox="0 0 800 200" preserveAspectRatio="none" style="width:100%; height:100%; display:block;">
+        <defs>
+          <pattern id="grid" width="40" height="20" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 20" fill="none" stroke="#221a08" stroke-width="1"/>
+          </pattern>
+        </defs>
+        <rect width="800" height="200" fill="url(#grid)" />
+        <!-- KOSPI (dim amber) -->
+        <polyline fill="none" stroke="#b86200" stroke-width="1.2"
+          points="0,140 40,138 80,135 120,142 160,130 200,128 240,132 280,125 320,130 360,122 400,118 440,120 480,115 520,118 560,112 600,108 640,110 680,105 720,108 760,102 800,98"/>
+        <!-- Portfolio (bright amber) -->
+        <polyline fill="none" stroke="#ff8a00" stroke-width="1.6"
+          points="0,140 40,132 80,128 120,125 160,118 200,110 240,115 280,100 320,95 360,90 400,85 440,82 480,74 520,70 560,60 600,52 640,55 680,45 720,42 760,32 800,28"/>
+        <!-- zero baseline -->
+        <line x1="0" y1="140" x2="800" y2="140" stroke="#444" stroke-dasharray="2 3"/>
+        <text x="6" y="18" fill="#ff8a00" font-family="monospace" font-size="11">MAIS  +18.4% YTD</text>
+        <text x="6" y="32" fill="#b86200" font-family="monospace" font-size="11">KOSPI +9.1%  YTD</text>
+        <text x="760" y="18" fill="#9a8a6a" font-family="monospace" font-size="10" text-anchor="end">1D · 1W · 1M · 3M · YTD · 1Y</text>
+      </svg>
+    </div>
+  </div>
+
+  <!-- 3. RISK GUARD -->
+  <div class="panel">
+    <div class="title">RISK GUARD <span class="code">RSK&lt;GO&gt;</span></div>
+    <div class="body">
+      <div class="gauge">
+        <div class="lbl">MAX DRAWDOWN (180d)  <span class="dim">limit 15.0%</span></div>
+        <div class="val down">-8.2%</div>
+        <div class="bar"><div style="width:54.6%;"></div><div class="marker" style="left:54.6%"></div></div>
+      </div>
+      <div class="gauge" style="margin-top:4px;">
+        <div class="lbl">VAR 95% (1D)  <span class="dim">limit 2.5%</span></div>
+        <div class="val">-1.48%</div>
+        <div class="bar"><div style="width:59.2%;"></div><div class="marker" style="left:59.2%"></div></div>
+      </div>
+      <div class="gauge" style="margin-top:4px;">
+        <div class="lbl">BETA vs KOSPI</div>
+        <div class="val">0.92</div>
+      </div>
+      <table style="margin-top:6px;">
+        <tr><td class="dim">Max Pos Wt.</td><td>9.4%</td><td class="dim">Sector Conc.</td><td>28.1%</td></tr>
+        <tr><td class="dim">Kill Switch</td><td class="up">ARMED</td><td class="dim">Circuit</td><td class="up">OK</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- 4. WATCHLIST / POSITIONS (spans 2 rows) -->
+  <div class="panel span-row-2">
+    <div class="title">POSITIONS &amp; WATCHLIST <span class="code">MON&lt;GO&gt;</span></div>
+    <div class="body">
+      <table>
+        <thead>
+          <tr><th>TICKER</th><th>WT%</th><th>LAST</th><th>CHG%</th><th>P&amp;L</th><th>SIG</th></tr>
+        </thead>
+        <tbody>
+          <tr class="sel"><td>005930 삼성전자</td><td>9.4</td><td>78,900</td><td class="up">+1.29</td><td class="up">+412k</td><td><span class="badge buy">BUY</span></td></tr>
+          <tr><td>000660 SK하이닉스</td><td>8.1</td><td>184,500</td><td class="up">+2.39</td><td class="up">+680k</td><td><span class="badge buy">BUY</span></td></tr>
+          <tr><td>035420 NAVER</td><td>5.2</td><td>201,000</td><td class="down">-0.74</td><td class="down">-88k</td><td><span class="badge hold">HOLD</span></td></tr>
+          <tr><td>207940 삼성바이오</td><td>4.8</td><td>891,000</td><td class="up">+1.02</td><td class="up">+102k</td><td><span class="badge buy">BUY</span></td></tr>
+          <tr><td>051910 LG화학</td><td>4.1</td><td>412,500</td><td class="down">-0.48</td><td class="down">-41k</td><td><span class="badge hold">HOLD</span></td></tr>
+          <tr><td>005380 현대차</td><td>3.9</td><td>246,000</td><td class="up">+0.82</td><td class="up">+62k</td><td><span class="badge buy">BUY</span></td></tr>
+          <tr><td>068270 셀트리온</td><td>3.2</td><td>189,400</td><td class="up">+1.55</td><td class="up">+98k</td><td><span class="badge buy">BUY</span></td></tr>
+          <tr><td>006400 삼성SDI</td><td>2.8</td><td>318,500</td><td class="down">-1.12</td><td class="down">-76k</td><td><span class="badge sell">SELL</span></td></tr>
+          <tr><td>035720 카카오</td><td>2.4</td><td>47,150</td><td class="down">-0.62</td><td class="down">-18k</td><td><span class="badge hold">HOLD</span></td></tr>
+          <tr><td>028260 삼성물산</td><td>2.1</td><td>132,800</td><td class="up">+0.38</td><td class="up">+9k</td><td><span class="badge hold">HOLD</span></td></tr>
+          <tr><td>105560 KB금융</td><td>1.9</td><td>76,400</td><td class="up">+0.52</td><td class="up">+11k</td><td><span class="badge buy">BUY</span></td></tr>
+          <tr><td>055550 신한지주</td><td>1.7</td><td>48,950</td><td class="up">+0.20</td><td class="up">+4k</td><td><span class="badge hold">HOLD</span></td></tr>
+          <tr><td>012330 현대모비스</td><td>1.5</td><td>238,000</td><td class="down">-0.42</td><td class="down">-8k</td><td><span class="badge hold">HOLD</span></td></tr>
+          <tr><td>015760 한국전력</td><td>1.2</td><td>21,400</td><td class="up">+1.42</td><td class="up">+14k</td><td><span class="badge buy">BUY</span></td></tr>
+          <tr><td>034020 두산에너빌</td><td>1.0</td><td>23,200</td><td class="up">+2.11</td><td class="up">+22k</td><td><span class="badge buy">BUY</span></td></tr>
+          <tr><td>066570 LG전자</td><td>0.9</td><td>108,300</td><td class="down">-0.28</td><td class="down">-3k</td><td><span class="badge hold">HOLD</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 5. AGENT PROPOSALS (spans 2 cols) -->
+  <div class="panel span-col-2">
+    <div class="title">AGENT PROPOSALS &amp; CONSENSUS <span class="code">AGT&lt;GO&gt;</span></div>
+    <div class="body">
+      <div class="agents">
+        <div class="agent">
+          <div class="hdr"><span>◆ MACRO</span><span class="badge hold">RISK-OFF</span></div>
+          <div class="row"><span class="dim">view</span><span>duration↑, KRW hedge on</span></div>
+          <div class="row"><span class="dim">conf</span><span>72%</span></div>
+          <div class="conf"><div style="width:72%"></div></div>
+          <div class="dim" style="margin-top:3px;">"Fed dovish pivot likely; KRW carry favors exporters."</div>
+        </div>
+        <div class="agent">
+          <div class="hdr"><span>◆ SECTOR</span><span class="badge buy">OW SEMI/AI</span></div>
+          <div class="row"><span class="dim">picks</span><span>005930, 000660, 034020</span></div>
+          <div class="row"><span class="dim">conf</span><span>81%</span></div>
+          <div class="conf"><div style="width:81%"></div></div>
+          <div class="dim" style="margin-top:3px;">"HBM cycle upgrade; NVDA capex guidance supports KR supply chain."</div>
+        </div>
+        <div class="agent">
+          <div class="hdr"><span>◆ VALUE</span><span class="badge buy">LONG 105560</span></div>
+          <div class="row"><span class="dim">target</span><span>PBR 0.52 → 0.72</span></div>
+          <div class="row"><span class="dim">conf</span><span>66%</span></div>
+          <div class="conf"><div style="width:66%"></div></div>
+          <div class="dim" style="margin-top:3px;">"Bank sector FCF yield 11%, corp. reform beneficiary."</div>
+        </div>
+        <div class="agent">
+          <div class="hdr"><span>◆ QUANT</span><span class="badge sell">TRIM 006400</span></div>
+          <div class="row"><span class="dim">factor</span><span>mom -1.8σ, qual -0.9σ</span></div>
+          <div class="row"><span class="dim">conf</span><span>74%</span></div>
+          <div class="conf"><div style="width:74%"></div></div>
+          <div class="dim" style="margin-top:3px;">"12M momentum rank bottom-decile; EV demand downgrade."</div>
+        </div>
+      </div>
+      <div style="margin-top:6px; border-top:1px dotted #333; padding-top:5px;">
+        <div style="display:flex; justify-content:space-between;">
+          <div><span class="dim">◆ EXECUTION</span> — orders proposed: <b>6</b> · guards passed: <b>6/6</b> · estimated slippage: <b>7bp</b></div>
+          <div class="amber" style="color:var(--amber);">CONSENSUS → <b>REBALANCE APPROVED</b></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. SECTOR HEATMAP -->
+  <div class="panel">
+    <div class="title">KOSPI SECTOR HEATMAP <span class="code">GRRT&lt;GO&gt;</span></div>
+    <div class="body">
+      <div class="heatmap">
+        <div class="cell" style="background:#0a3d1f;"><span class="s">반도체</span><span class="up">+2.41</span></div>
+        <div class="cell" style="background:#0d4a26;"><span class="s">AI/SW</span><span class="up">+1.82</span></div>
+        <div class="cell" style="background:#072b16;"><span class="s">바이오</span><span class="up">+1.05</span></div>
+        <div class="cell" style="background:#05210f;"><span class="s">금융</span><span class="up">+0.58</span></div>
+        <div class="cell" style="background:#04180c;"><span class="s">유통</span><span class="up">+0.22</span></div>
+        <div class="cell" style="background:#031207;"><span class="s">철강</span><span class="up">+0.12</span></div>
+        <div class="cell" style="background:#1a1a1a;"><span class="s">통신</span><span class="dim">-0.04</span></div>
+        <div class="cell" style="background:#2c0b0b;"><span class="s">화학</span><span class="down">-0.42</span></div>
+        <div class="cell" style="background:#3a0d0d;"><span class="s">자동차부품</span><span class="down">-0.78</span></div>
+        <div class="cell" style="background:#4a1111;"><span class="s">2차전지</span><span class="down">-1.12</span></div>
+      </div>
+      <div class="dim" style="font-size:10px; margin-top:5px;">● market-cap weighted · 1D return · KOSPI 200 sectors</div>
+    </div>
+  </div>
+
+  <!-- 7. NEWS / MACRO FEED -->
+  <div class="panel">
+    <div class="title">NEWS &amp; MACRO FEED <span class="code">N&lt;GO&gt;</span></div>
+    <div class="body news">
+      <div class="row"><span class="t">15:28</span><span class="src">[연합]</span><span>BOK 총재 "물가 안정세… 5월 금리인하 가능성 열려"</span></div>
+      <div class="row"><span class="t">15:21</span><span class="src">[REUTERS]</span><span>TSMC Q1 beats; Korean HBM suppliers rally pre-market</span></div>
+      <div class="row"><span class="t">15:14</span><span class="src">[DART]</span><span>005930 자기주식 소각 공시 — 발행주식 1.2% 감소</span></div>
+      <div class="row"><span class="t">14:59</span><span class="src">[BBG]</span><span>Fed minutes signal patient approach; USD softens vs EM FX</span></div>
+      <div class="row"><span class="t">14:47</span><span class="src">[한경]</span><span>외국인 5일 연속 순매수, 반도체·금융주에 집중</span></div>
+      <div class="row"><span class="t">14:32</span><span class="src">[FT]</span><span>Samsung reportedly wins Nvidia HBM4 qualification — sources</span></div>
+      <div class="row"><span class="t">14:18</span><span class="src">[연합]</span><span>정부, 밸류업 2.0 세제 혜택 구체안 다음주 발표</span></div>
+      <div class="row"><span class="t">14:05</span><span class="src">[MAIS]</span><span>Macro agent: KRW 1,380 돌파 시 수출주 비중 +3%p 제안</span></div>
+      <div class="row"><span class="t">13:51</span><span class="src">[DART]</span><span>000660 2026 Q1 잠정실적: 매출 YoY +58%, OP 마진 36%</span></div>
+      <div class="row"><span class="t">13:40</span><span class="src">[BBG]</span><span>WTI crude +0.6% on OPEC+ extension chatter</span></div>
+    </div>
+  </div>
+
+  <!-- 8. ORDER BLOTTER / EXEC LOG -->
+  <div class="panel">
+    <div class="title">ORDER BLOTTER &amp; EXEC LOG <span class="code">BLOT&lt;GO&gt;</span></div>
+    <div class="body log">
+      <table>
+        <thead><tr><th>TIME</th><th>TICKER</th><th>SIDE</th><th>QTY</th><th>PX</th><th>STATE</th></tr></thead>
+        <tbody>
+          <tr><td>15:29:42</td><td>005930</td><td class="up">BUY</td><td>120</td><td>78,880</td><td class="up">FILLED</td></tr>
+          <tr><td>15:28:11</td><td>000660</td><td class="up">BUY</td><td>40</td><td>184,400</td><td class="up">FILLED</td></tr>
+          <tr><td>15:26:03</td><td>006400</td><td class="down">SELL</td><td>25</td><td>318,900</td><td class="up">FILLED</td></tr>
+          <tr><td>15:20:47</td><td>105560</td><td class="up">BUY</td><td>180</td><td>76,350</td><td class="yellow">PARTIAL</td></tr>
+          <tr><td>15:18:22</td><td>034020</td><td class="up">BUY</td><td>500</td><td>23,180</td><td class="up">FILLED</td></tr>
+        </tbody>
+      </table>
+      <div style="border-top:1px dotted #333; margin-top:5px; padding-top:4px;">
+        <div class="line"><span class="t">15:30:02 </span><span class="lvl-info">[INFO]</span> KIS WebSocket hb ok · latency 38ms</div>
+        <div class="line"><span class="t">15:29:42 </span><span class="lvl-exec">[EXEC]</span> order#A0912 FILLED @78,880 (slippage 2bp)</div>
+        <div class="line"><span class="t">15:29:10 </span><span class="lvl-warn">[WARN]</span> 006400 sector weight 14.2% nearing 15% cap</div>
+        <div class="line"><span class="t">15:28:11 </span><span class="lvl-exec">[EXEC]</span> order#A0911 FILLED @184,400 (slippage 5bp)</div>
+        <div class="line"><span class="t">15:15:00 </span><span class="lvl-info">[INFO]</span> Daily pipeline step 4/7 · ExecutionAgent guards OK</div>
+        <div class="line"><span class="t">15:00:00 </span><span class="lvl-info">[INFO]</span> Consensus vote: 4 BUY · 1 SELL · 0 HOLD → APPROVED</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ============ FOOTER ============ -->
+<div class="footer">
+  <div>KIS API: <span class="up">●</span> CONNECTED · REDIS: <span class="up">●</span> · CHROMA: <span class="up">●</span> · LLM: <span class="up">●</span></div>
+  <div>ENV: <span class="env">PAPER</span> · DRY-RUN OFF · pipeline v0.6.1 · last tick 38ms ago</div>
+  <div>REFLECTION QUEUE: 2 pending · MEM HIT 78% · session 0x9F3A</div>
+</div>
+
+</body>
+</html>
