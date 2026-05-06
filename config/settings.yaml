@@ -53,6 +53,13 @@ scheduler:
   reflection_time: "18:00"
   heartbeat_time: "08:00"
   jitter_seconds: 60              # +/- random jitter on order_time to avoid HFT pattern
+  # Intraday stops — runs every N minutes between start/end on weekdays.
+  # Stops-only (never adds or rebalances). Defends capital intraday so we
+  # don't have to wait until tomorrow's 09:05 to react to a -8% move.
+  intraday_stops_enabled: true
+  intraday_stops_start: "10:00"   # KST — after the 09:00 opening volatility
+  intraday_stops_end: "15:00"     # KST — before the 15:30 close
+  intraday_stops_interval_min: 30
 
 agents:
   macro:

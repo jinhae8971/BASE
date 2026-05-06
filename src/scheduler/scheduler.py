@@ -47,6 +47,16 @@ def build_scheduler() -> BlockingScheduler:
     refl_h, refl_m = _hhmm(str(get_setting("scheduler.reflection_time", "18:00")), "18:00")
     hb_h, hb_m = _hhmm(str(get_setting("scheduler.heartbeat_time", "08:00")), "08:00")
     jitter = int(get_setting("scheduler.jitter_seconds", 60))
+    intraday_enabled = bool(get_setting("scheduler.intraday_stops_enabled", True))
+    intraday_start_h, intraday_start_m = _hhmm(
+        str(get_setting("scheduler.intraday_stops_start", "10:00")), "10:00"
+    )
+    intraday_end_h, _intraday_end_m = _hhmm(
+        str(get_setting("scheduler.intraday_stops_end", "15:00")), "15:00"
+    )
+    intraday_interval = max(
+        5, int(get_setting("scheduler.intraday_stops_interval_min", 30))
+    )
 
     def _research_job() -> None:
         from scheduler.daily_pipeline import research_phase
@@ -96,6 +106,14 @@ def build_scheduler() -> BlockingScheduler:
         except Exception as e:
             log.error("scheduler.morning_report.failed", error=str(e))
 
+    def _intraday_stops_job() -> None:
+        from scheduler.daily_pipeline import intraday_stops_phase
+
+        try:
+            intraday_stops_phase()
+        except Exception as e:
+            log.error("scheduler.intraday_stops.failed", error=str(e))
+
     def _heartbeat_job() -> None:
         from scheduler.morning_report import heartbeat
 
@@ -137,6 +155,26 @@ def build_scheduler() -> BlockingScheduler:
         CronTrigger(hour=hb_h, minute=hb_m),
         id="heartbeat",
     )
+    if intraday_enabled:
+        # Build a comma-separated minute list (e.g. "0,30") for the cron, and
+        # an hour range that excludes the lunch-break-hour-only edge case.
+        if intraday_interval >= 60:
+            minute_list = "0"
+        else:
+            minutes = list(range(intraday_start_m, 60, intraday_interval))
+            minute_list = ",".join(str(m) for m in minutes)
+        # Hour range is end_h - 1 inclusive (the last cron fires at end_h:00,
+        # which is intraday_end's first minute → keep it in the range).
+        hour_expr = f"{intraday_start_h}-{intraday_end_h}"
+        sched.add_job(
+            _intraday_stops_job,
+            CronTrigger(
+                hour=hour_expr,
+                minute=minute_list,
+                day_of_week="mon-fri",
+            ),
+            id="intraday_stops",
+        )
     log.info(
         "scheduler.configured",
         tz=tz_name,
@@ -147,6 +185,12 @@ def build_scheduler() -> BlockingScheduler:
         reflection=f"{refl_day} {refl_h:02d}:{refl_m:02d}",
         heartbeat=f"{hb_h:02d}:{hb_m:02d}",
         jitter_s=jitter,
+        intraday_stops=(
+            f"{intraday_start_h:02d}:{intraday_start_m:02d}-{intraday_end_h:02d}:00 "
+            f"every {intraday_interval}min"
+            if intraday_enabled
+            else "off"
+        ),
     )
     return sched
 

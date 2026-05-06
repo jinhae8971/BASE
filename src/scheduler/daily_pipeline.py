@@ -26,7 +26,7 @@ from agents import (
 from broker.kis_client import KISClient
 from common.config import get_env
 from common.logging import get_logger, setup_logging
-from common.notifications import notify_error, notify_info
+from common.notifications import notify_error, notify_info, notify_warning
 from common.types import PortfolioTarget
 from data.market import fetch_latest_prices
 from data.universe import get_universe, sector_map
@@ -206,6 +206,109 @@ def order_phase(as_of: date | None = None, *, dry_run: bool = True) -> dict[str,
         "as_of": as_of.isoformat(),
         "n_orders": len(results),
         "execution_results": [r.model_dump(mode="json") for r in results],
+    }
+
+
+# ----------------------------------------------------------------------
+# Intraday stops — fires every 30 min during regular hours.
+# Cuts losers fast / locks in trailing profits, but **never adds or
+# rebalances**. Stop selling only.
+# ----------------------------------------------------------------------
+def intraday_stops_phase(as_of: date | None = None) -> dict[str, Any]:
+    """Re-evaluate per-name stops with live KIS prices and submit market SELLs.
+
+    Steps:
+        1. Pull live positions + prices from KIS.
+        2. Bump persisted peak prices for every position seen at a new high.
+        3. evaluate_stops → stop_orders → place_order for each.
+        4. Journal + notify.
+
+    Skipped silently when KIS credentials are missing (so dry-run dev boxes
+    don't spam the broker). Always allowed to send sells, even when the
+    broader pipeline is in dry-run mode — defending capital trumps the safety
+    flag.
+    """
+    setup_logging()
+    as_of = as_of or date.today()
+
+    env = get_env()
+    if not (env.kis_app_key and env.kis_app_secret):
+        log.debug("intraday.no_kis_credentials")
+        return {"as_of": as_of.isoformat(), "skipped": "no KIS credentials"}
+
+    from broker.kis_client import KISClient
+    from broker.tick_size import snap_to_tick
+    from common.types import Side
+    from portfolio.position_state import update_peak
+    from portfolio.stops import (
+        apply_state_after_fill,
+        evaluate_stops,
+        stop_orders,
+    )
+
+    client = KISClient()
+    state = client.get_account_state()
+    positions = state.get("positions") or {}
+    if not positions:
+        log.debug("intraday.no_positions")
+        return {"as_of": as_of.isoformat(), "n_positions": 0, "n_stops": 0}
+
+    prices = client.get_prices(list(positions.keys()))
+    if not prices:
+        log.warning("intraday.no_prices")
+        return {"as_of": as_of.isoformat(), "n_positions": len(positions), "n_stops": 0}
+
+    # Bump peak prices for trailing-stop reference (uses *intraday* highs).
+    for ticker, px in prices.items():
+        update_peak(ticker, px, as_of)
+
+    signals = evaluate_stops(positions, prices)
+    if not signals:
+        log.info("intraday.no_stops_fired", n_positions=len(positions))
+        return {"as_of": as_of.isoformat(), "n_positions": len(positions), "n_stops": 0}
+
+    journal = DecisionJournal()
+    notify_warning(
+        "Intraday stops fired",
+        f"{len(signals)} positions about to be sold",
+        tickers=",".join(s.ticker for s in signals),
+    )
+
+    raw_orders = stop_orders(signals, prices)
+    # Snap any limit prices (stop_orders emits market orders, but be defensive)
+    submitted: list[dict[str, Any]] = []
+    for order in raw_orders:
+        if order.order_type == "limit":
+            price = float(snap_to_tick(order.price or 0, side="up"))
+            order = order.model_copy(update={"price": price})
+        result = client.place_order(order)
+        submitted.append(result.model_dump(mode="json"))
+        journal.record(
+            agent="execution",
+            action=f"INTRADAY_STOP_{order.side.value}",
+            ticker=order.ticker,
+            conviction=10,
+            rationale=result.message,
+            context=result.model_dump(mode="json"),
+        )
+        if result.status == "rejected":
+            notify_error(
+                "Intraday stop order rejected",
+                result.message,
+                ticker=order.ticker,
+                qty=order.quantity,
+            )
+        else:
+            # Maintain position_state so the trailing peak resets on full exit
+            apply_state_after_fill(
+                order.ticker, Side.SELL, order.quantity, prices.get(order.ticker, 0.0), as_of
+            )
+    log.warning("intraday.stops_executed", n=len(submitted))
+    return {
+        "as_of": as_of.isoformat(),
+        "n_positions": len(positions),
+        "n_stops": len(submitted),
+        "results": submitted,
     }
 
 
