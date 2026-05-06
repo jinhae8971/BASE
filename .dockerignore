@@ -1,0 +1,46 @@
+# Git
+.git
+.gitignore
+
+# Python cache
+__pycache__
+*.py[cod]
+*.pyo
+.pytest_cache
+.mypy_cache
+.ruff_cache
+
+# Virtual environments
+.venv
+venv
+env
+
+# Secrets — NEVER bake into image
+.env
+.env.*
+!.env.example
+
+# KIS token cache
+.kis_token.json
+
+# Runtime data — mounted as volumes
+data_store/
+logs/
+
+# IDE
+.vscode
+.idea
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docs / CI (not needed at runtime)
+docs/
+.github/
+
+# Test output
+htmlcov/
+.coverage
+coverage.xml

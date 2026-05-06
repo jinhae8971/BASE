@@ -1,0 +1,73 @@
+# ============================================================
+# MAIS — docker-compose for Windows Docker Desktop
+#
+# Services:
+#   scheduler  — 평일 자동 파이프라인 (APScheduler)
+#   dashboard  — Streamlit UI  http://localhost:8501
+#
+# 사용법:
+#   1. cp .env.example .env  →  .env에 키 입력
+#   2. docker compose build
+#   3. docker compose up -d
+#   4. 브라우저 http://localhost:8501
+#
+# 수동 실행 (1회):
+#   docker compose run --rm scheduler python -m scheduler.daily_pipeline --dry-run
+# ============================================================
+
+services:
+
+  # ── 자동 스케줄러 (평일 08:00, 09:05 KST) ──────────────────
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: mais-app
+    container_name: mais-scheduler
+    env_file:
+      - .env
+    environment:
+      - DRY_RUN=${DRY_RUN:-true}        # false로 변경하면 실제 주문
+      - KIS_ENV=${KIS_ENV:-paper}
+    volumes:
+      - ./data_store:/app/data_store    # 저널 DB + ChromaDB + 리플렉션 보고서
+      - ./logs:/app/logs
+      - ./config:/app/config:ro         # 설정 읽기 전용 마운트
+    command: python -m scheduler.scheduler_service
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import scheduler.scheduler_service"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+
+  # ── Streamlit 대시보드 ────────────────────────────────────────
+  dashboard:
+    image: mais-app                     # 같은 이미지 재사용
+    container_name: mais-dashboard
+    env_file:
+      - .env
+    volumes:
+      - ./data_store:/app/data_store
+      - ./config:/app/config:ro
+    ports:
+      - "8501:8501"
+    command: >
+      streamlit run src/dashboard/app.py
+      --server.port=8501
+      --server.address=0.0.0.0
+      --server.headless=true
+      --server.fileWatcherType=none
+    restart: unless-stopped
+    depends_on:
+      - scheduler
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+# ── Named volumes (Windows Docker Desktop compatible) ─────────
+volumes:
+  data_store:
+    driver: local
