@@ -44,32 +44,30 @@ def build_scheduler() -> BlockingScheduler:
     refl_h, refl_m = _hhmm(str(get_setting("scheduler.reflection_time", "18:00")), "18:00")
 
     def _research_job() -> None:
-        from scheduler.daily_pipeline import run_daily
+        from scheduler.daily_pipeline import research_phase
 
         log.info("scheduler.research.fire")
         try:
-            run_daily(dry_run=True)  # research only — no orders yet
+            research_phase()
         except Exception as e:
             log.error("scheduler.research.failed", error=str(e))
 
     def _order_job() -> None:
-        from scheduler.daily_pipeline import run_daily
+        from scheduler.daily_pipeline import order_phase
 
         log.info("scheduler.order.fire")
         try:
-            # ``--live`` is gated by the user via env vars; here we always
-            # respect ``KIS_ENV``. dry_run=False allows real orders only when
-            # the user explicitly set KIS_ENV=live (paper still simulates).
-            run_daily(dry_run=False)
+            # ``KIS_ENV=paper`` keeps us in the simulator; live env actually trades.
+            order_phase(dry_run=False)
         except Exception as e:
             log.error("scheduler.order.failed", error=str(e))
 
     def _eod_job() -> None:
-        from memory.outcomes import update_outcomes
+        from scheduler.daily_pipeline import eod_phase
 
         log.info("scheduler.eod.fire")
         try:
-            update_outcomes()
+            eod_phase()
         except Exception as e:
             log.error("scheduler.eod.failed", error=str(e))
 

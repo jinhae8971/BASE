@@ -30,6 +30,8 @@ execution:
   commission_bps: 1.5
   tax_sell_bps: 23
   dry_run_default: true
+  limit_offset_bps: 30            # used when no live bid/ask is available
+  max_pct_of_adv: 0.10            # cap any single-day order at 10% of 20d ADV
 
 scheduler:
   research_time: "08:00"

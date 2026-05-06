@@ -153,11 +153,12 @@ def fetch_factor_panel(as_of: date) -> dict[str, Any]:
     """Cross-sectional factor panel, z-scored.
 
     Factors:
-        - momentum (12-1m return)
-        - lowvol   (-1 * 60-day std)
-        - size     (-1 * log market cap)  → small-cap tilt; we use +log for "large"
-        - quality  (placeholder using inverse vol; real ROE comes from fundamentals)
-        - value    (placeholder using -1 * 6m return; real B/P comes from fundamentals)
+        - momentum  (12-1m return)
+        - lowvol    (-1 * 60-day std)
+        - size      (+log market cap; large-cap tilt)
+        - quality   (ROE from pykrx fundamentals + drawdown stability)
+        - value     (-log PBR composite if PBR available, else -6m return fallback)
+        - liquidity (log dollar-volume)
     """
     universe = get_universe(as_of)
     tickers = [r["ticker"] for r in universe]
@@ -187,16 +188,21 @@ def fetch_factor_panel(as_of: date) -> dict[str, Any]:
     vol_60 = daily.tail(60).std() * np.sqrt(252)
     avg_dollar_vol = (panel * panel.diff().abs()).tail(20).mean()  # rough proxy
 
-    # Real market cap if pykrx is reachable
+    # Real market cap + multiples if pykrx is reachable (historical for as_of)
     mcap = pd.Series(dtype=float)
+    per = pd.Series(dtype=float)
+    pbr = pd.Series(dtype=float)
     try:
         from pykrx import stock  # type: ignore
 
         ymd = as_of.strftime("%Y%m%d")
         cap_df = stock.get_market_cap_by_ticker(ymd)
         mcap = cap_df["시가총액"].astype(float)
+        fund_df = stock.get_market_fundamental_by_ticker(ymd)
+        per = fund_df["PER"].astype(float)
+        pbr = fund_df["PBR"].astype(float)
     except Exception as e:
-        log.debug("market.mcap_failed", error=str(e))
+        log.debug("market.fundamentals_failed", error=str(e))
 
     name_lookup = {r["ticker"]: r.get("name") for r in universe}
     sec_lookup = {r["ticker"]: r.get("sector") for r in universe}
@@ -207,11 +213,32 @@ def fetch_factor_panel(as_of: date) -> dict[str, Any]:
             return pd.Series(0.0, index=s.index)
         return (s - s.mean()) / s.std()
 
+    # Drawdown stability proxy (smaller drawdowns = higher quality)
+    eq = (1 + daily.fillna(0)).cumprod()
+    rolling_max = eq.cummax()
+    max_dd = ((eq - rolling_max) / rolling_max).tail(252).min()
+
     momentum = _z(mom_12_1)
     lowvol = _z(-vol_60)
     size = _z(np.log(mcap.replace(0, np.nan))) if not mcap.empty else pd.Series(dtype=float)
-    quality = _z(-vol_60 / vol_60.replace(0, np.nan))  # weak placeholder, will be replaced
-    value = _z(-ret_6m)
+
+    # Quality = E/P (earnings yield) * dd_stability  → real fundamentals where available
+    if not per.empty:
+        ep_yield = 1.0 / per.replace([0, np.inf, -np.inf], np.nan)
+        quality = _z(ep_yield) * 0.6 + _z(-max_dd) * 0.4
+        quality = _z(quality)
+    else:
+        quality = _z(-max_dd)
+
+    # Value = composite -log(PBR) + -log(PER) when both available
+    if not pbr.empty and not per.empty:
+        bp = -np.log(pbr.replace([0, np.inf, -np.inf], np.nan))
+        ep = -np.log(per.replace([0, np.inf, -np.inf], np.nan))
+        value = _z(bp) * 0.5 + _z(ep) * 0.5
+        value = _z(value)
+    else:
+        value = _z(-ret_6m)
+
     liquidity = _z(np.log(avg_dollar_vol.replace(0, np.nan)))
 
     rows: list[dict[str, Any]] = []

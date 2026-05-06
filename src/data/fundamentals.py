@@ -66,11 +66,15 @@ def _dart_recent_financials(ticker: str, year: int) -> dict[str, float]:
         return {}
 
 
-def fetch_value_candidates(as_of: date, top_n: int = 30) -> dict[str, Any]:
+def fetch_value_candidates(
+    as_of: date, top_n: int = 30, *, augment_dart: bool | None = None
+) -> dict[str, Any]:
     """Pre-filter the universe for the ValueAgent.
 
-    Returns a list of candidates ordered by a simple value composite
-    (low PER + low PBR + above-median dividend yield).
+    Returns a list of candidates ordered by a value composite (low PER, low
+    PBR, dividend yield). Set ``augment_dart=True`` (or rely on the default
+    ``DART_API_KEY`` presence) to also pull recent ROE/부채비율 from DART for
+    the **top_n only** — keeps API quota safe.
     """
     universe = get_universe(as_of)
     fund = _pykrx_fundamentals(as_of)
@@ -78,7 +82,7 @@ def fetch_value_candidates(as_of: date, top_n: int = 30) -> dict[str, Any]:
 
     for row in universe:
         tkr = row["ticker"]
-        snap = {
+        snap: dict[str, Any] = {
             "ticker": tkr,
             "name": row.get("name"),
             "sector": row.get("sector"),
@@ -94,13 +98,8 @@ def fetch_value_candidates(as_of: date, top_n: int = 30) -> dict[str, Any]:
                         "dividend_yield": float(fund.loc[tkr, "DIV"]) / 100.0,
                     }
                 )
-        # Optional DART augmentation — only fire when key is present
-        # (kept off by default so we don't burn rate limits in the daily loop)
-        # if get_env().dart_api_key:
-        #     snap["dart"] = _dart_recent_financials(tkr, as_of.year - 1)
         candidates.append(snap)
 
-    # Score: lower PER+PBR is better, dividend yield is bonus.
     def _score(c: dict[str, Any]) -> float:
         per = c.get("per") or 1e6
         pbr = c.get("pbr") or 1e6
@@ -112,10 +111,30 @@ def fetch_value_candidates(as_of: date, top_n: int = 30) -> dict[str, Any]:
         return -(0.6 / per + 0.3 / pbr + dy)
 
     scored = sorted(candidates, key=_score)[:top_n]
+
+    # DART augmentation only on the shortlist
+    if augment_dart is None:
+        augment_dart = bool(get_env().dart_api_key)
+    if augment_dart:
+        for c in scored:
+            with contextlib.suppress(Exception):
+                fin = _dart_recent_financials(c["ticker"], as_of.year - 1)
+                if not fin:
+                    continue
+                # Common DART account names — pick safe defaults
+                ni = fin.get("당기순이익") or fin.get("순이익")
+                eq = fin.get("자본총계") or fin.get("자본금")
+                liab = fin.get("부채총계")
+                if ni and eq and eq != 0:
+                    c["roe_pct"] = round(float(ni) / float(eq) * 100.0, 2)
+                if liab and eq and eq != 0:
+                    c["debt_to_equity_pct"] = round(float(liab) / float(eq) * 100.0, 2)
+
     return {
         "as_of": as_of.isoformat(),
         "candidates": scored,
         "n_total_universe": len(universe),
+        "dart_enabled": augment_dart,
     }
 
 

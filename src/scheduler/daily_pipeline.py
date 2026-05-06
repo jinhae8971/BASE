@@ -1,13 +1,13 @@
-"""Daily pipeline — single entry point for the whole system.
+"""Daily pipeline — research and order phases.
 
-Steps:
-    1. Each specialist agent gathers its own context and produces an
-       ``AgentProposal``.
-    2. Consensus aggregates those proposals.
-    3. PortfolioOptimizer turns the consensus into a ``PortfolioTarget``.
-    4. ExecutionAgent applies risk guards and submits orders to KIS
-       (or dry-runs).
-    5. Every step is journaled, and accepted picks are pushed to RAG memory.
+Two entry points:
+    research_phase(as_of)  — run the 4 specialists, build a consensus + target,
+                             persist it. Always dry-run (no broker calls).
+    order_phase(as_of)     — load the saved target, gather live KIS state +
+                             quotes + ADV, hand off to ExecutionAgent.
+
+``run_daily`` is a convenience that does research + order in sequence (used
+by the standalone CLI and the legacy single-step CI flow).
 """
 from __future__ import annotations
 
@@ -26,26 +26,36 @@ from agents import (
 from broker.kis_client import KISClient
 from common.config import get_env
 from common.logging import get_logger, setup_logging
+from common.notifications import notify_error, notify_info
 from common.types import PortfolioTarget
 from data.market import fetch_latest_prices
-from data.universe import sector_map
+from data.universe import get_universe, sector_map
 from memory.journal import DecisionJournal
 from memory.rag import RAGMemory
 from orchestrator import Consensus, PortfolioOptimizer
+from portfolio.risk_guards import (
+    daily_executed_notional,
+    load_recent_equity,
+    persist_nav,
+)
+
+from . import state as state_store
 
 log = get_logger(__name__)
 app = typer.Typer(add_completion=False)
 
 
-def run_daily(as_of: date | None = None, *, dry_run: bool = True) -> dict[str, Any]:
+# ----------------------------------------------------------------------
+# Phase 1 — research
+# ----------------------------------------------------------------------
+def research_phase(as_of: date | None = None) -> dict[str, Any]:
     setup_logging()
     as_of = as_of or date.today()
-    log.info("pipeline.start", as_of=as_of.isoformat(), dry_run=dry_run)
+    log.info("research.start", as_of=as_of.isoformat())
 
     journal = DecisionJournal()
     rag = RAGMemory()
 
-    # 1. Specialist agents -------------------------------------------------
     specialists = [MacroAgent(), SectorAgent(), ValueAgent(), QuantAgent()]
     proposals = []
     for agent in specialists:
@@ -80,11 +90,12 @@ def run_daily(as_of: date | None = None, *, dry_run: bool = True) -> dict[str, A
                 )
         except Exception as e:
             log.error("agent.failed", agent=agent.name, error=str(e))
+            notify_error("Agent failed", str(e), agent=agent.name)
 
-    # 2. Consensus + 3. Optimize ------------------------------------------
     consensus = Consensus().aggregate(proposals, as_of)
     smap = sector_map(as_of)
     target: PortfolioTarget = PortfolioOptimizer().optimize(consensus, sector_map=smap)
+
     journal.record(
         agent="orchestrator",
         action="TARGET",
@@ -93,56 +104,148 @@ def run_daily(as_of: date | None = None, *, dry_run: bool = True) -> dict[str, A
         rationale=target.rationale,
         context=target.model_dump(mode="json"),
     )
-
-    # 4. Execute ----------------------------------------------------------
-    exec_agent = ExecutionAgent()
-    env = get_env()
-    results: list = []
-
-    if env.kis_app_key and env.kis_app_secret:
-        try:
-            client = KISClient()
-            state = client.get_account_state()
-            current_positions = state["positions"]
-            cash = state["cash"]
-            position_tickers = list(set(current_positions) | set(target.positions))
-            prices = client.get_prices(position_tickers) if position_tickers else {}
-            # Fallback: backfill missing prices from pykrx/FDR
-            if any(t not in prices for t in position_tickers):
-                fallback = fetch_latest_prices(
-                    [t for t in position_tickers if t not in prices], as_of=as_of
-                )
-                prices.update(fallback)
-            results = exec_agent.execute(
-                target, current_positions, cash, prices, dry_run=dry_run
-            )
-            for r in results:
-                journal.record(
-                    agent="execution",
-                    action=f"ORDER_{r.order.side.value}",
-                    ticker=r.order.ticker,
-                    conviction=10,
-                    rationale=r.message,
-                    context=r.model_dump(mode="json"),
-                )
-        except Exception as e:
-            log.error("pipeline.execution_failed", error=str(e))
-    else:
-        log.info("pipeline.no_kis_credentials")
-
+    state_store.save_target(
+        target,
+        extra={
+            "n_proposals": len(proposals),
+            "consensus_regime": str(consensus.get("regime")),
+        },
+    )
+    notify_info(
+        "Research done",
+        target.rationale or "(no rationale)",
+        positions=len(target.positions),
+        cash=f"{target.cash_weight:.0%}",
+    )
     log.info(
-        "pipeline.done",
+        "research.done",
         positions=len(target.positions),
         cash=round(target.cash_weight, 4),
-        n_orders=len(results),
-        dry_run=dry_run,
     )
     return {
         "as_of": as_of.isoformat(),
         "target": target.model_dump(mode="json"),
         "n_proposals": len(proposals),
+    }
+
+
+# ----------------------------------------------------------------------
+# Phase 2 — execution
+# ----------------------------------------------------------------------
+def order_phase(as_of: date | None = None, *, dry_run: bool = True) -> dict[str, Any]:
+    setup_logging()
+    as_of = as_of or date.today()
+    log.info("order.start", as_of=as_of.isoformat(), dry_run=dry_run)
+
+    loaded = state_store.load_target(as_of)
+    if loaded is None:
+        log.warning("order.no_saved_target_running_research")
+        research_phase(as_of)
+        loaded = state_store.load_target(as_of)
+        if loaded is None:
+            return {"as_of": as_of.isoformat(), "error": "no target available"}
+    target, _extra = loaded
+
+    journal = DecisionJournal()
+    env = get_env()
+    if not (env.kis_app_key and env.kis_app_secret):
+        log.info("order.no_kis_credentials")
+        return {"as_of": as_of.isoformat(), "skipped": "no KIS credentials"}
+
+    client = KISClient()
+    state = client.get_account_state()
+    current_positions = state["positions"]
+    cash = state["cash"]
+    nav = state["nav"] or (cash + sum(
+        p * state["prices"].get(t, 0.0) for t, p in current_positions.items()
+    ))
+
+    position_tickers = list(set(current_positions) | set(target.positions))
+    prices = client.get_prices(position_tickers) if position_tickers else {}
+    if any(t not in prices for t in position_tickers):
+        fallback = fetch_latest_prices(
+            [t for t in position_tickers if t not in prices], as_of=as_of
+        )
+        prices.update(fallback)
+    orderbooks = client.get_orderbooks(position_tickers) if position_tickers else {}
+
+    # 20-day ADV from the universe (already filtered)
+    adv_map = {r["ticker"]: float(r.get("adv", 0)) for r in get_universe(as_of)}
+
+    # Yesterday's NAV for daily-loss kill, equity history for MDD trigger
+    eq = load_recent_equity()
+    prev_nav = float(eq.iloc[-1]) if not eq.empty else None
+    today_executed = daily_executed_notional(journal.recent(2), as_of)
+
+    exec_agent = ExecutionAgent()
+    results = exec_agent.execute(
+        target,
+        current_positions,
+        cash,
+        prices,
+        dry_run=dry_run,
+        orderbooks=orderbooks,
+        adv_20d=adv_map,
+        nav_today=nav,
+        prev_nav=prev_nav,
+        equity_curve=eq,
+        executed_today_notional=today_executed,
+    )
+    for r in results:
+        journal.record(
+            agent="execution",
+            action=f"ORDER_{r.order.side.value}",
+            ticker=r.order.ticker,
+            conviction=10,
+            rationale=r.message,
+            context=r.model_dump(mode="json"),
+        )
+
+    log.info("order.done", n_orders=len(results), dry_run=dry_run)
+    return {
+        "as_of": as_of.isoformat(),
+        "n_orders": len(results),
         "execution_results": [r.model_dump(mode="json") for r in results],
     }
+
+
+# ----------------------------------------------------------------------
+# End-of-day mark-to-market
+# ----------------------------------------------------------------------
+def eod_phase(as_of: date | None = None) -> dict[str, Any]:
+    setup_logging()
+    as_of = as_of or date.today()
+    log.info("eod.start", as_of=as_of.isoformat())
+
+    env = get_env()
+    nav = 0.0
+    if env.kis_app_key and env.kis_app_secret:
+        try:
+            state = KISClient().get_account_state()
+            nav = state["cash"] + sum(
+                q * state["prices"].get(t, 0.0)
+                for t, q in state["positions"].items()
+            )
+        except Exception as e:
+            log.warning("eod.kis_unavailable", error=str(e))
+
+    if nav > 0:
+        persist_nav(as_of, nav)
+
+    from memory.outcomes import update_outcomes
+
+    counts = update_outcomes()
+    log.info("eod.done", nav=nav, **counts)
+    return {"as_of": as_of.isoformat(), "nav": nav, **counts}
+
+
+# ----------------------------------------------------------------------
+# Convenience: research + order in one go
+# ----------------------------------------------------------------------
+def run_daily(as_of: date | None = None, *, dry_run: bool = True) -> dict[str, Any]:
+    res = research_phase(as_of)
+    out = order_phase(as_of, dry_run=dry_run)
+    return {"research": res, "order": out}
 
 
 @app.command()

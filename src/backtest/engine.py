@@ -143,16 +143,17 @@ class BacktestEngine:
         # Recompute as cumulative product of period ratios (more numerically stable)
         equity = self._normalize_to_initial(nav_values)
         returns = equity.pct_change().fillna(0.0)
-        metrics = compute_portfolio_metrics(returns)
 
         bench = fetch_benchmark_series(self.start, self.end)
         if not bench.empty:
             bench = bench.reindex(equity.index, method="pad").dropna()
             bench_norm = bench / bench.iloc[0] * self.initial_capital
             bench_returns = bench.pct_change().fillna(0.0)
+            metrics = compute_portfolio_metrics(returns, benchmark_returns=bench_returns)
             bench_metrics = compute_portfolio_metrics(bench_returns)
         else:
             bench_norm = pd.Series(dtype=float)
+            metrics = compute_portfolio_metrics(returns)
             bench_metrics = None
 
         log.info(
@@ -160,6 +161,8 @@ class BacktestEngine:
             cagr=round(metrics.cagr, 4),
             mdd=round(metrics.mdd, 4),
             sharpe=round(metrics.sharpe, 2),
+            ir=round(metrics.information_ratio, 2),
+            te=round(metrics.tracking_error, 4),
         )
         return BacktestResult(
             start=self.start,

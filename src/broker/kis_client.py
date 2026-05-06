@@ -144,20 +144,56 @@ class KISClient:
                 log.warning("kis.price_failed", ticker=t, error=str(e))
         return out
 
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(min=1, max=5))
+    def get_orderbook(self, ticker: str) -> dict[str, Any]:
+        """Top-of-book bid/ask for ``ticker``.
+
+        Returns ``{"bid": float, "ask": float, "mid": float, "spread_bps": float}``
+        — values are 0 when unreachable.
+        """
+        url = f"{self.base_url}/uapi/domestic-stock/v1/quotations/inquire-asking-price-exp-ccn"
+        params = {"FID_COND_MRKT_DIV_CODE": "J", "FID_INPUT_ISCD": ticker}
+        try:
+            r = httpx.get(
+                url, params=params, headers=self._headers("FHKST01010200"), timeout=10
+            )
+            r.raise_for_status()
+            o = (r.json().get("output1") or {})
+            bid = float(o.get("bidp1") or 0)
+            ask = float(o.get("askp1") or 0)
+            mid = (bid + ask) / 2 if (bid and ask) else max(bid, ask)
+            spread_bps = (ask - bid) / mid * 10_000 if mid > 0 else 0.0
+            return {"bid": bid, "ask": ask, "mid": mid, "spread_bps": spread_bps}
+        except Exception as e:
+            log.warning("kis.orderbook_failed", ticker=ticker, error=str(e))
+            return {"bid": 0.0, "ask": 0.0, "mid": 0.0, "spread_bps": 0.0}
+
+    def get_orderbooks(self, tickers: list[str]) -> dict[str, dict[str, Any]]:
+        return {t: self.get_orderbook(t) for t in tickers}
+
     # ------------------------------------------------------------------
     # Trading
     # ------------------------------------------------------------------
     def place_order(self, order: Order) -> ExecutionResult:
+        from .tick_size import snap_to_tick
+
         tr_id = self._order_tr_id(order.side)
         url = f"{self.base_url}/uapi/domestic-stock/v1/trading/order-cash"
         cano, prdt = self._split_account()
+        # Snap to KRX tick size — buys snap down, sells snap up.
+        snap_side = "down" if order.side is Side.BUY else "up"
+        unpr = (
+            snap_to_tick(order.price, side=snap_side)
+            if order.price and order.order_type == "limit"
+            else 0
+        )
         body = {
             "CANO": cano,
             "ACNT_PRDT_CD": prdt,
             "PDNO": order.ticker,
             "ORD_DVSN": "00" if order.order_type == "limit" else "01",
             "ORD_QTY": str(order.quantity),
-            "ORD_UNPR": str(int(order.price or 0)),
+            "ORD_UNPR": str(unpr),
         }
         try:
             r = httpx.post(url, json=body, headers=self._headers(tr_id), timeout=15)
