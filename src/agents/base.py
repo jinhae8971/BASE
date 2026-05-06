@@ -20,14 +20,15 @@ class BaseAgent(ABC):
     """Abstract LLM agent.
 
     Subclasses must define:
-    - `name` — stable identifier used in consensus/journal
-    - `prompt_file` — file name in config/prompts
-    - `gather_context(as_of)` — return dict of research data for the prompt
-    - `parse_response(text, as_of)` — turn raw model output into AgentProposal
+        - ``name``         — stable identifier used in consensus/journal
+        - ``prompt_file``  — file name in ``config/prompts``
+        - ``gather_context(as_of)`` — research data dict for the prompt
+        - ``parse_response(text, as_of)`` — turn raw model output into AgentProposal
     """
 
     name: str = "base"
     prompt_file: str = "base.md"
+    use_rag: bool = True
 
     def __init__(self) -> None:
         agent_cfg = get_setting(f"agents.{self.name}", {}) or {}
@@ -41,6 +42,8 @@ class BaseAgent(ABC):
     def run(self, as_of: date) -> AgentProposal:
         log.info("agent.run.start", agent=self.name, as_of=as_of.isoformat())
         ctx = self.gather_context(as_of)
+        if self.use_rag:
+            ctx["similar_past_decisions"] = self._rag_examples(ctx)
         system = self._load_system_prompt()
         user_msg = self._format_user_message(ctx, as_of)
 
@@ -90,16 +93,25 @@ class BaseAgent(ABC):
             f"```json\n{json.dumps(ctx, ensure_ascii=False, default=str, indent=2)}\n```"
         )
 
+    def _rag_examples(self, ctx: dict[str, Any]) -> list[dict[str, Any]]:
+        try:
+            from memory.rag import RAGMemory
+
+            rag = RAGMemory()
+            return rag.query_similar({"agent": self.name, "context": ctx})
+        except Exception as e:
+            log.debug("agent.rag_skip", agent=self.name, error=str(e))
+            return []
+
     @staticmethod
     def _extract_json(text: str) -> dict[str, Any]:
         """Best-effort JSON extraction from LLM text."""
         text = text.strip()
         if text.startswith("```"):
-            # strip code fences
             first_nl = text.find("\n")
             text = text[first_nl + 1 :]
             if text.endswith("```"):
-                text = text[: -3]
+                text = text[:-3]
         start = text.find("{")
         end = text.rfind("}")
         if start == -1 or end == -1:

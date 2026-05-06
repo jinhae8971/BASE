@@ -1,5 +1,4 @@
-"""Streamlit operational dashboard (Phase 6).
+"""Streamlit dashboard. Run with:
 
-Run:
     streamlit run src/dashboard/app.py
 """

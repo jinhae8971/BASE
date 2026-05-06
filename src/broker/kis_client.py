@@ -2,17 +2,19 @@
 
 Reference: https://apiportal.koreainvestment.com/
 
-This is a lean wrapper focused on what MAI-System needs:
-- OAuth token issuance and caching
-- Domestic stock quote
-- Domestic stock order (cash buy/sell)
-- Balance and position lookup
+A lean wrapper focused on what MAI-System needs:
+    - OAuth token issuance + caching
+    - Domestic stock quote (single + bulk)
+    - Domestic stock cash buy/sell order
+    - Account balance + positions parsing
+    - Open-order inquiry / cancellation
 
-For the paper environment, set `KIS_ENV=paper` in `.env`. The base URL switches
-automatically.
+Set ``KIS_ENV=paper`` (default) for the simulated environment. The base URL
+and TR IDs switch automatically.
 """
 from __future__ import annotations
 
+import contextlib
 import json
 import time
 from datetime import datetime
@@ -41,7 +43,7 @@ class KISClient:
         self.app_key = env.kis_app_key
         self.app_secret = env.kis_app_secret
         self.account_no = env.kis_account_no
-        self.env = env.kis_env.lower()
+        self.env = (env.kis_env or "paper").lower()
         self.base_url = BASE_URLS.get(self.env, BASE_URLS["paper"])
         self._token: str | None = None
         self._token_expires_at: float = 0
@@ -57,22 +59,25 @@ class KISClient:
             if data.get("env") == self.env and data.get("expires_at", 0) > time.time() + 60:
                 self._token = data["token"]
                 self._token_expires_at = data["expires_at"]
-        except Exception:  # noqa: BLE001
+        except Exception:
             pass
 
     def _save_cached_token(self) -> None:
-        TOKEN_CACHE.write_text(
-            json.dumps(
-                {
-                    "env": self.env,
-                    "token": self._token,
-                    "expires_at": self._token_expires_at,
-                }
+        with contextlib.suppress(Exception):
+            TOKEN_CACHE.write_text(
+                json.dumps(
+                    {
+                        "env": self.env,
+                        "token": self._token,
+                        "expires_at": self._token_expires_at,
+                    }
+                )
             )
-        )
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(min=1, max=10))
     def _issue_token(self) -> str:
+        if not self.app_key or not self.app_secret:
+            raise RuntimeError("KIS_APP_KEY / KIS_APP_SECRET not set")
         url = f"{self.base_url}/oauth2/tokenP"
         payload = {
             "grant_type": "client_credentials",
@@ -83,7 +88,7 @@ class KISClient:
         r.raise_for_status()
         data = r.json()
         self._token = data["access_token"]
-        # KIS tokens expire after ~24h; use 23h safety margin
+        # KIS tokens expire after ~24h; keep a 23h safety margin
         self._token_expires_at = time.time() + 23 * 3600
         self._save_cached_token()
         return self._token
@@ -109,23 +114,35 @@ class KISClient:
         }
 
     def _split_account(self) -> tuple[str, str]:
+        if not self.account_no:
+            return "", "01"
         if "-" in self.account_no:
             head, tail = self.account_no.split("-", 1)
             return head, tail
-        return self.account_no[:8], self.account_no[8:] or "01"
+        return self.account_no[:8], (self.account_no[8:] or "01")
 
     # ------------------------------------------------------------------
     # Market data
     # ------------------------------------------------------------------
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(min=1, max=5))
     def get_price(self, ticker: str) -> float:
-        """Return current price (KRW)."""
+        """Current price (KRW)."""
         url = f"{self.base_url}/uapi/domestic-stock/v1/quotations/inquire-price"
         params = {"FID_COND_MRKT_DIV_CODE": "J", "FID_INPUT_ISCD": ticker}
         r = httpx.get(url, params=params, headers=self._headers("FHKST01010100"), timeout=10)
         r.raise_for_status()
         data = r.json()
         return float(data["output"]["stck_prpr"])
+
+    def get_prices(self, tickers: list[str]) -> dict[str, float]:
+        """Bulk current prices (sequential — KIS has no batch quote endpoint)."""
+        out: dict[str, float] = {}
+        for t in tickers:
+            try:
+                out[t] = self.get_price(t)
+            except Exception as e:
+                log.warning("kis.price_failed", ticker=t, error=str(e))
+        return out
 
     # ------------------------------------------------------------------
     # Trading
@@ -151,10 +168,10 @@ class KISClient:
                 order=order,
                 submitted_at=datetime.utcnow(),
                 status=status,
-                broker_order_id=resp.get("output", {}).get("ODNO"),
+                broker_order_id=(resp.get("output") or {}).get("ODNO"),
                 message=resp.get("msg1", ""),
             )
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:
             log.error("kis.order_failed", error=str(e), order=order.model_dump())
             return ExecutionResult(
                 order=order,
@@ -162,6 +179,30 @@ class KISClient:
                 status="rejected",
                 message=str(e),
             )
+
+    def cancel_order(self, ticker: str, broker_order_id: str, qty: int) -> dict[str, Any]:
+        """Cancel an open order."""
+        url = f"{self.base_url}/uapi/domestic-stock/v1/trading/order-rvsecncl"
+        cano, prdt = self._split_account()
+        tr_id = "VTTC0803U" if self.env == "paper" else "TTTC0803U"
+        body = {
+            "CANO": cano,
+            "ACNT_PRDT_CD": prdt,
+            "KRX_FWDG_ORD_ORGNO": "",
+            "ORGN_ODNO": broker_order_id,
+            "ORD_DVSN": "00",
+            "RVSE_CNCL_DVSN_CD": "02",  # 02 = cancel
+            "ORD_QTY": str(qty),
+            "ORD_UNPR": "0",
+            "QTY_ALL_ORD_YN": "Y",
+        }
+        try:
+            r = httpx.post(url, json=body, headers=self._headers(tr_id), timeout=15)
+            r.raise_for_status()
+            return r.json()
+        except Exception as e:
+            log.error("kis.cancel_failed", error=str(e), order_id=broker_order_id)
+            return {"rt_cd": "1", "msg1": str(e)}
 
     def _order_tr_id(self, side: Side) -> str:
         """TR IDs differ between paper (VTT) and live (TTT) environments."""
@@ -173,6 +214,7 @@ class KISClient:
     # Account
     # ------------------------------------------------------------------
     def get_balance(self) -> dict[str, Any]:
+        """Raw balance response. Use ``get_account_state`` for the parsed view."""
         url = f"{self.base_url}/uapi/domestic-stock/v1/trading/inquire-balance"
         cano, prdt = self._split_account()
         tr_id = "VTTC8434R" if self.env == "paper" else "TTTC8434R"
@@ -192,3 +234,47 @@ class KISClient:
         r = httpx.get(url, params=params, headers=self._headers(tr_id), timeout=15)
         r.raise_for_status()
         return r.json()
+
+    def get_account_state(self) -> dict[str, Any]:
+        """Parsed account state.
+
+        Returns:
+            ``{"positions": {ticker: qty}, "prices": {ticker: avg_buy_price},
+              "cash": float, "nav": float, "raw": <full json>}``
+
+        Falls back to an empty state on auth/network errors so the daily
+        pipeline can run dry without a configured KIS account.
+        """
+        try:
+            raw = self.get_balance()
+        except Exception as e:
+            log.warning("kis.balance_unavailable", error=str(e))
+            return {"positions": {}, "prices": {}, "cash": 0.0, "nav": 0.0, "raw": {}}
+
+        positions: dict[str, int] = {}
+        prices: dict[str, float] = {}
+        for row in raw.get("output1", []) or []:
+            tkr = row.get("pdno") or ""
+            qty = int(float(row.get("hldg_qty") or 0))
+            if not tkr or qty <= 0:
+                continue
+            positions[tkr] = qty
+            try:
+                prices[tkr] = float(row.get("prpr") or row.get("pchs_avg_pric") or 0)
+            except ValueError:
+                prices[tkr] = 0.0
+
+        summary = (raw.get("output2") or [{}])[0]
+        try:
+            cash = float(summary.get("dnca_tot_amt") or 0)
+            nav = float(summary.get("tot_evlu_amt") or summary.get("nass_amt") or 0)
+        except ValueError:
+            cash, nav = 0.0, 0.0
+
+        return {
+            "positions": positions,
+            "prices": prices,
+            "cash": cash,
+            "nav": nav,
+            "raw": raw,
+        }

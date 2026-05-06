@@ -15,8 +15,12 @@ class MacroAgent(BaseAgent):
 
     def gather_context(self, as_of: date) -> dict[str, Any]:
         from data.macro import fetch_macro_snapshot
+        from data.news import fetch_news_headlines
 
-        return fetch_macro_snapshot(as_of)
+        snap = fetch_macro_snapshot(as_of)
+        news = fetch_news_headlines(as_of, limit=20)
+        snap["recent_news"] = news.get("headlines", [])[:20]
+        return snap
 
     def parse_response(self, text: str, as_of: date) -> AgentProposal:
         data = self._extract_json(text)

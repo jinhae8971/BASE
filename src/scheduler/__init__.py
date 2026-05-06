@@ -1,3 +1,3 @@
-from .daily_pipeline import run_daily, main
+from .daily_pipeline import main, run_daily
 
-__all__ = ["run_daily", "main"]
+__all__ = ["main", "run_daily"]

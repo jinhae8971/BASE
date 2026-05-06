@@ -1,4 +1,4 @@
-from .risk import RiskMetrics, compute_portfolio_metrics
 from .allocator import PositionSizer
+from .risk import RiskMetrics, compute_portfolio_metrics
 
-__all__ = ["RiskMetrics", "compute_portfolio_metrics", "PositionSizer"]
+__all__ = ["PositionSizer", "RiskMetrics", "compute_portfolio_metrics"]

@@ -74,7 +74,8 @@ consensus:
   min_agreement: 2
 
 optimizer:
-  method: black_litterman
+  # score_weighted | mean_variance | black_litterman
+  method: score_weighted
   risk_aversion: 3.0
   lookback_days: 252
   shrinkage: ledoit_wolf

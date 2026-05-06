@@ -19,6 +19,7 @@ dependencies = [
     "httpx>=0.27",
     "tenacity>=8.2",
     "apscheduler>=3.10",
+    "pytz>=2024.1",
     "pandas>=2.2",
     "numpy>=1.26",
     "scipy>=1.12",
@@ -27,6 +28,8 @@ dependencies = [
     "pykrx>=1.0.45",
     "FinanceDataReader>=0.9.90",
     "OpenDartReader>=0.2.2",
+    "yfinance>=0.2",
+    "feedparser>=6.0",
     "chromadb>=0.4.24",
     "sqlalchemy>=2.0",
     "rich>=13.7",
@@ -54,8 +57,10 @@ backtest = [
 
 [project.scripts]
 mais-daily = "scheduler.daily_pipeline:main"
+mais-scheduler = "scheduler.scheduler:main"
 mais-backtest = "backtest.engine:main"
 mais-reflect = "agents.reflection_agent:main"
+mais-outcomes = "memory.outcomes:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

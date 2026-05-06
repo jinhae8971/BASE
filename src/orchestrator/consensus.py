@@ -2,8 +2,8 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from collections.abc import Iterable
 from datetime import date
-from typing import Iterable
 
 from common.config import get_setting
 from common.logging import get_logger
@@ -62,7 +62,7 @@ class Consensus:
         if not vals:
             return 0.7
         total = sum(wts) or 1.0
-        return sum(v * w for v, w in zip(vals, wts)) / total
+        return sum(v * w for v, w in zip(vals, wts, strict=False)) / total
 
     def _vote_regime(self, proposals: list[AgentProposal]) -> MarketRegime:
         tally: dict[MarketRegime, float] = defaultdict(float)

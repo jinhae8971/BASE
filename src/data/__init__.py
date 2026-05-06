@@ -1,19 +1,31 @@
 """Data ingestion modules.
 
-Each submodule exposes thin `fetch_*` functions that return plain dicts so
-they can be embedded into LLM prompts directly. Implementations are stubs
-in Phase 0 — Phase 1 will wire them to pykrx / DART / ECOS / news sources.
+Each submodule exposes thin ``fetch_*`` functions that return plain dicts so
+they can be embedded into LLM prompts directly.
 """
-from .macro import fetch_macro_snapshot
-from .market import fetch_factor_panel, fetch_sector_snapshot, fetch_price_series
 from .fundamentals import fetch_value_candidates
+from .macro import fetch_macro_snapshot
+from .market import (
+    fetch_benchmark_series,
+    fetch_close_panel,
+    fetch_factor_panel,
+    fetch_latest_prices,
+    fetch_price_series,
+    fetch_sector_snapshot,
+)
 from .news import fetch_news_headlines
+from .universe import get_universe, sector_map
 
 __all__ = [
-    "fetch_macro_snapshot",
+    "fetch_benchmark_series",
+    "fetch_close_panel",
     "fetch_factor_panel",
-    "fetch_sector_snapshot",
-    "fetch_price_series",
-    "fetch_value_candidates",
+    "fetch_latest_prices",
+    "fetch_macro_snapshot",
     "fetch_news_headlines",
+    "fetch_price_series",
+    "fetch_sector_snapshot",
+    "fetch_value_candidates",
+    "get_universe",
+    "sector_map",
 ]

@@ -8,13 +8,13 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 
-class Side(str, Enum):
+class Side(str, Enum):  # noqa: UP042 - legacy mixin kept for JSON compat
     BUY = "BUY"
     SELL = "SELL"
     HOLD = "HOLD"
 
 
-class MarketRegime(str, Enum):
+class MarketRegime(str, Enum):  # noqa: UP042
     RISK_ON = "risk_on"
     NEUTRAL = "neutral"
     RISK_OFF = "risk_off"
@@ -32,7 +32,7 @@ class AgentProposal(BaseModel):
     regime: MarketRegime | None = None
     sector_tilts: dict[str, float] = Field(default_factory=dict)
     # Ticker-level view
-    picks: list["TickerView"] = Field(default_factory=list)
+    picks: list[TickerView] = Field(default_factory=list)
     # Metadata
     context_used: dict = Field(default_factory=dict)
 

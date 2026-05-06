@@ -81,6 +81,8 @@ config/
 
 ## 🚀 빠른 시작
 
+### 옵션 A — 로컬 Python (개발)
+
 ```bash
 # 1. 환경 설정
 python -m venv .venv && source .venv/bin/activate
@@ -89,28 +91,43 @@ pip install -e ".[dev]"
 # 2. 환경변수
 cp .env.example .env  # KIS_APP_KEY, KIS_APP_SECRET, ANTHROPIC_API_KEY 등 입력
 
-# 3. 일일 파이프라인 (모의투자)
-python scripts/run_daily.py --env paper
+# 3. 일일 파이프라인 (모의투자, dry-run)
+python scripts/run_daily.py --env paper --dry-run
 
-# 4. 백테스트
-python scripts/run_backtest.py --start 2015-01-01 --end 2025-12-31
+# 4. 백테스트 (Quant-only, 빠름)
+python scripts/run_backtest.py --start 2018-01-01
 
 # 5. 리플렉션 (주간/월간)
 python scripts/run_reflection.py
+
+# 6. 대시보드
+streamlit run src/dashboard/app.py
 ```
+
+### 옵션 B — Docker (운영, Windows 권장)
+
+```powershell
+copy .env.example .env
+notepad .env
+docker compose up -d scheduler dashboard
+start http://localhost:8501
+```
+
+자세한 운영 가이드는 [`docs/docker.md`](docs/docker.md) 참고.
 
 ---
 
 ## 🗺️ 로드맵
 
 - [x] **Phase 0**: 레포 스캐폴딩, CI, 문서
-- [ ] **Phase 1**: 데이터 파이프라인 + KIS 래퍼 (모의)
-- [ ] **Phase 2**: 5개 에이전트 MVP + 오케스트레이터
-- [ ] **Phase 3**: 백테스트 엔진
-- [ ] **Phase 4**: 자가학습 (Journal + Reflection + RAG)
-- [ ] **Phase 5**: 모의투자 2개월 검증
-- [ ] **Phase 6**: 대시보드 + 알림
-- [ ] **Phase 7**: 실전 소액 투입
+- [x] **Phase 1**: 데이터 파이프라인 (pykrx/FDR/yfinance/RSS) + KIS 래퍼 (잔고 파싱·미체결 조회)
+- [x] **Phase 2**: 5개 에이전트 MVP + Consensus + Black-Litterman 옵티마이저
+- [x] **Phase 3**: 이벤트 기반 백테스트 엔진 (Quant-only, 거래비용 모델 포함)
+- [x] **Phase 4**: Decision Journal + Outcome 백필 + Chroma RAG
+- [ ] **Phase 5**: 모의투자 2개월 검증 (사용자 영역)
+- [x] **Phase 6**: Streamlit 대시보드 (Overview / Positions / Journal / Backtest)
+- [ ] **Phase 7**: 실전 소액 투입 (사용자 영역, Phase 5 통과 후)
+- [x] **Docker 배포**: `docker-compose.yml` + `Dockerfile` + Windows 가이드
 
 ---
 

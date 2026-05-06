@@ -15,8 +15,15 @@ class SectorAgent(BaseAgent):
 
     def gather_context(self, as_of: date) -> dict[str, Any]:
         from data.market import fetch_sector_snapshot
+        from data.news import fetch_news_headlines
 
-        return fetch_sector_snapshot(as_of)
+        ctx = fetch_sector_snapshot(as_of)
+        news = fetch_news_headlines(as_of, limit=30)
+        ctx["news"] = [
+            {"headline": h["headline"], "tickers": h.get("tickers", [])}
+            for h in news.get("headlines", [])[:30]
+        ]
+        return ctx
 
     def parse_response(self, text: str, as_of: date) -> AgentProposal:
         data = self._extract_json(text)

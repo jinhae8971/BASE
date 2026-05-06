@@ -60,6 +60,7 @@ class DecisionJournal:
             )
             c.execute("CREATE INDEX IF NOT EXISTS idx_decisions_ts ON decisions(ts)")
             c.execute("CREATE INDEX IF NOT EXISTS idx_decisions_agent ON decisions(agent)")
+            c.execute("CREATE INDEX IF NOT EXISTS idx_decisions_ticker ON decisions(ticker)")
 
     # ------------------------------------------------------------------
     def record(
@@ -107,7 +108,55 @@ class DecisionJournal:
                 "SELECT * FROM decisions WHERE ts >= ? ORDER BY ts DESC", (cutoff,)
             )
             cols = [d[0] for d in cur.description]
-            return [dict(zip(cols, row)) for row in cur.fetchall()]
+            return [dict(zip(cols, row, strict=False)) for row in cur.fetchall()]
+
+    def find_by_ticker(self, ticker: str, limit: int = 50) -> list[dict[str, Any]]:
+        with self._conn() as c:
+            cur = c.execute(
+                "SELECT * FROM decisions WHERE ticker = ? ORDER BY ts DESC LIMIT ?",
+                (ticker, limit),
+            )
+            cols = [d[0] for d in cur.description]
+            return [dict(zip(cols, row, strict=False)) for row in cur.fetchall()]
+
+    def update_outcome(
+        self,
+        decision_id: str,
+        *,
+        outcome_1w: float | None = None,
+        outcome_1m: float | None = None,
+        outcome_3m: float | None = None,
+    ) -> None:
+        sets: list[str] = []
+        vals: list[Any] = []
+        if outcome_1w is not None:
+            sets.append("outcome_1w = ?")
+            vals.append(outcome_1w)
+        if outcome_1m is not None:
+            sets.append("outcome_1m = ?")
+            vals.append(outcome_1m)
+        if outcome_3m is not None:
+            sets.append("outcome_3m = ?")
+            vals.append(outcome_3m)
+        if not sets:
+            return
+        vals.append(decision_id)
+        with self._conn() as c:
+            c.execute(f"UPDATE decisions SET {', '.join(sets)} WHERE id = ?", vals)
+
+    def pending_outcomes(self, horizon: str = "1w") -> list[dict[str, Any]]:
+        """Decisions whose outcome window has elapsed but is not yet filled."""
+        days = {"1w": 7, "1m": 30, "3m": 90}.get(horizon, 7)
+        col = f"outcome_{horizon}"
+        cutoff = (datetime.utcnow() - timedelta(days=days)).isoformat()
+        with self._conn() as c:
+            cur = c.execute(
+                f"SELECT * FROM decisions WHERE ticker IS NOT NULL "
+                f"AND ts <= ? AND {col} IS NULL ORDER BY ts ASC",
+                (cutoff,),
+            )
+            cols = [d[0] for d in cur.description]
+            return [dict(zip(cols, row, strict=False)) for row in cur.fetchall()]
 
 
 def summarize_decisions(as_of: date, lookback_days: int = 30) -> dict[str, Any]:
@@ -117,10 +166,27 @@ def summarize_decisions(as_of: date, lookback_days: int = 30) -> dict[str, Any]:
     by_agent: dict[str, list[dict[str, Any]]] = {}
     for r in rows:
         by_agent.setdefault(r["agent"], []).append(r)
+
+    # Outcome attribution per agent
+    attribution: dict[str, dict[str, Any]] = {}
+    for agent, xs in by_agent.items():
+        with_out = [x for x in xs if x.get("outcome_1m") is not None]
+        avg_1m = (
+            sum(x["outcome_1m"] for x in with_out) / len(with_out) if with_out else None
+        )
+        hit = sum(1 for x in with_out if (x.get("outcome_1m") or 0) > 0)
+        attribution[agent] = {
+            "n": len(xs),
+            "n_with_outcome": len(with_out),
+            "avg_1m_return": avg_1m,
+            "hit_ratio_1m": hit / len(with_out) if with_out else None,
+        }
+
     return {
         "as_of": as_of.isoformat(),
         "lookback_days": lookback_days,
         "total_decisions": len(rows),
         "by_agent": {a: len(xs) for a, xs in by_agent.items()},
-        "sample": rows[:20],
+        "attribution": attribution,
+        "sample": rows[:30],
     }
