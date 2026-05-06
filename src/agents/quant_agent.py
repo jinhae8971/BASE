@@ -1,8 +1,15 @@
-"""Quant factor-ranking agent.
+"""Quant factor-ranking agent — momentum-tilted, regime-conditional, long-only.
 
-Most of the heavy lifting (factor z-scoring) happens upstream in
-``data.market.fetch_factor_panel``. We pre-compute a composite score and
-hand the LLM a *short* shortlist so the prompt stays cheap and deterministic.
+Composite weights adapt to the market regime *hinted by KOSPI 3m momentum*:
+
+    risk_on   M=0.45 V=0.15 Q=0.10 L=0.10 S=0.10 F=0.10   (let winners run)
+    neutral   M=0.35 V=0.25 Q=0.15 L=0.10 S=0.05 F=0.10
+    risk_off  M=0.10 V=0.20 Q=0.30 L=0.25 S=0.05 F=0.10   (defensive)
+
+Weights are also exposed in the prompt so the LLM can reason about them.
+``flow`` (foreign + institutional 5d net-buy) gets a baseline 10% across all
+regimes — it's a Korea-specific short-horizon alpha that helps catch
+"가는 말" (early stages of bull stampedes).
 """
 from __future__ import annotations
 
@@ -12,6 +19,33 @@ from typing import Any
 from common.types import AgentProposal, Side, TickerView
 
 from .base import BaseAgent
+
+REGIME_WEIGHTS: dict[str, dict[str, float]] = {
+    "risk_on": {
+        "momentum": 0.45,
+        "value": 0.15,
+        "quality": 0.10,
+        "lowvol": 0.10,
+        "size": 0.10,
+        "flow": 0.10,
+    },
+    "neutral": {
+        "momentum": 0.35,
+        "value": 0.25,
+        "quality": 0.15,
+        "lowvol": 0.10,
+        "size": 0.05,
+        "flow": 0.10,
+    },
+    "risk_off": {
+        "momentum": 0.10,
+        "value": 0.20,
+        "quality": 0.30,
+        "lowvol": 0.25,
+        "size": 0.05,
+        "flow": 0.10,
+    },
+}
 
 
 class QuantAgent(BaseAgent):
@@ -24,19 +58,26 @@ class QuantAgent(BaseAgent):
 
         panel = fetch_factor_panel(as_of)
         rows = panel.get("rows", [])
+        regime = panel.get("regime_hint", "neutral")
+        weights = REGIME_WEIGHTS.get(regime, REGIME_WEIGHTS["neutral"])
 
-        # Composite score per the prompt-defined weights.
         for r in rows:
             r["composite"] = round(
-                0.30 * r.get("value", 0)
-                + 0.25 * r.get("momentum", 0)
-                + 0.25 * r.get("quality", 0)
-                + 0.10 * r.get("lowvol", 0)
-                + 0.10 * r.get("size", 0),
+                sum(weights[f] * r.get(f, 0.0) for f in weights),
                 4,
             )
+
+        # In risk_on, prioritise positive-momentum names (let winners run).
+        # In risk_off, drop negative-composite names entirely.
+        if regime == "risk_on":
+            rows = [r for r in rows if r.get("momentum", 0.0) > -0.5]
+        elif regime == "risk_off":
+            rows = [r for r in rows if r["composite"] > 0]
+
         rows.sort(key=lambda r: r["composite"], reverse=True)
-        panel["rows"] = rows[:25]  # shortlist for the prompt
+        panel["rows"] = rows[:25]
+        panel["composite_weights"] = weights
+        panel["regime_used"] = regime
         return panel
 
     def parse_response(self, text: str, as_of: date) -> AgentProposal:

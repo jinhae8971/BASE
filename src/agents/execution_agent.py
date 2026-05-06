@@ -73,13 +73,39 @@ class ExecutionAgent(BaseAgent):
         if dry_run is None:
             dry_run = bool(get_setting("execution.dry_run_default", True))
 
+        from portfolio.stops import (
+            apply_state_after_fill,
+            evaluate_stops,
+            stop_orders,
+        )
+
         nav = nav_today or (
             cash + sum(current_positions.get(t, 0) * prices.get(t, 0.0) for t in current_positions)
         )
 
+        # 0. Per-name stops (fired BEFORE rebalance — let losses cut fast).
+        forced_sells: list[Order] = []
+        try:
+            signals = evaluate_stops(current_positions, prices)
+            forced_sells = stop_orders(signals, prices)
+            if forced_sells:
+                # Drop those tickers from the rebalance target so we don't
+                # immediately buy back what the stop just sold.
+                for o in forced_sells:
+                    target.positions.pop(o.ticker, None)
+                notify_warning(
+                    "Stop loss / trailing fired",
+                    f"{len(forced_sells)} positions stopped out",
+                    tickers=",".join(o.ticker for o in forced_sells),
+                )
+        except Exception as e:
+            log.warning("execution.stops_eval_failed", error=str(e))
+
         # 1-2. Plan + cash/per-name caps
         orders = self._plan_orders(target, current_positions, cash, prices)
         orders = self._apply_basic_caps(orders, target, cash)
+        # Stops are added back at the front so they execute first.
+        orders = [*forced_sells, *orders]
 
         # 3. Daily portfolio guards
         guard = DailyRiskGuard(
@@ -134,23 +160,27 @@ class ExecutionAgent(BaseAgent):
                     self._set_limit_price(o, prices, orderbooks or {}) for o in orders
                 ]
 
-        # 7. Submit
+        # 7. Submit (with optional TWAP slicing)
+        twap_enabled = bool(get_setting("execution.twap_enabled", False))
+        twap_slices = max(1, int(get_setting("execution.twap_slices", 4)))
+        sliced_orders = (
+            self._twap_slice(orders, twap_slices) if twap_enabled else orders
+        )
+
         client = KISClient()
         results: list[ExecutionResult] = []
-        for order in orders:
+        today_dt = datetime.utcnow().date()
+        for order in sliced_orders:
             if dry_run:
                 log.info("execution.dry_run", order=order.model_dump())
-                results.append(
-                    ExecutionResult(
-                        order=order,
-                        submitted_at=datetime.utcnow(),
-                        status="submitted",
-                        message="dry_run",
-                    )
+                result = ExecutionResult(
+                    order=order,
+                    submitted_at=datetime.utcnow(),
+                    status="submitted",
+                    message="dry_run",
                 )
             else:
                 result = client.place_order(order)
-                results.append(result)
                 if result.status == "rejected":
                     notify_error(
                         "Order rejected",
@@ -166,7 +196,48 @@ class ExecutionAgent(BaseAgent):
                         price=order.price,
                         broker_id=result.broker_order_id or "",
                     )
+            results.append(result)
+
+            # Maintain position_state — covers dry-run too so backtests/paper
+            # exercise the stop logic end-to-end.
+            if result.status in ("submitted", "filled", "partial"):
+                fill_qty = (
+                    result.filled_qty
+                    if result.filled_qty
+                    else order.quantity
+                )
+                fill_price = result.avg_price or (order.price or 0.0)
+                if fill_qty > 0 and fill_price > 0:
+                    apply_state_after_fill(
+                        order.ticker, order.side, fill_qty, fill_price, today_dt
+                    )
         return results
+
+    # ------------------------------------------------------------------
+    def _twap_slice(self, orders: list[Order], slices: int) -> list[Order]:
+        """Split each order into ``slices`` roughly-equal child orders.
+
+        We rely on KIS's instant order acceptance — the time-spacing itself
+        is handled by the scheduler (we just submit the slice; the operator
+        is expected to use ``execution.twap_interval_seconds`` between calls
+        if running TWAP across the morning band manually).
+
+        For now we keep slicing simple: just emit the child orders. The
+        ExecutionAgent caller can sleep between calls if desired.
+        """
+        if slices <= 1:
+            return orders
+        out: list[Order] = []
+        for o in orders:
+            chunk = max(1, o.quantity // slices)
+            remaining = o.quantity
+            for i in range(slices):
+                qty = chunk if i < slices - 1 else remaining
+                if qty <= 0:
+                    break
+                out.append(o.model_copy(update={"quantity": qty}))
+                remaining -= qty
+        return out
 
     # ------------------------------------------------------------------
     # Order planning
@@ -178,10 +249,22 @@ class ExecutionAgent(BaseAgent):
         cash: float,
         prices: dict[str, float],
     ) -> list[Order]:
+        """Plan delta orders with **asymmetric** rebalance thresholds.
+
+        Default behaviour ('let winners run'):
+            BUY  fires when drift >= execution.rebalance_buy_threshold  (4%)
+            SELL fires when drift >= execution.rebalance_sell_threshold (8%)
+
+        We are *quicker to add* and *slower to trim* — keeping winners
+        in the book through normal volatility.
+        """
         nav = cash + sum(
             current_positions.get(t, 0) * prices.get(t, 0.0) for t in current_positions
         )
-        rebalance_threshold = float(get_setting("risk.rebalance_threshold", 0.05))
+        # Backwards-compatible fallback to the symmetric setting
+        sym = float(get_setting("risk.rebalance_threshold", 0.05))
+        buy_thr = float(get_setting("execution.rebalance_buy_threshold", sym))
+        sell_thr = float(get_setting("execution.rebalance_sell_threshold", sym * 1.6))
 
         orders: list[Order] = []
 
@@ -192,9 +275,12 @@ class ExecutionAgent(BaseAgent):
             target_w = target.positions.get(ticker, 0.0)
             target_qty = int((target_w * nav) // price)
             delta = target_qty - qty
-            if abs(delta * price) / max(nav, 1.0) < rebalance_threshold:
+            if delta >= 0:
                 continue
-            if delta < 0:
+            drift = abs(delta * price) / max(nav, 1.0)
+            # Always exit if the target dropped to zero (no position) — that's
+            # an active SELL, not a drift trim.
+            if target_w == 0.0 or drift >= sell_thr:
                 orders.append(
                     Order(ticker=ticker, side=Side.SELL, quantity=-delta, price=price)
                 )
@@ -207,7 +293,7 @@ class ExecutionAgent(BaseAgent):
             target_qty = int((weight * nav) // price)
             current_qty = current_positions.get(ticker, 0)
             delta = target_qty - current_qty
-            if delta > 0 and (delta * price) / max(nav, 1.0) >= rebalance_threshold:
+            if delta > 0 and (delta * price) / max(nav, 1.0) >= buy_thr:
                 orders.append(
                     Order(ticker=ticker, side=Side.BUY, quantity=delta, price=price)
                 )

@@ -24,15 +24,16 @@ def test_daily_loss_kill_blocks_orders() -> None:
 
 
 def test_mdd_trigger_de_levers() -> None:
-    # Equity curve drops 20% from peak → MDD = -20% > 15% trigger
+    # Equity peaks at 110, drops to 88 = -20% drawdown — top tier (75% trim)
     eq = pd.Series([100, 105, 110, 95, 88], index=pd.date_range("2025-01-01", periods=5))
     g = DailyRiskGuard(prev_nav=88, equity_curve=eq)
     decision = g.evaluate(_target(), nav_today=88, new_orders_notional=10_000_000)
     assert decision.allow is True
     assert decision.target_override is not None
-    halved = decision.target_override.positions
-    assert halved["005930"] == 0.25
-    assert halved["000660"] == 0.20
+    trimmed = decision.target_override.positions
+    # 0.5 * 0.25 = 0.125, 0.4 * 0.25 = 0.10
+    assert abs(trimmed["005930"] - 0.125) < 1e-9
+    assert abs(trimmed["000660"] - 0.10) < 1e-9
 
 
 def test_turnover_cap_scales_down() -> None:

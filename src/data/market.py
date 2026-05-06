@@ -183,10 +183,18 @@ def fetch_factor_panel(as_of: date) -> dict[str, Any]:
             return pd.Series(dtype=float)
         return panel.iloc[-1] / panel.iloc[-days] - 1
 
+    # Momentum: blend of classic 12-1m and shorter 6-1m to keep the signal
+    # responsive in trending bull markets while still penalising 1-month reversal.
     mom_12_1 = _safe_ret(252) - _safe_ret(22)
+    mom_6_1 = _safe_ret(126) - _safe_ret(22)
+    mom_3m = _safe_ret(63)
     ret_6m = _safe_ret(126)
     vol_60 = daily.tail(60).std() * np.sqrt(252)
     avg_dollar_vol = (panel * panel.diff().abs()).tail(20).mean()  # rough proxy
+
+    # Flow factor — foreign + institutional 5d net buy (Korean-market-specific
+    # alpha). Best-effort via pykrx; silently skipped on failure.
+    flow_series = _fetch_flow_panel(as_of, tickers)
 
     # Real market cap + multiples if pykrx is reachable (historical for as_of)
     mcap = pd.Series(dtype=float)
@@ -218,8 +226,12 @@ def fetch_factor_panel(as_of: date) -> dict[str, Any]:
     rolling_max = eq.cummax()
     max_dd = ((eq - rolling_max) / rolling_max).tail(252).min()
 
-    momentum = _z(mom_12_1)
+    # Composite momentum z-score (50% 12-1, 30% 6-1, 20% 3m)
+    momentum = _z(
+        _z(mom_12_1) * 0.5 + _z(mom_6_1) * 0.3 + _z(mom_3m) * 0.2
+    )
     lowvol = _z(-vol_60)
+    flow = _z(flow_series) if not flow_series.empty else pd.Series(dtype=float)
     size = _z(np.log(mcap.replace(0, np.nan))) if not mcap.empty else pd.Series(dtype=float)
 
     # Quality = E/P (earnings yield) * dd_stability  → real fundamentals where available
@@ -241,6 +253,21 @@ def fetch_factor_panel(as_of: date) -> dict[str, Any]:
 
     liquidity = _z(np.log(avg_dollar_vol.replace(0, np.nan)))
 
+    # Regime hint for downstream agents — KOSPI 3m momentum.
+    bench_3m_mom = 0.0
+    try:
+        bench = fetch_benchmark_series(end - timedelta(days=120), end)
+        if not bench.empty and len(bench) > 60:
+            bench_3m_mom = float(bench.iloc[-1] / bench.iloc[-60] - 1)
+    except Exception:
+        pass
+    if bench_3m_mom > 0.05:
+        regime_hint = "risk_on"
+    elif bench_3m_mom < -0.05:
+        regime_hint = "risk_off"
+    else:
+        regime_hint = "neutral"
+
     rows: list[dict[str, Any]] = []
     for tkr in tickers:
         rows.append(
@@ -254,14 +281,61 @@ def fetch_factor_panel(as_of: date) -> dict[str, Any]:
                 "lowvol": float(lowvol.get(tkr, 0.0)) if not lowvol.empty else 0.0,
                 "size": float(size.get(tkr, 0.0)) if not size.empty else 0.0,
                 "liquidity": float(liquidity.get(tkr, 0.0)) if not liquidity.empty else 0.0,
+                "flow": float(flow.get(tkr, 0.0)) if not flow.empty else 0.0,
             }
         )
     return {
         "as_of": as_of.isoformat(),
         "universe_size": len(rows),
-        "factors": ["value", "momentum", "quality", "lowvol", "size", "liquidity"],
+        "factors": [
+            "value",
+            "momentum",
+            "quality",
+            "lowvol",
+            "size",
+            "liquidity",
+            "flow",
+        ],
+        "regime_hint": regime_hint,
+        "kospi_mom_3m": round(bench_3m_mom, 4),
         "rows": rows,
     }
+
+
+def _fetch_flow_panel(as_of: date, tickers: list[str], lookback_days: int = 5) -> pd.Series:
+    """Foreign + institutional cumulative net-buy (KRW) over the last ``lookback_days``,
+    normalised by market cap. Returns an empty Series when pykrx is unavailable.
+    """
+    try:
+        from pykrx import stock  # type: ignore
+    except Exception:
+        return pd.Series(dtype=float)
+
+    end = as_of.strftime("%Y%m%d")
+    start = (as_of - timedelta(days=lookback_days * 3)).strftime("%Y%m%d")
+    out: dict[str, float] = {}
+    try:
+        cap_df = stock.get_market_cap_by_ticker(end)
+    except Exception:
+        cap_df = pd.DataFrame()
+
+    for tkr in tickers:
+        try:
+            df = stock.get_market_trading_value_by_date(start, end, tkr)
+            if df is None or df.empty:
+                continue
+            net = float(df["외국인합계"].tail(lookback_days).sum()) + float(
+                df["기관합계"].tail(lookback_days).sum()
+            )
+            mcap = (
+                float(cap_df.loc[tkr, "시가총액"])
+                if (not cap_df.empty and tkr in cap_df.index)
+                else 0.0
+            )
+            out[tkr] = net / mcap if mcap > 0 else 0.0
+        except Exception:
+            continue
+    return pd.Series(out, dtype=float)
 
 
 # ----------------------------------------------------------------------

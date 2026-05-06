@@ -38,10 +38,15 @@ def build_scheduler() -> BlockingScheduler:
     sched = BlockingScheduler(timezone=tz)
 
     research_h, research_m = _hhmm(str(get_setting("scheduler.research_time", "08:00")), "08:00")
+    morning_h, morning_m = _hhmm(
+        str(get_setting("scheduler.morning_report_time", "08:30")), "08:30"
+    )
     order_h, order_m = _hhmm(str(get_setting("scheduler.order_time", "09:05")), "09:05")
     eod_h, eod_m = _hhmm(str(get_setting("scheduler.eod_review_time", "16:00")), "16:00")
     refl_day = str(get_setting("scheduler.reflection_day", "fri"))[:3].lower()
     refl_h, refl_m = _hhmm(str(get_setting("scheduler.reflection_time", "18:00")), "18:00")
+    hb_h, hb_m = _hhmm(str(get_setting("scheduler.heartbeat_time", "08:00")), "08:00")
+    jitter = int(get_setting("scheduler.jitter_seconds", 60))
 
     def _research_job() -> None:
         from scheduler.daily_pipeline import research_phase
@@ -82,14 +87,39 @@ def build_scheduler() -> BlockingScheduler:
         except Exception as e:
             log.error("scheduler.reflection.failed", error=str(e))
 
+    def _morning_job() -> None:
+        from scheduler.morning_report import build_morning_report
+
+        log.info("scheduler.morning_report.fire")
+        try:
+            build_morning_report()
+        except Exception as e:
+            log.error("scheduler.morning_report.failed", error=str(e))
+
+    def _heartbeat_job() -> None:
+        from scheduler.morning_report import heartbeat
+
+        try:
+            heartbeat()
+        except Exception as e:
+            log.error("scheduler.heartbeat.failed", error=str(e))
+
     sched.add_job(
         _research_job,
         CronTrigger(hour=research_h, minute=research_m, day_of_week="mon-fri"),
         id="research",
     )
     sched.add_job(
+        _morning_job,
+        CronTrigger(hour=morning_h, minute=morning_m, day_of_week="mon-fri"),
+        id="morning_report",
+    )
+    sched.add_job(
         _order_job,
-        CronTrigger(hour=order_h, minute=order_m, day_of_week="mon-fri"),
+        # ±jitter on the order time → harder for HFTs to pattern-match.
+        CronTrigger(
+            hour=order_h, minute=order_m, day_of_week="mon-fri", jitter=jitter
+        ),
         id="order",
     )
     sched.add_job(
@@ -102,13 +132,21 @@ def build_scheduler() -> BlockingScheduler:
         CronTrigger(day_of_week=refl_day, hour=refl_h, minute=refl_m),
         id="reflection",
     )
+    sched.add_job(
+        _heartbeat_job,
+        CronTrigger(hour=hb_h, minute=hb_m),
+        id="heartbeat",
+    )
     log.info(
         "scheduler.configured",
         tz=tz_name,
         research=f"{research_h:02d}:{research_m:02d}",
+        morning=f"{morning_h:02d}:{morning_m:02d}",
         order=f"{order_h:02d}:{order_m:02d}",
         eod=f"{eod_h:02d}:{eod_m:02d}",
         reflection=f"{refl_day} {refl_h:02d}:{refl_m:02d}",
+        heartbeat=f"{hb_h:02d}:{hb_m:02d}",
+        jitter_s=jitter,
     )
     return sched
 

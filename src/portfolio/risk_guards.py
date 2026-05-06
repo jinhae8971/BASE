@@ -83,29 +83,36 @@ class DailyRiskGuard:
                     triggered=triggered,
                 )
 
-        # ── Portfolio MDD trigger → de-leverage ─────────────────────────
+        # ── Portfolio MDD trigger → graduated de-leverage ───────────────
+        # Tiers (from settings):
+        #   risk.graduated_mdd: [0.10, 0.12, 0.15]  → trim 25%, 50%, 75%
         if not self.equity_curve.empty:
             mdd = self._rolling_mdd(self.equity_curve)
-            if mdd <= -self.max_mdd:
-                triggered.append(f"mdd_trigger ({mdd:.2%})")
-                # Force halve all positions, raise cash, but still allow trades
-                # to GO TOWARDS the safer target (so reductions can execute).
-                halved = {t: w * 0.5 for t, w in target.positions.items()}
-                cash = max(1.0 - sum(halved.values()), self.cash_buffer_min * 2)
+            tiers = get_setting("risk.graduated_mdd", [0.10, 0.12, 0.15]) or []
+            trims = [0.25, 0.50, 0.75]
+            trim_pct = 0.0
+            for level, t in zip(tiers, trims, strict=False):
+                if mdd <= -float(level):
+                    trim_pct = t
+            if trim_pct > 0:
+                keep = 1.0 - trim_pct
+                triggered.append(f"mdd_trigger ({mdd:.2%} → trim {trim_pct:.0%})")
+                trimmed = {t: w * keep for t, w in target.positions.items()}
+                cash = max(1.0 - sum(trimmed.values()), self.cash_buffer_min * 2)
                 override = PortfolioTarget(
                     as_of=target.as_of,
                     cash_weight=cash,
-                    positions=halved,
+                    positions=trimmed,
                     rationale=(
                         f"{target.rationale} | MDD guard: rolling MDD={mdd:.2%}; "
-                        f"halving positions, cash≥{cash:.0%}"
+                        f"trimming {trim_pct:.0%}, cash>={cash:.0%}"
                     ),
                 )
-                log.warning("guard.mdd_trigger", mdd=mdd)
+                log.warning("guard.mdd_trigger", mdd=mdd, trim=trim_pct)
                 return GuardDecision(
                     allow=True,
-                    reason=f"MDD {mdd:.2%} ≤ -{self.max_mdd:.0%} → de-leverage",
-                    scale=0.5,
+                    reason=f"MDD {mdd:.2%} -> trim {trim_pct:.0%}",
+                    scale=keep,
                     target_override=override,
                     triggered=triggered,
                 )

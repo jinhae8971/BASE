@@ -20,25 +20,39 @@ risk:
   max_portfolio_mdd: 0.15
   daily_loss_kill: 0.03
   max_turnover_daily: 0.30
-  rebalance_threshold: 0.05
+  rebalance_threshold: 0.05         # legacy fallback
   cash_buffer_min: 0.05
+  # Graduated MDD trim — tiers paired with [25%, 50%, 75%] trim
+  graduated_mdd: [0.10, 0.12, 0.15]
+  # Per-name asymmetric stops (long-only, "let winners run")
+  hard_stop_pct: 0.12               # cut losers fast
+  trailing_take_pct: 0.10           # take profit after a 10% pullback from peak
+  trailing_min_profit: 0.05         # only trail once +5% from entry
 
 execution:
   order_style: limit              # limit | market | twap
+  twap_enabled: true
   twap_slices: 4
+  twap_interval_seconds: 300      # 5 min between slices when TWAP is active
   slippage_bps: 15
   commission_bps: 1.5
   tax_sell_bps: 23
   dry_run_default: true
   limit_offset_bps: 30            # used when no live bid/ask is available
   max_pct_of_adv: 0.10            # cap any single-day order at 10% of 20d ADV
+  # Asymmetric drift — quick to add, slow to trim (let winners run)
+  rebalance_buy_threshold: 0.04
+  rebalance_sell_threshold: 0.08
 
 scheduler:
   research_time: "08:00"
+  morning_report_time: "08:30"
   order_time: "09:05"
   eod_review_time: "16:00"
   reflection_day: "friday"
   reflection_time: "18:00"
+  heartbeat_time: "08:00"
+  jitter_seconds: 60              # +/- random jitter on order_time to avoid HFT pattern
 
 agents:
   macro:
@@ -67,11 +81,13 @@ agents:
     max_tokens: 8000
 
 consensus:
+  # Quant-heavy + momentum bias — bull markets reward sticking with the
+  # leaders, and the Quant agent now adapts factor weights to regime.
   weights:
-    macro: 0.25
-    sector: 0.20
-    value: 0.25
-    quant: 0.30
+    macro: 0.20
+    sector: 0.15
+    value: 0.20
+    quant: 0.45
   min_conviction: 5
   min_agreement: 2
 
