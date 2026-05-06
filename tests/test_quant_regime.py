@@ -5,9 +5,10 @@ from agents.quant_agent import REGIME_WEIGHTS
 
 def test_risk_on_momentum_dominates() -> None:
     w = REGIME_WEIGHTS["risk_on"]
-    assert w["momentum"] >= 0.40
-    # Momentum + size + flow should be the bulk of the bull-market allocation
-    assert w["momentum"] + w["size"] + w["flow"] >= 0.6
+    # Momentum + breakout together should dominate (the trend bucket)
+    assert w["momentum"] + w["breakout"] >= 0.45
+    # Trend bucket + size + flow should be the bulk of the bull-market allocation
+    assert w["momentum"] + w["breakout"] + w["size"] + w["flow"] >= 0.6
     # Quality + lowvol should be light in a risk_on book
     assert w["quality"] + w["lowvol"] <= 0.3
 

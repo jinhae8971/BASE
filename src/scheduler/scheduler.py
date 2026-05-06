@@ -42,6 +42,9 @@ def build_scheduler() -> BlockingScheduler:
         str(get_setting("scheduler.morning_report_time", "08:30")), "08:30"
     )
     order_h, order_m = _hhmm(str(get_setting("scheduler.order_time", "09:05")), "09:05")
+    monitor_h, monitor_m = _hhmm(
+        str(get_setting("scheduler.monitor_unfilled_time", "09:35")), "09:35"
+    )
     eod_h, eod_m = _hhmm(str(get_setting("scheduler.eod_review_time", "16:00")), "16:00")
     refl_day = str(get_setting("scheduler.reflection_day", "fri"))[:3].lower()
     refl_h, refl_m = _hhmm(str(get_setting("scheduler.reflection_time", "18:00")), "18:00")
@@ -114,6 +117,14 @@ def build_scheduler() -> BlockingScheduler:
         except Exception as e:
             log.error("scheduler.intraday_stops.failed", error=str(e))
 
+    def _monitor_unfilled_job() -> None:
+        from scheduler.daily_pipeline import monitor_unfilled_phase
+
+        try:
+            monitor_unfilled_phase()
+        except Exception as e:
+            log.error("scheduler.monitor_unfilled.failed", error=str(e))
+
     def _heartbeat_job() -> None:
         from scheduler.morning_report import heartbeat
 
@@ -139,6 +150,11 @@ def build_scheduler() -> BlockingScheduler:
             hour=order_h, minute=order_m, day_of_week="mon-fri", jitter=jitter
         ),
         id="order",
+    )
+    sched.add_job(
+        _monitor_unfilled_job,
+        CronTrigger(hour=monitor_h, minute=monitor_m, day_of_week="mon-fri"),
+        id="monitor_unfilled",
     )
     sched.add_job(
         _eod_job,
@@ -181,6 +197,7 @@ def build_scheduler() -> BlockingScheduler:
         research=f"{research_h:02d}:{research_m:02d}",
         morning=f"{morning_h:02d}:{morning_m:02d}",
         order=f"{order_h:02d}:{order_m:02d}",
+        monitor_unfilled=f"{monitor_h:02d}:{monitor_m:02d}",
         eod=f"{eod_h:02d}:{eod_m:02d}",
         reflection=f"{refl_day} {refl_h:02d}:{refl_m:02d}",
         heartbeat=f"{hb_h:02d}:{hb_m:02d}",

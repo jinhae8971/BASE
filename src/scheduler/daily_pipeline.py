@@ -24,7 +24,7 @@ from agents import (
     ValueAgent,
 )
 from broker.kis_client import KISClient
-from common.config import get_env
+from common.config import get_env, get_setting
 from common.logging import get_logger, setup_logging
 from common.notifications import notify_error, notify_info, notify_warning
 from common.types import PortfolioTarget
@@ -146,6 +146,42 @@ def order_phase(as_of: date | None = None, *, dry_run: bool = True) -> dict[str,
             return {"as_of": as_of.isoformat(), "error": "no target available"}
     target, _extra = loaded
 
+    # Pre-market shock gate — KOSPI proxy (EWY) overnight move.
+    # When the breach fires we either skip new orders entirely or scale them
+    # down, configured via ``execution.shock_action`` ("skip" or "scale").
+    try:
+        from data.macro import fetch_overnight_shock
+
+        shock = fetch_overnight_shock()
+        if shock.get("breached"):
+            action = str(get_setting("execution.shock_action", "skip"))
+            shock_pct = shock.get("shock_pct", 0.0)
+            notify_warning(
+                "Overnight shock — gate fired",
+                f"EWY overnight {shock_pct:+.2%} <= {shock.get('threshold')}; "
+                f"action={action}",
+                proxy=shock.get("proxy"),
+            )
+            if action == "skip":
+                log.warning("order.skip_due_to_shock", **shock)
+                return {
+                    "as_of": as_of.isoformat(),
+                    "skipped": "overnight_shock",
+                    "shock": shock,
+                }
+            # otherwise "scale": halve every target weight
+            target = target.model_copy(
+                update={
+                    "positions": {t: w * 0.5 for t, w in target.positions.items()},
+                    "rationale": (
+                        f"{target.rationale} | overnight shock {shock_pct:+.2%} "
+                        f"-> halving all targets"
+                    ),
+                }
+            )
+    except Exception as e:
+        log.warning("order.shock_check_failed", error=str(e))
+
     journal = DecisionJournal()
     env = get_env()
     if not (env.kis_app_key and env.kis_app_secret):
@@ -207,6 +243,101 @@ def order_phase(as_of: date | None = None, *, dry_run: bool = True) -> dict[str,
         "n_orders": len(results),
         "execution_results": [r.model_dump(mode="json") for r in results],
     }
+
+
+# ----------------------------------------------------------------------
+# Monitor unfilled — runs once a few minutes after order_phase.
+# Cancels any limit order that hasn't filled and replaces it at the
+# current bid/ask (so we don't sit with a stale limit while the stock
+# runs away from us).
+# ----------------------------------------------------------------------
+def monitor_unfilled_phase(as_of: date | None = None) -> dict[str, Any]:
+    setup_logging()
+    as_of = as_of or date.today()
+    log.info("monitor_unfilled.start", as_of=as_of.isoformat())
+
+    env = get_env()
+    if not (env.kis_app_key and env.kis_app_secret):
+        log.debug("monitor_unfilled.no_kis_credentials")
+        return {"as_of": as_of.isoformat(), "skipped": "no KIS credentials"}
+
+    from broker.kis_client import KISClient
+    from broker.tick_size import snap_to_tick
+    from common.types import Order, Side
+
+    client = KISClient()
+    unfilled = client.get_unfilled_orders()
+    if not unfilled:
+        log.info("monitor_unfilled.none")
+        return {"as_of": as_of.isoformat(), "n_replaced": 0}
+
+    journal = DecisionJournal()
+    replaced: list[dict[str, Any]] = []
+    for u in unfilled:
+        ticker = u["ticker"]
+        broker_id = u["broker_order_id"]
+        remaining = u["remaining"]
+        side = Side.BUY if u["side"] == "BUY" else Side.SELL
+        if remaining <= 0 or not broker_id:
+            continue
+
+        # Pull a fresh quote and decide on the new price.
+        ob = client.get_orderbook(ticker)
+        last_price = client.get_price(ticker) if not (ob.get("bid") or ob.get("ask")) else 0.0
+        if side is Side.BUY:
+            ref = ob.get("ask") or last_price
+            new_price = float(snap_to_tick(ref, side="down"))
+        else:
+            ref = ob.get("bid") or last_price
+            new_price = float(snap_to_tick(ref, side="up"))
+        if new_price <= 0 or abs(new_price - u["price"]) < 1e-6:
+            # No meaningful price change — leave the order alone.
+            continue
+
+        # Cancel + re-submit
+        cancel_resp = client.cancel_order(ticker, broker_id, remaining)
+        if str(cancel_resp.get("rt_cd")) != "0":
+            log.warning(
+                "monitor_unfilled.cancel_failed",
+                ticker=ticker,
+                broker_id=broker_id,
+                msg=cancel_resp.get("msg1"),
+            )
+            continue
+        new_order = Order(
+            ticker=ticker,
+            side=side,
+            quantity=remaining,
+            price=new_price,
+            order_type="limit",
+        )
+        result = client.place_order(new_order)
+        replaced.append(
+            {
+                "ticker": ticker,
+                "old_price": u["price"],
+                "new_price": new_price,
+                "remaining": remaining,
+                "result": result.model_dump(mode="json"),
+            }
+        )
+        journal.record(
+            agent="execution",
+            action=f"REPLACE_{side.value}",
+            ticker=ticker,
+            conviction=10,
+            rationale=f"reprice {u['price']:.0f} -> {new_price:.0f}",
+            context=result.model_dump(mode="json"),
+        )
+
+    if replaced:
+        notify_warning(
+            "Unfilled orders replaced",
+            f"{len(replaced)} orders re-priced to fresh bid/ask",
+            tickers=",".join(r["ticker"] for r in replaced),
+        )
+    log.info("monitor_unfilled.done", n_replaced=len(replaced))
+    return {"as_of": as_of.isoformat(), "n_replaced": len(replaced), "replaced": replaced}
 
 
 # ----------------------------------------------------------------------

@@ -216,6 +216,63 @@ class KISClient:
                 message=str(e),
             )
 
+    def get_unfilled_orders(self) -> list[dict[str, Any]]:
+        """List today's open (unfilled) orders.
+
+        Returns a normalised list of:
+            ``{ticker, broker_order_id, side, ord_qty, ccld_qty, remaining,
+                price, ord_type}``
+
+        Empty list on failure / no unfilled orders.
+        """
+        url = f"{self.base_url}/uapi/domestic-stock/v1/trading/inquire-psbl-rvsecncl"
+        cano, prdt = self._split_account()
+        tr_id = "VTTC8036R" if self.env == "paper" else "TTTC8036R"
+        params = {
+            "CANO": cano,
+            "ACNT_PRDT_CD": prdt,
+            "INQR_DVSN_1": "0",
+            "INQR_DVSN_2": "0",
+            "CTX_AREA_FK100": "",
+            "CTX_AREA_NK100": "",
+        }
+        try:
+            r = httpx.get(
+                url, params=params, headers=self._headers(tr_id), timeout=15
+            )
+            r.raise_for_status()
+            data = r.json()
+        except Exception as e:
+            log.warning("kis.unfilled_failed", error=str(e))
+            return []
+
+        out: list[dict[str, Any]] = []
+        for row in data.get("output") or []:
+            try:
+                ord_qty = int(float(row.get("ord_qty") or 0))
+                ccld_qty = int(float(row.get("tot_ccld_qty") or 0))
+                remaining = max(ord_qty - ccld_qty, 0)
+                if remaining <= 0:
+                    continue
+                sll_buy = str(row.get("sll_buy_dvsn_cd") or "")
+                # KIS code: '01' = SELL, '02' = BUY (도메스틱)
+                side = "SELL" if sll_buy == "01" else "BUY"
+                out.append(
+                    {
+                        "ticker": str(row.get("pdno") or ""),
+                        "broker_order_id": str(row.get("odno") or ""),
+                        "side": side,
+                        "ord_qty": ord_qty,
+                        "ccld_qty": ccld_qty,
+                        "remaining": remaining,
+                        "price": float(row.get("ord_unpr") or 0),
+                        "ord_type": str(row.get("ord_dvsn_cd") or ""),
+                    }
+                )
+            except Exception:
+                continue
+        return out
+
     def cancel_order(self, ticker: str, broker_order_id: str, qty: int) -> dict[str, Any]:
         """Cancel an open order."""
         url = f"{self.base_url}/uapi/domestic-stock/v1/trading/order-rvsecncl"

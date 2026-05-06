@@ -22,23 +22,26 @@ from .base import BaseAgent
 
 REGIME_WEIGHTS: dict[str, dict[str, float]] = {
     "risk_on": {
-        "momentum": 0.45,
-        "value": 0.15,
+        "momentum": 0.35,
+        "breakout": 0.15,
+        "value": 0.10,
         "quality": 0.10,
-        "lowvol": 0.10,
+        "lowvol": 0.05,
         "size": 0.10,
-        "flow": 0.10,
+        "flow": 0.15,
     },
     "neutral": {
-        "momentum": 0.35,
-        "value": 0.25,
+        "momentum": 0.30,
+        "breakout": 0.05,
+        "value": 0.20,
         "quality": 0.15,
         "lowvol": 0.10,
         "size": 0.05,
-        "flow": 0.10,
+        "flow": 0.15,
     },
     "risk_off": {
         "momentum": 0.10,
+        "breakout": 0.00,
         "value": 0.20,
         "quality": 0.30,
         "lowvol": 0.25,

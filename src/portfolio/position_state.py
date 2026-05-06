@@ -31,10 +31,18 @@ def _conn() -> sqlite3.Connection:
             entry_date TEXT,
             peak_price REAL,
             peak_date TEXT,
-            qty INTEGER
+            qty INTEGER,
+            pyramid_levels INTEGER DEFAULT 0
         )
         """
     )
+    # Migrate older databases that pre-date the pyramid_levels column.
+    cur = c.execute("PRAGMA table_info(position_state)")
+    cols = {row[1] for row in cur.fetchall()}
+    if "pyramid_levels" not in cols:
+        c.execute(
+            "ALTER TABLE position_state ADD COLUMN pyramid_levels INTEGER DEFAULT 0"
+        )
     return c
 
 
@@ -46,6 +54,7 @@ class PositionState:
     peak_price: float
     peak_date: date
     qty: int
+    pyramid_levels: int = 0
 
     def trailing_drop_pct(self, current_price: float) -> float:
         if self.peak_price <= 0:
@@ -124,8 +133,8 @@ def remove(ticker: str) -> None:
 def get(ticker: str) -> PositionState | None:
     with _conn() as c:
         cur = c.execute(
-            "SELECT ticker, entry_price, entry_date, peak_price, peak_date, qty "
-            "FROM position_state WHERE ticker = ?",
+            "SELECT ticker, entry_price, entry_date, peak_price, peak_date, qty, "
+            "COALESCE(pyramid_levels, 0) FROM position_state WHERE ticker = ?",
             (ticker,),
         )
         row = cur.fetchone()
@@ -138,14 +147,15 @@ def get(ticker: str) -> PositionState | None:
         peak_price=float(row[3] or 0),
         peak_date=date.fromisoformat(row[4]) if row[4] else date.today(),
         qty=int(row[5] or 0),
+        pyramid_levels=int(row[6] or 0),
     )
 
 
 def all_states() -> list[PositionState]:
     with _conn() as c:
         cur = c.execute(
-            "SELECT ticker, entry_price, entry_date, peak_price, peak_date, qty "
-            "FROM position_state"
+            "SELECT ticker, entry_price, entry_date, peak_price, peak_date, qty, "
+            "COALESCE(pyramid_levels, 0) FROM position_state"
         )
         rows = cur.fetchall()
     out: list[PositionState] = []
@@ -158,6 +168,15 @@ def all_states() -> list[PositionState]:
                 peak_price=float(r[3] or 0),
                 peak_date=date.fromisoformat(r[4]) if r[4] else date.today(),
                 qty=int(r[5] or 0),
+                pyramid_levels=int(r[6] or 0),
             )
         )
     return out
+
+
+def set_pyramid_level(ticker: str, level: int) -> None:
+    with _conn() as c:
+        c.execute(
+            "UPDATE position_state SET pyramid_levels = ? WHERE ticker = ?",
+            (level, ticker),
+        )

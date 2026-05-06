@@ -253,6 +253,17 @@ def fetch_factor_panel(as_of: date) -> dict[str, Any]:
 
     liquidity = _z(np.log(avg_dollar_vol.replace(0, np.nan)))
 
+    # 52-week breakout — current close vs trailing 252-day max. Names actively
+    # printing new highs (ratio >= 0.98) get a strong z-boost; this is the
+    # classic momentum-trader signal that captures the early stage of a
+    # bull stampede ('가는 말').
+    hi_252 = panel.tail(252).max()
+    breakout_ratio = panel.iloc[-1] / hi_252.replace(0, np.nan)
+    breakout = _z(breakout_ratio)
+    # New high in the last 5 days → +1.0z bonus (z-scored back).
+    recent_hi_bonus = (panel.tail(5).max() >= hi_252 * 0.999).astype(float)
+    breakout = _z(breakout + recent_hi_bonus * 0.5)
+
     # Regime hint for downstream agents — KOSPI 3m momentum.
     bench_3m_mom = 0.0
     try:
@@ -282,6 +293,7 @@ def fetch_factor_panel(as_of: date) -> dict[str, Any]:
                 "size": float(size.get(tkr, 0.0)) if not size.empty else 0.0,
                 "liquidity": float(liquidity.get(tkr, 0.0)) if not liquidity.empty else 0.0,
                 "flow": float(flow.get(tkr, 0.0)) if not flow.empty else 0.0,
+                "breakout": float(breakout.get(tkr, 0.0)) if not breakout.empty else 0.0,
             }
         )
     return {
@@ -295,6 +307,7 @@ def fetch_factor_panel(as_of: date) -> dict[str, Any]:
             "size",
             "liquidity",
             "flow",
+            "breakout",
         ],
         "regime_hint": regime_hint,
         "kospi_mom_3m": round(bench_3m_mom, 4),

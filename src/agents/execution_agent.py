@@ -101,6 +101,21 @@ class ExecutionAgent(BaseAgent):
         except Exception as e:
             log.warning("execution.stops_eval_failed", error=str(e))
 
+        # 0b. Pyramid winners — bump target weight on +20%/+40% names.
+        pyramid_intents: list = []
+        try:
+            from portfolio.pyramid import evaluate_pyramid
+
+            pyramid_intents = evaluate_pyramid(target, current_positions, prices, nav)
+            if pyramid_intents:
+                notify_info(
+                    "Pyramid intents",
+                    f"{len(pyramid_intents)} winners scaled up",
+                    tickers=",".join(p.ticker for p in pyramid_intents),
+                )
+        except Exception as e:
+            log.warning("execution.pyramid_eval_failed", error=str(e))
+
         # 1-2. Plan + cash/per-name caps
         orders = self._plan_orders(target, current_positions, cash, prices)
         orders = self._apply_basic_caps(orders, target, cash)
@@ -211,6 +226,16 @@ class ExecutionAgent(BaseAgent):
                     apply_state_after_fill(
                         order.ticker, order.side, fill_qty, fill_price, today_dt
                     )
+
+        # Commit pyramid level counters AFTER orders are submitted, so a
+        # single +20% trigger doesn't fire twice across runs.
+        if pyramid_intents:
+            try:
+                from portfolio.pyramid import commit_pyramid_levels
+
+                commit_pyramid_levels(pyramid_intents)
+            except Exception as e:
+                log.warning("execution.pyramid_commit_failed", error=str(e))
         return results
 
     # ------------------------------------------------------------------

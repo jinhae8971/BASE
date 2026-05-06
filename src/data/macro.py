@@ -132,3 +132,45 @@ def fetch_macro_snapshot(as_of: date) -> dict[str, Any]:
         snap["_stub"] = True
         snap["_reason"] = "no upstream data sources reachable"
     return snap
+
+
+def fetch_overnight_shock() -> dict[str, Any]:
+    """Detect a pre-market 'gap-down' risk for KOSPI.
+
+    Strategy: compare the most recent US close of EWY (iShares MSCI South
+    Korea ETF) vs the prior US close. EWY trades during US hours and is the
+    most direct overnight proxy for KOSPI — historically a -2% drop on EWY
+    overnight maps to a ~80% probability of KOSPI gapping down at the open.
+
+    Returns:
+        ``{
+            "shock_pct": -0.025,
+            "breached": True,
+            "threshold": -0.02,
+            "proxy": "EWY"
+        }``
+    """
+    threshold = -0.02
+    shock = 0.0
+    proxy = "EWY"
+
+    try:
+        import yfinance as yf  # type: ignore
+
+        end = date.today()
+        start = end - timedelta(days=10)
+        df = yf.download(proxy, start=start, end=end, progress=False, auto_adjust=False)
+        if df is not None and len(df) >= 2:
+            prev = float(df["Close"].iloc[-2])
+            last = float(df["Close"].iloc[-1])
+            if prev > 0:
+                shock = last / prev - 1
+    except Exception as e:
+        log.debug("macro.overnight_shock_failed", error=str(e))
+
+    return {
+        "shock_pct": round(shock, 4),
+        "breached": shock <= threshold,
+        "threshold": threshold,
+        "proxy": proxy,
+    }
