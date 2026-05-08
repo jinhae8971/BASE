@@ -17,6 +17,7 @@ Pages:
 from __future__ import annotations
 
 import json
+import re
 import sys
 from datetime import date, timedelta
 from pathlib import Path
@@ -373,12 +374,413 @@ def _page_xray() -> None:
     )
 
 
+def _page_today() -> None:
+    """Morning-report style: today's target, planned orders, imminent stops."""
+    st.title("☀️ Today")
+    today_d = date.today()
+
+    try:
+        from scheduler.morning_report import build_morning_report
+        from scheduler.state import load_target
+
+        loaded = load_target(today_d)
+    except Exception as e:
+        st.error(f"State load failed: {e}")
+        return
+
+    if loaded is None:
+        st.warning(
+            "No saved target yet. Click **Run research now** in the sidebar "
+            "or run `mais run research`."
+        )
+        return
+
+    target, extra = loaded
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("Positions", len(target.positions))
+    c2.metric("Cash %", f"{target.cash_weight:.0%}")
+    c3.metric("Regime", str(extra.get("consensus_regime", "?")))
+    c4.metric("Proposals", str(extra.get("n_proposals", "?")))
+
+    st.subheader("Target weights (Top 25)")
+    rows = sorted(
+        target.positions.items(), key=lambda kv: kv[1], reverse=True
+    )[:25]
+    df = pd.DataFrame(rows, columns=["ticker", "weight"])
+    df["weight%"] = df["weight"].map(lambda w: f"{w:.2%}")
+    st.dataframe(df[["ticker", "weight%"]], use_container_width=True, hide_index=True)
+
+    st.subheader("Imminent stops")
+    try:
+        from data.market import fetch_latest_prices
+        from portfolio.position_state import all_states
+        from portfolio.stops import evaluate_stops
+
+        states = all_states()
+        if states:
+            prices = fetch_latest_prices([s.ticker for s in states])
+            signals = evaluate_stops(
+                {s.ticker: s.qty for s in states}, prices
+            )
+            if signals:
+                sig_df = pd.DataFrame(
+                    [
+                        {
+                            "ticker": s.ticker,
+                            "reason": s.reason,
+                            "pnl": f"{s.pnl_pct:+.2%}",
+                        }
+                        for s in signals
+                    ]
+                )
+                st.dataframe(sig_df, use_container_width=True, hide_index=True)
+            else:
+                st.success("No stops imminent.")
+        else:
+            st.info("No tracked positions.")
+    except Exception as e:
+        st.warning(f"Stops eval failed: {e}")
+
+    if st.button("📨 Send morning report now"):
+        try:
+            with st.spinner("Sending…"):
+                build_morning_report(today_d)
+            st.success("Sent to Slack/Telegram.")
+        except Exception as e:
+            st.error(f"Failed: {e}")
+
+
+def _page_alerts() -> None:
+    """Recent risk-guard / stop / pyramid / divergence events from the journal."""
+    st.title("🚨 Alerts & Guards")
+    df = _journal_recent(7)
+    if df.empty:
+        st.info("No journal entries in the last 7 days.")
+        return
+
+    interesting = df[
+        df["action"].astype(str).str.contains(
+            "INTRADAY_STOP|REPLACE|LIQUIDATE|PARAM_UPDATE",
+            regex=True,
+            na=False,
+        )
+    ]
+    st.subheader(f"Last 7 days — {len(interesting)} guard / stop / param events")
+    if interesting.empty:
+        st.success("No alert-class events.")
+    else:
+        st.dataframe(
+            interesting[
+                ["ts", "agent", "action", "ticker", "rationale"]
+            ].sort_values("ts", ascending=False),
+            use_container_width=True,
+            hide_index=True,
+        )
+
+    st.subheader("Per-agent action mix (last 7d)")
+    mix = (
+        df.groupby(["agent", "action"]).size().unstack(fill_value=0)
+    )
+    if not mix.empty:
+        st.bar_chart(mix)
+
+
+def _page_learning() -> None:
+    """Bandit + booster + A/B paper book — all the self-tuning surfaces."""
+    st.title("🤖 Learning")
+
+    st.subheader("TWAP bandit")
+    try:
+        from learning.bandit import latest_state
+
+        state = latest_state()
+        bandit_df = pd.DataFrame(state["arms"])
+        bandit_df["seconds"] = bandit_df["seconds"].astype(str)
+        st.dataframe(bandit_df, use_container_width=True, hide_index=True)
+        if not bandit_df.empty:
+            st.bar_chart(bandit_df.set_index("seconds")["avg_reward"])
+        st.caption(f"epsilon = {state['epsilon']:.2f}")
+    except Exception as e:
+        st.info(f"Bandit not initialised: {e}")
+
+    st.subheader("Consensus booster (recent attribution)")
+    try:
+        from learning.booster import score_agents
+
+        scores = score_agents(180)
+        if scores:
+            sc_df = pd.DataFrame(
+                [
+                    {
+                        "agent": s.agent,
+                        "n_picks": s.n,
+                        "avg_1m_return": s.mean_outcome_1m,
+                        "predicted_alpha": s.pred_alpha,
+                    }
+                    for s in scores
+                ]
+            )
+            st.dataframe(sc_df, use_container_width=True, hide_index=True)
+            st.bar_chart(sc_df.set_index("agent")["predicted_alpha"])
+        else:
+            st.info("Not enough labelled picks yet (need ≥20 per agent).")
+    except Exception as e:
+        st.info(f"Booster not ready: {e}")
+
+    st.subheader("A/B paper books")
+    try:
+        from orchestrator.ab_book import METHODS, evaluate_books, load_book
+
+        for method in METHODS:
+            nav = load_book(method)
+            if nav.empty:
+                continue
+            st.markdown(f"**{method}**")
+            st.line_chart(nav)
+
+        books = evaluate_books(window_days=30)
+        if books:
+            ab_df = pd.DataFrame(books).T.reset_index().rename(
+                columns={"index": "method"}
+            )
+            st.dataframe(ab_df, use_container_width=True, hide_index=True)
+        else:
+            st.info("No paper book history yet.")
+    except Exception as e:
+        st.info(f"A/B books unavailable: {e}")
+
+
+def _settings_path() -> Path:
+    return Path(__file__).resolve().parents[1] / "config" / "settings.yaml"
+
+
+def _load_settings_yaml() -> dict:
+    import yaml
+
+    p = _settings_path()
+    if not p.exists():
+        return {}
+    return yaml.safe_load(p.read_text(encoding="utf-8")) or {}
+
+
+def _save_settings_yaml(data: dict) -> None:
+    import yaml
+
+    p = _settings_path()
+    p.write_text(
+        yaml.safe_dump(data, allow_unicode=True, sort_keys=False),
+        encoding="utf-8",
+    )
+    try:
+        from common import config as c
+
+        c.load_yaml_settings.cache_clear()
+    except Exception:
+        pass
+
+
+def _set_dotted(d: dict, dotted: str, value) -> None:
+    keys = dotted.split(".")
+    cur = d
+    for k in keys[:-1]:
+        cur = cur.setdefault(k, {})
+    cur[keys[-1]] = value
+
+
+def _page_control() -> None:
+    """Operator control panel — flags, params, kill switch, blacklist."""
+    st.title("🎛️ Control panel")
+    st.caption(
+        "Edits below write to ``config/settings.yaml`` immediately. The "
+        "running scheduler picks them up on the next phase."
+    )
+
+    settings = _load_settings_yaml()
+
+    # ── Feature flags ────────────────────────────────────────────────
+    st.subheader("Feature flags")
+    flag_paths = [
+        ("Hedge (defensive ETF)", "hedge.enabled"),
+        ("TWAP execution", "execution.twap_enabled"),
+        ("TWAP ε-greedy bandit", "execution.twap_bandit_enabled"),
+        ("Intraday stops (every 30m)", "scheduler.intraday_stops_enabled"),
+        ("A/B optimizer auto-rotate", "optimizer.ab_auto_rotate"),
+        ("Booster auto-apply", "learning.auto_apply"),
+        ("Realtime websocket stops", "websocket.enabled"),
+    ]
+    cols = st.columns(2)
+    changed = False
+    for i, (label, path) in enumerate(flag_paths):
+        cur = bool(get_setting(path, False))
+        new = cols[i % 2].toggle(label, value=cur, key=f"flag_{path}")
+        if new != cur:
+            _set_dotted(settings, path, bool(new))
+            changed = True
+
+    # ── Risk params (sliders) ────────────────────────────────────────
+    st.subheader("Risk parameters")
+    sliders = [
+        ("Hard stop %", "risk.hard_stop_pct", 0.05, 0.20, 0.005),
+        ("Trailing take %", "risk.trailing_take_pct", 0.05, 0.20, 0.005),
+        ("Cash buffer min", "risk.cash_buffer_min", 0.02, 0.20, 0.01),
+        ("Max single position", "risk.max_position_weight", 0.05, 0.30, 0.01),
+        ("Max sector", "risk.max_sector_weight", 0.10, 0.50, 0.05),
+        ("BUY drift", "execution.rebalance_buy_threshold", 0.02, 0.10, 0.005),
+        ("SELL drift", "execution.rebalance_sell_threshold", 0.04, 0.20, 0.005),
+    ]
+    for label, path, lo, hi, step in sliders:
+        cur = float(get_setting(path, lo) or lo)
+        cur = max(lo, min(hi, cur))
+        new = st.slider(
+            label, min_value=lo, max_value=hi, value=cur, step=step, key=f"sl_{path}"
+        )
+        if abs(new - cur) > step / 100:
+            _set_dotted(settings, path, float(new))
+            changed = True
+
+    if changed:
+        _save_settings_yaml(settings)
+        st.success("settings.yaml saved. Scheduler will pick up on next phase.")
+
+    # ── Blacklist editor ─────────────────────────────────────────────
+    st.subheader("Excluded tickers")
+    bl_path = Path(get_env().mais_data_dir) / "excluded_tickers.json"
+    current_list: list[str] = []
+    if bl_path.exists():
+        try:
+            current_list = json.loads(bl_path.read_text(encoding="utf-8"))
+        except Exception:
+            current_list = []
+    bl_text = st.text_area(
+        "Comma- or newline-separated 6-digit codes",
+        value=", ".join(current_list),
+        key="bl_text",
+    )
+    if st.button("Save blacklist"):
+        new_codes = [c.strip() for c in re.split(r"[,\n\s]+", bl_text) if c.strip()]
+        new_codes = [c for c in new_codes if re.fullmatch(r"\d{6}", c)]
+        bl_path.parent.mkdir(parents=True, exist_ok=True)
+        bl_path.write_text(json.dumps(new_codes, ensure_ascii=False), encoding="utf-8")
+        try:
+            from data.universe import invalidate_universe_cache
+
+            invalidate_universe_cache()
+        except Exception:
+            pass
+        st.success(f"Saved {len(new_codes)} codes to {bl_path.name}")
+
+    # ── Kill switch ──────────────────────────────────────────────────
+    st.subheader("🚨 Kill switch")
+    st.caption("Liquidates **every** open position at market. Irreversible.")
+    cnf = st.text_input(
+        "Type 'I-UNDERSTAND' to enable the button", value="", key="kill_confirm"
+    )
+    if st.button(
+        "💣 Liquidate all positions",
+        type="primary",
+        disabled=(cnf != "I-UNDERSTAND"),
+    ):
+        try:
+            from broker.kis_client import KISClient
+            from common.types import Order, Side
+            from memory.journal import DecisionJournal
+
+            client = KISClient()
+            state = client.get_account_state()
+            positions = state.get("positions") or {}
+            if not positions:
+                st.info("No positions to liquidate.")
+            else:
+                journal = DecisionJournal()
+                with st.spinner(f"Liquidating {len(positions)} positions…"):
+                    for tk, qty in positions.items():
+                        if qty <= 0:
+                            continue
+                        order = Order(
+                            ticker=tk,
+                            side=Side.SELL,
+                            quantity=qty,
+                            order_type="market",
+                        )
+                        result = client.place_order(order)
+                        journal.record(
+                            agent="kill_switch",
+                            action="LIQUIDATE",
+                            ticker=tk,
+                            conviction=10,
+                            rationale="Dashboard kill switch",
+                            context={"result": result.model_dump()},
+                        )
+                st.error(f"Submitted SELLs for {len(positions)} tickers.")
+        except Exception as e:
+            st.error(f"Kill switch failed: {e}")
+
+
+def _page_reflection_review() -> None:
+    """Read the latest reflection report and approve / discard the patches."""
+    st.title("🪞 Reflection review")
+
+    refl_dir = Path(get_env().mais_data_dir) / "reflections"
+    if not refl_dir.exists():
+        st.info("No reflections directory yet.")
+        return
+    files = sorted(refl_dir.glob("*.md"), reverse=True)
+    if not files:
+        st.info("No reflection reports yet — they appear weekly on Friday 18:00.")
+        return
+
+    chosen = st.selectbox(
+        "Report",
+        files,
+        format_func=lambda p: p.name,
+    )
+    body = chosen.read_text(encoding="utf-8")
+    st.markdown(body)
+
+    st.divider()
+    if "## Auto-apply patches" in body:
+        st.caption(
+            "This report contains an Auto-apply patches block. Click below to "
+            "run it through the whitelisted reflection_apply pipeline now."
+        )
+        if st.button("✅ Apply patches now"):
+            try:
+                from agents.reflection_apply import apply_reflection_patches
+
+                with st.spinner("Applying…"):
+                    out = apply_reflection_patches(chosen)
+                st.success(
+                    f"Applied {len(out.get('applied', []))}, "
+                    f"rejected {len(out.get('rejected', []))}."
+                )
+                if out.get("rejected"):
+                    st.warning(out["rejected"])
+            except Exception as e:
+                st.error(f"Apply failed: {e}")
+        if st.button("🗑️ Strip patches block (keep narrative)"):
+            new_body = re.sub(
+                r"##\s*Auto-apply patches.*?```\s*",
+                "",
+                body,
+                flags=re.DOTALL | re.IGNORECASE,
+            )
+            chosen.write_text(new_body, encoding="utf-8")
+            st.success("Patches block removed.")
+    else:
+        st.info("No patches block in this report — read-only.")
+
+
 PAGES = {
     "📈 Overview": _page_overview,
+    "☀️ Today": _page_today,
     "💼 Positions": _page_positions,
     "🔬 X-ray": _page_xray,
+    "🤖 Learning": _page_learning,
+    "🚨 Alerts": _page_alerts,
     "🧾 Journal": _page_journal,
     "⏪ Backtest": _page_backtest,
+    "🎛️ Control": _page_control,
+    "🪞 Reflection": _page_reflection_review,
 }
 
 
