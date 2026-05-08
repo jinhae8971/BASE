@@ -100,6 +100,13 @@ def build_scheduler() -> BlockingScheduler:
             ReflectionAgent().reflect(_date.today())
         except Exception as e:
             log.error("scheduler.reflection.failed", error=str(e))
+        # Append booster nudges to the freshly written reflection report.
+        try:
+            from learning import append_to_latest_reflection
+
+            append_to_latest_reflection()
+        except Exception as e:
+            log.warning("scheduler.booster.failed", error=str(e))
 
     def _morning_job() -> None:
         from scheduler.morning_report import build_morning_report

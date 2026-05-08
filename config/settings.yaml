@@ -125,6 +125,13 @@ memory:
   rag_store: data_store/chroma
   rag_top_k: 5
 
+learning:
+  # ML-based consensus weight booster. The weekly reflection job appends
+  # booster patches to the report; eod_phase auto-applies them through the
+  # whitelisted reflection_apply pipeline. Set true to skip reflection and
+  # apply directly (rarely needed).
+  auto_apply: false
+
 monitor:
   # Paper-vs-live divergence: alert when the two NAV curves drift apart by
   # this fraction of return (default 0.5%). 0 disables the check.
