@@ -28,7 +28,22 @@ from common.config import get_env
 from common.logging import get_logger
 from common.types import ExecutionResult, Order, Side
 
+from .rate_limiter import get_default_limiter
+
 log = get_logger(__name__)
+
+
+def _throttle() -> None:
+    """Acquire one token from the KIS rate limiter before every external call.
+
+    Defaults are tuned for KIS retail (5 req/s, burst 10). Override in
+    settings.yaml::broker.rate_limit_per_sec / rate_limit_burst.
+    """
+    try:
+        get_default_limiter().acquire(timeout=10.0)
+    except Exception as e:
+        log.warning("kis.rate_limit_timeout", error=str(e))
+
 
 BASE_URLS = {
     "paper": "https://openapivts.koreainvestment.com:29443",
@@ -84,6 +99,7 @@ class KISClient:
             "appkey": self.app_key,
             "appsecret": self.app_secret,
         }
+        _throttle()
         r = httpx.post(url, json=payload, timeout=15)
         r.raise_for_status()
         data = r.json()
@@ -129,6 +145,7 @@ class KISClient:
         """Current price (KRW)."""
         url = f"{self.base_url}/uapi/domestic-stock/v1/quotations/inquire-price"
         params = {"FID_COND_MRKT_DIV_CODE": "J", "FID_INPUT_ISCD": ticker}
+        _throttle()
         r = httpx.get(url, params=params, headers=self._headers("FHKST01010100"), timeout=10)
         r.raise_for_status()
         data = r.json()
@@ -154,6 +171,7 @@ class KISClient:
         url = f"{self.base_url}/uapi/domestic-stock/v1/quotations/inquire-asking-price-exp-ccn"
         params = {"FID_COND_MRKT_DIV_CODE": "J", "FID_INPUT_ISCD": ticker}
         try:
+            _throttle()
             r = httpx.get(
                 url, params=params, headers=self._headers("FHKST01010200"), timeout=10
             )
@@ -196,6 +214,7 @@ class KISClient:
             "ORD_UNPR": str(unpr),
         }
         try:
+            _throttle()
             r = httpx.post(url, json=body, headers=self._headers(tr_id), timeout=15)
             r.raise_for_status()
             resp = r.json()
@@ -237,6 +256,7 @@ class KISClient:
             "CTX_AREA_NK100": "",
         }
         try:
+            _throttle()
             r = httpx.get(
                 url, params=params, headers=self._headers(tr_id), timeout=15
             )
@@ -290,6 +310,7 @@ class KISClient:
             "QTY_ALL_ORD_YN": "Y",
         }
         try:
+            _throttle()
             r = httpx.post(url, json=body, headers=self._headers(tr_id), timeout=15)
             r.raise_for_status()
             return r.json()
@@ -324,6 +345,7 @@ class KISClient:
             "CTX_AREA_FK100": "",
             "CTX_AREA_NK100": "",
         }
+        _throttle()
         r = httpx.get(url, params=params, headers=self._headers(tr_id), timeout=15)
         r.raise_for_status()
         return r.json()

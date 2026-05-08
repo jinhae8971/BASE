@@ -29,6 +29,12 @@ risk:
   trailing_take_pct: 0.10           # take profit after a 10% pullback from peak
   trailing_min_profit: 0.05         # only trail once +5% from entry
 
+broker:
+  # KIS public API caps: paper ~20 req/s, live retail ~5 req/s. We target
+  # well below the cap to leave headroom for retries.
+  rate_limit_per_sec: 5.0
+  rate_limit_burst: 10
+
 execution:
   order_style: limit              # limit | market | twap
   twap_enabled: true
