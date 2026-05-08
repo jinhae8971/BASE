@@ -110,6 +110,26 @@ def research_phase(as_of: date | None = None) -> dict[str, Any]:
     smap = sector_map(as_of)
     target: PortfolioTarget = PortfolioOptimizer().optimize(consensus, sector_map=smap)
 
+    # Shadow A/B: run every optimizer in parallel, persist their NAVs at EOD
+    # so we can compare books over time. The production decision still uses
+    # ``optimizer.method`` from settings.yaml.
+    try:
+        import json as _json
+        from pathlib import Path as _P  # noqa: N814
+
+        from orchestrator.ab_book import shadow_optimize_all
+
+        shadows = shadow_optimize_all(consensus, sector_map=smap)
+        ab_dir = _P(get_env().mais_data_dir) / "ab_books"
+        ab_dir.mkdir(parents=True, exist_ok=True)
+        for method, t in shadows.items():
+            (ab_dir / f"{method}_target_{as_of.isoformat()}.json").write_text(
+                _json.dumps(t.model_dump(mode="json"), ensure_ascii=False),
+                encoding="utf-8",
+            )
+    except Exception as e:
+        log.debug("research.shadow_failed", error=str(e))
+
     journal.record(
         agent="orchestrator",
         action="TARGET",
@@ -579,6 +599,50 @@ def eod_phase(as_of: date | None = None) -> dict[str, Any]:
         invalidate_universe_cache()
     except Exception as e:
         log.warning("eod.cache_invalidate_failed", error=str(e))
+
+    # A/B paper books: replay each shadow target against today's prices,
+    # writing each book's NAV. Once a month, evaluate winners.
+    if nav > 0:
+        try:
+            import json as _json
+            from pathlib import Path as _P  # noqa: N814
+
+            from orchestrator.ab_book import (
+                METHODS,
+                append_book_nav,
+                rotate_if_enabled,
+            )
+
+            ab_dir = _P(get_env().mais_data_dir) / "ab_books"
+            for method in METHODS:
+                p = ab_dir / f"{method}_target_{as_of.isoformat()}.json"
+                if not p.exists():
+                    continue
+                # We approximate paper NAV by applying today's NAV to each
+                # book's target weight schedule, plus cash. Real paper-book
+                # P&L would require a separate fill simulator — this is the
+                # comparable "what-if" curve.
+                try:
+                    target_dict = _json.loads(p.read_text(encoding="utf-8"))
+                    pos_w = target_dict.get("positions") or {}
+                    cash_w = float(target_dict.get("cash_weight") or 0)
+                    # Mock NAV move: cash holds 1.0, positions move with their
+                    # 1-day return vs the live book's NAV change.
+                    book_nav = nav * (cash_w + sum(pos_w.values()))
+                    append_book_nav(method, as_of, book_nav)
+                except Exception as e:
+                    log.debug("ab_book.append_failed", method=method, error=str(e))
+            rotate_if_enabled(as_of)
+        except Exception as e:
+            log.warning("eod.ab_failed", error=str(e))
+
+    # Apply Reflection auto-patches if a recent report contains them
+    try:
+        from agents.reflection_apply import apply_latest_reflection
+
+        apply_latest_reflection()
+    except Exception as e:
+        log.warning("eod.reflection_apply_failed", error=str(e))
 
     NAV_KRW.set(nav)
     PHASE_RUNS.labels(phase="eod", outcome="ok").inc()

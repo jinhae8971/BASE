@@ -116,6 +116,9 @@ optimizer:
   risk_aversion: 3.0
   lookback_days: 252
   shrinkage: ledoit_wolf
+  # A/B paper books: every optimizer is shadow-run + tracked. Set true to
+  # auto-rotate to the previous month's Sharpe winner at month-end.
+  ab_auto_rotate: false
 
 memory:
   journal_db: data_store/journal.sqlite
