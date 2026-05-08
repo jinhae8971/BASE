@@ -59,6 +59,7 @@ backtest = [
 ]
 
 [project.scripts]
+mais = "cli:main"
 mais-daily = "scheduler.daily_pipeline:main"
 mais-scheduler = "scheduler.scheduler:main"
 mais-backtest = "backtest.engine:main"
@@ -75,6 +76,11 @@ target-version = "py311"
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "N", "SIM", "RUF"]
 ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+# Typer's idiomatic pattern uses typer.Option/Argument as defaults; that's
+# the documented API even though it trips ruff's B008.
+"src/cli.py" = ["B008"]
 
 [tool.mypy]
 python_version = "3.11"

@@ -38,6 +38,48 @@ st.set_page_config(
     layout="wide",
 )
 
+# Sidebar — global controls reused across pages
+with st.sidebar:
+    auto_refresh = st.checkbox("Auto-refresh (60s)", value=False)
+    if auto_refresh:
+        # Lightweight refresh — 60s. streamlit-autorefresh would be cleaner
+        # but we avoid the extra dependency.
+        import time as _t
+
+        _t.sleep(0)  # placeholder; meta refresh handles the actual reload
+        st.markdown(
+            '<meta http-equiv="refresh" content="60">', unsafe_allow_html=True
+        )
+
+    st.divider()
+    st.subheader("Quick actions")
+
+    if st.button("⏯ Run research now", use_container_width=True):
+        try:
+            from scheduler.daily_pipeline import research_phase
+
+            with st.spinner("Running research…"):
+                research_phase()
+            st.success("Research finished — see Today page.")
+        except Exception as e:
+            st.error(f"research failed: {e}")
+
+    if st.button("📅 EOD reconcile now", use_container_width=True):
+        try:
+            from scheduler.daily_pipeline import eod_phase
+
+            with st.spinner("Running EOD…"):
+                eod_phase()
+            st.success("EOD reconciliation done.")
+        except Exception as e:
+            st.error(f"eod failed: {e}")
+
+
+def _pct(v: float) -> str:
+    """Color-coded HTML span for a +/- percentage."""
+    color = "#22c55e" if v >= 0 else "#dc2626"
+    return f'<span style="color:{color};font-weight:600">{v:+.2%}</span>'
+
 
 @st.cache_data(ttl=60)
 def _journal_recent(days: int) -> pd.DataFrame:
@@ -53,11 +95,53 @@ def _journal_recent(days: int) -> pd.DataFrame:
 def _page_overview() -> None:
     st.title("📈 MAI-System — 운영 대시보드")
     env = get_env()
-    col1, col2, col3, col4 = st.columns(4)
-    col1.metric("KIS 환경", env.kis_env.upper())
-    col2.metric("벤치마크", str(get_setting("system.benchmark", "KOSPI")))
-    col3.metric("MDD 한도", f"{get_setting('risk.max_portfolio_mdd', 0.15):.0%}")
-    col4.metric("종목당 한도", f"{get_setting('risk.max_position_weight', 0.10):.0%}")
+
+    # Live NAV / Δ% / MDD up top
+    try:
+        from portfolio.risk_guards import load_recent_equity
+
+        eq = load_recent_equity(lookback_days=60)
+        nav_now = float(eq.iloc[-1]) if not eq.empty else 0.0
+        nav_chg = (
+            float(eq.iloc[-1]) / float(eq.iloc[-2]) - 1
+            if len(eq) >= 2
+            else 0.0
+        )
+        rolling_mdd = (
+            float(((eq - eq.cummax()) / eq.cummax()).min())
+            if len(eq) >= 2
+            else 0.0
+        )
+    except Exception:
+        eq, nav_now, nav_chg, rolling_mdd = pd.Series(dtype=float), 0.0, 0.0, 0.0
+
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("NAV (KRW)", f"{nav_now:,.0f}", f"{nav_chg:+.2%}")
+    c2.metric("Rolling MDD", f"{rolling_mdd:.2%}")
+    c3.metric("KIS 환경", env.kis_env.upper())
+    c4.metric("MDD 한도", f"{get_setting('risk.max_portfolio_mdd', 0.15):.0%}")
+
+    if not eq.empty:
+        st.subheader("NAV curve")
+        st.line_chart(eq.rename("NAV"))
+
+    # Active feature flags — visual badges
+    st.subheader("Feature flags")
+    flags = {
+        "Hedge": get_setting("hedge.enabled", False),
+        "Websocket": get_setting("websocket.enabled", False),
+        "TWAP": get_setting("execution.twap_enabled", False),
+        "TWAP bandit": get_setting("execution.twap_bandit_enabled", False),
+        "AB rotate": get_setting("optimizer.ab_auto_rotate", False),
+        "Booster auto": get_setting("learning.auto_apply", False),
+    }
+    badges = "  ".join(
+        f"<span style='background:{'#22c55e' if v else '#475569'};"
+        f"color:white;padding:3px 9px;border-radius:12px;font-size:0.85rem'>"
+        f"{name} {'ON' if v else 'off'}</span>"
+        for name, v in flags.items()
+    )
+    st.markdown(badges, unsafe_allow_html=True)
 
     st.divider()
     st.subheader("최근 30일 의사결정")
@@ -83,24 +167,64 @@ def _page_positions() -> None:
     st.title("💼 현재 포지션")
     try:
         from broker.kis_client import KISClient
+        from portfolio.position_state import all_states
 
         state = KISClient().get_account_state()
+        states = {s.ticker: s for s in all_states()}
     except Exception as e:
         st.error(f"KIS 잔고 조회 실패: {e}")
         return
     if not state["positions"]:
         st.info("보유 포지션이 없습니다.")
         return
-    rows = [
-        {"ticker": t, "qty": q, "price": state["prices"].get(t, 0)}
-        for t, q in state["positions"].items()
-    ]
-    df = pd.DataFrame(rows)
-    df["value"] = df["qty"] * df["price"]
-    st.dataframe(df, use_container_width=True, hide_index=True)
-    col1, col2 = st.columns(2)
+
+    rows = []
+    for t, q in state["positions"].items():
+        px = state["prices"].get(t, 0.0)
+        s = states.get(t)
+        pnl = (px / s.entry_price - 1.0) if (s and s.entry_price) else 0.0
+        trail = (px / s.peak_price - 1.0) if (s and s.peak_price) else 0.0
+        rows.append(
+            {
+                "ticker": t,
+                "qty": q,
+                "entry": s.entry_price if s else 0,
+                "peak": s.peak_price if s else 0,
+                "now": px,
+                "value": q * px,
+                "pnl%": pnl,
+                "trail%": trail,
+                "pyramid": s.pyramid_levels if s else 0,
+            }
+        )
+    df = pd.DataFrame(rows).sort_values("value", ascending=False)
+    st.dataframe(
+        df.style.format(
+            {
+                "entry": "{:,.0f}",
+                "peak": "{:,.0f}",
+                "now": "{:,.0f}",
+                "value": "{:,.0f}",
+                "pnl%": "{:+.2%}",
+                "trail%": "{:+.2%}",
+            }
+        ).map(
+            lambda v: (
+                "color: #22c55e"
+                if isinstance(v, (int, float)) and v > 0
+                else "color: #dc2626"
+                if isinstance(v, (int, float)) and v < 0
+                else None
+            ),
+            subset=["pnl%", "trail%"],
+        ),
+        use_container_width=True,
+        hide_index=True,
+    )
+    col1, col2, col3 = st.columns(3)
     col1.metric("현금 (KRW)", f"{state['cash']:,.0f}")
     col2.metric("순자산 (KRW)", f"{state['nav']:,.0f}")
+    col3.metric("평균 PnL", f"{df['pnl%'].mean():+.2%}" if not df.empty else "0.00%")
 
 
 def _page_journal() -> None:

@@ -165,6 +165,25 @@ hedge:
     "304660": {name: "KOSEF 단기자금", weight: 0.30, kind: money_market}
     "132030": {name: "KODEX 국고채30년", weight: 0.20, kind: long_bond}
 
+notifications:
+  # Per-category × per-level toggle. Set false to suppress noisy events
+  # (e.g. order-info pings every fill on a busy day).
+  categories:
+    order:   {info: true,  warning: true, error: true}
+    risk:    {info: true,  warning: true, error: true}
+    agent:   {info: false, warning: true, error: true}
+    booster: {info: false, warning: true, error: true}
+    general: {info: true,  warning: true, error: true}
+  # Digest mode: queue info-level events to a JSONL buffer and flush as a
+  # single summary on a cron. Useful during heavy backfill periods.
+  digest:
+    enabled: false
+    interval_seconds: 3600     # cron flushes every hour
+  # Drop messages of the same (category,level) beyond this within the window.
+  rate_limit:
+    max_per_window: 10
+    window_seconds: 600
+
 monitor:
   # Paper-vs-live divergence: alert when the two NAV curves drift apart by
   # this fraction of return (default 0.5%). 0 disables the check.
