@@ -62,6 +62,7 @@ def research_phase(as_of: date | None = None) -> dict[str, Any]:
         try:
             p = agent.run(as_of)
             proposals.append(p)
+            ver = type(agent).prompt_version()
             rec = journal.record(
                 agent=p.agent_name,
                 action="PROPOSE",
@@ -69,11 +70,16 @@ def research_phase(as_of: date | None = None) -> dict[str, Any]:
                 conviction=p.conviction,
                 rationale=p.rationale,
                 context=p.model_dump(mode="json"),
+                prompt_version=ver,
             )
             rag.add(
                 doc_id=rec.id,
                 text=p.rationale,
-                metadata={"agent": p.agent_name, "as_of": as_of.isoformat()},
+                metadata={
+                    "agent": p.agent_name,
+                    "as_of": as_of.isoformat(),
+                    "prompt_version": ver,
+                },
             )
             for pick in p.picks:
                 journal.record(
@@ -87,6 +93,7 @@ def research_phase(as_of: date | None = None) -> dict[str, Any]:
                         "side": pick.side.value,
                         "target_weight": pick.target_weight,
                     },
+                    prompt_version=ver,
                 )
         except Exception as e:
             log.error("agent.failed", agent=agent.name, error=str(e))

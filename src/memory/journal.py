@@ -61,6 +61,11 @@ class DecisionJournal:
             c.execute("CREATE INDEX IF NOT EXISTS idx_decisions_ts ON decisions(ts)")
             c.execute("CREATE INDEX IF NOT EXISTS idx_decisions_agent ON decisions(agent)")
             c.execute("CREATE INDEX IF NOT EXISTS idx_decisions_ticker ON decisions(ticker)")
+            # Online migration: add prompt_version on existing DBs.
+            cur = c.execute("PRAGMA table_info(decisions)")
+            cols = {row[1] for row in cur.fetchall()}
+            if "prompt_version" not in cols:
+                c.execute("ALTER TABLE decisions ADD COLUMN prompt_version TEXT")
 
     # ------------------------------------------------------------------
     def record(
@@ -72,6 +77,7 @@ class DecisionJournal:
         conviction: int,
         rationale: str,
         context: dict[str, Any],
+        prompt_version: str | None = None,
     ) -> DecisionRecord:
         rec = DecisionRecord(
             id=str(uuid.uuid4()),
@@ -86,8 +92,8 @@ class DecisionJournal:
         with self._conn() as c:
             c.execute(
                 """INSERT INTO decisions
-                   (id, ts, agent, action, ticker, conviction, rationale, context_json)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                   (id, ts, agent, action, ticker, conviction, rationale, context_json, prompt_version)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                 (
                     rec.id,
                     rec.timestamp.isoformat(),
@@ -97,6 +103,7 @@ class DecisionJournal:
                     rec.conviction,
                     rec.rationale,
                     json.dumps(rec.context, ensure_ascii=False, default=str),
+                    prompt_version,
                 ),
             )
         return rec

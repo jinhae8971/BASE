@@ -85,6 +85,22 @@ class BaseAgent(ABC):
             return f"You are the {self.name} specialist. Respond with valid JSON."
         return path.read_text(encoding="utf-8")
 
+    @classmethod
+    def prompt_version(cls) -> str:
+        """Short hash of the agent's system prompt — tagged onto every
+        journal row so attribution can be sliced by prompt revision.
+
+        Returns a 12-char SHA-1 prefix, or 'no-prompt' when the file is
+        missing.
+        """
+        import hashlib
+
+        path = PROMPTS_DIR / cls.prompt_file
+        if not path.exists():
+            return "no-prompt"
+        h = hashlib.sha1(path.read_bytes()).hexdigest()
+        return h[:12]
+
     def _format_user_message(self, ctx: dict[str, Any], as_of: date) -> str:
         return (
             f"오늘 날짜(KST): {as_of.isoformat()}\n\n"
