@@ -1,4 +1,4 @@
-"""Streamlit operational dashboard.
+"""Streamlit operational dashboard — primary operator surface.
 
 Run inside the Docker stack via the ``dashboard`` service:
 
@@ -8,11 +8,23 @@ Standalone:
 
     streamlit run src/dashboard/app.py
 
-Pages:
-    1. Overview        — live equity curve, today's target, agent proposals
-    2. Positions       — current KIS holdings (or last known)
-    3. Decision Log    — searchable journal of every agent decision
-    4. Backtest        — quant-only historical simulation
+Pages (sidebar):
+    📈 Overview     — NAV curve + flag badges + 30d decision mix
+    ☀️ Today        — today's target, regime, imminent stops, send report
+    💼 Positions    — per-name PnL / peak / trailing% / pyramid level
+    🔬 X-ray        — factor + sector exposure of the live book
+    🤖 Learning     — TWAP bandit / consensus booster / A/B paper books
+    🚨 Alerts       — last 7d guard / stop / replace / param-update events
+    🧾 Journal      — searchable journal w/ outcome attribution
+    ⏪ Backtest     — quant-only historical simulation
+    🎛️ Control      — feature-flag toggles, risk-param sliders, blacklist,
+                       kill switch (typed-confirm gated)
+    🪞 Reflection   — read weekly report, approve auto-apply patches
+
+Sidebar Quick actions:
+    ⏯ Run research now     — synchronous research_phase() (UI blocks ~60-120s
+                              while the four LLM specialists run)
+    📅 EOD reconcile now   — synchronous eod_phase() (~5-10s)
 """
 from __future__ import annotations
 
@@ -43,23 +55,23 @@ st.set_page_config(
 with st.sidebar:
     auto_refresh = st.checkbox("Auto-refresh (60s)", value=False)
     if auto_refresh:
-        # Lightweight refresh — 60s. streamlit-autorefresh would be cleaner
-        # but we avoid the extra dependency.
-        import time as _t
-
-        _t.sleep(0)  # placeholder; meta refresh handles the actual reload
+        # Lightweight refresh — meta tag triggers a full reload every 60s.
         st.markdown(
             '<meta http-equiv="refresh" content="60">', unsafe_allow_html=True
         )
 
     st.divider()
     st.subheader("Quick actions")
+    st.caption(
+        "These run synchronously and **block this tab** until done. "
+        "Open another tab to keep monitoring."
+    )
 
     if st.button("⏯ Run research now", use_container_width=True):
         try:
             from scheduler.daily_pipeline import research_phase
 
-            with st.spinner("Running research…"):
+            with st.spinner("Running 4 specialist agents (~60-120s)…"):
                 research_phase()
             st.success("Research finished — see Today page.")
         except Exception as e:
@@ -69,7 +81,7 @@ with st.sidebar:
         try:
             from scheduler.daily_pipeline import eod_phase
 
-            with st.spinner("Running EOD…"):
+            with st.spinner("Running EOD (~5-10s)…"):
                 eod_phase()
             st.success("EOD reconciliation done.")
         except Exception as e:
@@ -758,14 +770,17 @@ def _page_reflection_review() -> None:
             except Exception as e:
                 st.error(f"Apply failed: {e}")
         if st.button("🗑️ Strip patches block (keep narrative)"):
+            # Patches block is appended at the end by booster/reflection
+            # — strip from the heading through end-of-document.
             new_body = re.sub(
-                r"##\s*Auto-apply patches.*?```\s*",
-                "",
+                r"\n*##\s*Auto-apply patches[\s\S]*\Z",
+                "\n",
                 body,
-                flags=re.DOTALL | re.IGNORECASE,
+                flags=re.IGNORECASE,
             )
             chosen.write_text(new_body, encoding="utf-8")
-            st.success("Patches block removed.")
+            st.success("Patches block removed. Reloading page…")
+            st.rerun()
     else:
         st.info("No patches block in this report — read-only.")
 
