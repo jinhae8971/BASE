@@ -80,30 +80,75 @@ def extract_training_data(lookback_days: int = 180) -> dict[str, list[dict]]:
 def train_agent_quality_model(
     rows: list[dict],
 ) -> tuple[float, list[float]]:
-    """Tiny ridge regression: outcome_1m ~ a + b1*conviction + b2*score.
+    """Predict outcome_1m from (conviction, score, conviction*score, score^2).
 
-    Returns ``(predicted_alpha_at_avg_features, raw_coeffs)``. When sklearn
-    is missing, falls back to the mean outcome.
+    Three-tier strategy (each requires more data than the last):
+
+        1. >= 50 rows  → MLPRegressor (one hidden layer, "deep enough" for
+                         this scale of data; controlled by ``learning.model``).
+        2. 5..49 rows  → Ridge regression (same feature set).
+        3. < 5 rows    → plain mean of outcomes (fallback).
+
+    Returns ``(predicted_alpha_at_median, raw_coeffs)``. ``raw_coeffs`` is
+    only populated for the linear (Ridge) path — neural nets don't expose
+    interpretable coefficients.
     """
     if not rows:
         return 0.0, []
 
     try:
         import numpy as np
-        from sklearn.linear_model import Ridge
 
-        feat = np.array([[r["conviction"], r["score"]] for r in rows], dtype=float)
+        # Engineered features so a linear model still has some non-linearity
+        feat = np.array(
+            [
+                [
+                    r["conviction"],
+                    r["score"],
+                    r["conviction"] * r["score"],
+                    r["score"] ** 2,
+                ]
+                for r in rows
+            ],
+            dtype=float,
+        )
         y = np.array([r["outcome_1m"] for r in rows], dtype=float)
         if len(rows) < 5 or np.std(y) == 0:
             return float(y.mean()), []
-        model = Ridge(alpha=1.0).fit(feat, y)
-        # Evaluate at the median feature point — typical agent behaviour
+
         med = np.median(feat, axis=0)
-        pred = float(model.predict(med.reshape(1, -1))[0])
-        return pred, list(map(float, model.coef_))
+        model_kind = str(get_setting("learning.model", "auto")).lower()
+
+        if (model_kind in ("auto", "mlp")) and len(rows) >= 50:
+            try:
+                from sklearn.neural_network import MLPRegressor
+
+                hidden = tuple(
+                    int(x) for x in get_setting("learning.mlp_hidden", [16, 8])
+                )
+                mlp = MLPRegressor(
+                    hidden_layer_sizes=hidden,
+                    activation="relu",
+                    solver="adam",
+                    alpha=1e-3,
+                    learning_rate_init=1e-3,
+                    max_iter=400,
+                    random_state=0,
+                ).fit(feat, y)
+                pred = float(mlp.predict(med.reshape(1, -1))[0])
+                log.debug("booster.mlp_trained", n=len(rows), pred=pred)
+                return pred, []
+            except Exception as e:
+                log.debug("booster.mlp_failed_fallback_ridge", error=str(e))
+
+        # Ridge default
+        from sklearn.linear_model import Ridge
+
+        ridge = Ridge(alpha=1.0).fit(feat, y)
+        pred = float(ridge.predict(med.reshape(1, -1))[0])
+        return pred, list(map(float, ridge.coef_))
     except Exception as e:
         log.debug("booster.sklearn_unavailable", error=str(e))
-        # Plain mean fallback
         return sum(r["outcome_1m"] for r in rows) / len(rows), []
 
 

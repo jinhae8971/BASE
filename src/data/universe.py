@@ -38,11 +38,37 @@ FALLBACK_UNIVERSE: list[dict[str, Any]] = [
 ]
 
 
+# pykrx 인덱스 코드 (KRX 공식)
+INDEX_CODES: dict[str, list[str]] = {
+    "KOSPI200": ["1028"],
+    "KRX300": ["5300"],          # 코스피·코스닥 통합 우량주
+    "KOSDAQ150": ["2203"],
+    "UNION": ["1028", "2203"],   # KOSPI200 + KOSDAQ150 합집합
+}
+
+
+def _fetch_index_members(stock: Any, code: str, ymd: str) -> list[str]:
+    """``stock.get_index_portfolio_deposit_file`` returns members for a given
+    index code. Some KOSDAQ index calls require a date param — try both.
+    """
+    try:
+        members = stock.get_index_portfolio_deposit_file(code)
+        if members:
+            return list(members)
+    except Exception:
+        pass
+    try:
+        return list(stock.get_index_portfolio_deposit_file(code, ymd))
+    except Exception:
+        return []
+
+
 @lru_cache(maxsize=4)
 def get_universe(as_of: date | None = None) -> list[dict[str, Any]]:
     """Return the active investable universe as a list of tickers + metadata.
 
     Filters by minimum market cap and 20-day ADV from ``settings.yaml``.
+    Supports KOSPI200 / KRX300 / KOSDAQ150 / UNION via ``universe.index``.
     """
     as_of = as_of or date.today()
     index_name = str(get_setting("universe.index", "KOSPI200")).upper()
@@ -54,19 +80,18 @@ def get_universe(as_of: date | None = None) -> list[dict[str, Any]]:
         from pykrx import stock  # type: ignore
 
         ymd = as_of.strftime("%Y%m%d")
-        # Walk back up to 7 calendar days to find the most recent trading day
+        codes = INDEX_CODES.get(index_name, INDEX_CODES["KOSPI200"])
+
+        tickers: list[str] = []
         for back in range(0, 7):
             d = (as_of - timedelta(days=back)).strftime("%Y%m%d")
-            tickers = (
-                stock.get_index_portfolio_deposit_file("1028")  # KOSPI200
-                if index_name == "KOSPI200"
-                else stock.get_market_ticker_list(d, market="KOSPI")
-            )
-            if tickers:
+            collected: set[str] = set()
+            for code in codes:
+                collected.update(_fetch_index_members(stock, code, d))
+            if collected:
                 ymd = d
+                tickers = sorted(collected)
                 break
-        else:
-            tickers = []
 
         cap_df = stock.get_market_cap_by_ticker(ymd)
         for tkr in tickers:

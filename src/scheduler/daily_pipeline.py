@@ -110,6 +110,16 @@ def research_phase(as_of: date | None = None) -> dict[str, Any]:
     smap = sector_map(as_of)
     target: PortfolioTarget = PortfolioOptimizer().optimize(consensus, sector_map=smap)
 
+    # Defensive spot-ETF hedge: when regime tilts neutral/risk_off, redirect
+    # part of the cash bucket into gold/bond/MMF ETFs (long-only, no
+    # futures). No-op when hedge.enabled=false (default).
+    try:
+        from portfolio.hedge import apply_defensive_hedge
+
+        target = apply_defensive_hedge(target, consensus.get("regime"))
+    except Exception as e:
+        log.debug("research.hedge_failed", error=str(e))
+
     # Shadow A/B: run every optimizer in parallel, persist their NAVs at EOD
     # so we can compare books over time. The production decision still uses
     # ``optimizer.method`` from settings.yaml.
@@ -256,6 +266,16 @@ def order_phase(as_of: date | None = None, *, dry_run: bool = True) -> dict[str,
     prev_nav = float(eq.iloc[-1]) if not eq.empty else None
     today_executed = daily_executed_notional(journal.recent(2), as_of)
 
+    # Bandit-selected TWAP interval (off when execution.twap_bandit_enabled=false)
+    twap_arm: int | None = None
+    if get_setting("execution.twap_bandit_enabled", False):
+        try:
+            from learning.bandit import select_twap_interval
+
+            twap_arm = select_twap_interval()
+        except Exception as e:
+            log.debug("order.bandit_select_failed", error=str(e))
+
     exec_agent = ExecutionAgent()
     results = exec_agent.execute(
         target,
@@ -269,7 +289,21 @@ def order_phase(as_of: date | None = None, *, dry_run: bool = True) -> dict[str,
         prev_nav=prev_nav,
         equity_curve=eq,
         executed_today_notional=today_executed,
+        twap_interval_override=twap_arm,
     )
+
+    # Persist the chosen arm for EOD reward computation
+    if twap_arm is not None:
+        try:
+            import json as _json
+            from pathlib import Path as _P  # noqa: N814
+
+            (_P(get_env().mais_data_dir) / "bandit_today.json").write_text(
+                _json.dumps({"as_of": as_of.isoformat(), "arm": twap_arm}),
+                encoding="utf-8",
+            )
+        except Exception as e:
+            log.debug("order.bandit_persist_failed", error=str(e))
     for r in results:
         journal.record(
             agent="execution",
@@ -582,6 +616,43 @@ def eod_phase(as_of: date | None = None) -> dict[str, Any]:
     from memory.outcomes import update_outcomes
 
     counts = update_outcomes()
+
+    # Bandit reward for today's TWAP interval choice — slippage-driven
+    try:
+        import json as _json
+        from pathlib import Path as _P  # noqa: N814
+
+        bandit_file = _P(get_env().mais_data_dir) / "bandit_today.json"
+        if bandit_file.exists():
+            payload = _json.loads(bandit_file.read_text(encoding="utf-8"))
+            arm = int(payload.get("arm", 0))
+            if arm > 0:
+                # Compute average |fill - target| / target across today's orders
+                rows = DecisionJournal().recent(2)
+                slips = []
+                for r in rows:
+                    if not str(r.get("action") or "").startswith("ORDER_"):
+                        continue
+                    if str(r.get("ts") or "")[:10] != as_of.isoformat():
+                        continue
+                    ctx_raw = r.get("context_json")
+                    try:
+                        ctx = _json.loads(ctx_raw) if isinstance(ctx_raw, str) else (ctx_raw or {})
+                    except Exception:
+                        continue
+                    o = (ctx or {}).get("order") or {}
+                    target_p = float(o.get("price") or 0)
+                    fill_p = float((ctx or {}).get("avg_price") or target_p)
+                    if target_p > 0 and fill_p > 0:
+                        slips.append(abs(fill_p - target_p) / target_p)
+                if slips:
+                    avg_slip_bps = (sum(slips) / len(slips)) * 10_000
+                    from learning.bandit import record_day_outcome
+
+                    record_day_outcome(arm, avg_slip_bps)
+                    log.info("bandit.recorded", arm=arm, slip_bps=round(avg_slip_bps, 2))
+    except Exception as e:
+        log.warning("eod.bandit_record_failed", error=str(e))
 
     # Paper-vs-live drift check (no-op if either curve is missing)
     try:

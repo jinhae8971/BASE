@@ -66,6 +66,7 @@ class ExecutionAgent(BaseAgent):
         prev_nav: float | None = None,
         equity_curve: Any = None,
         executed_today_notional: float = 0.0,
+        twap_interval_override: int | None = None,
     ) -> list[ExecutionResult]:
         from broker.kis_client import KISClient
         from portfolio.risk_guards import DailyRiskGuard
@@ -181,7 +182,12 @@ class ExecutionAgent(BaseAgent):
         # — caller is responsible for budgeting the order_phase wall clock.
         twap_enabled = bool(get_setting("execution.twap_enabled", False))
         twap_slices = max(1, int(get_setting("execution.twap_slices", 4)))
-        twap_interval = max(0, int(get_setting("execution.twap_interval_seconds", 0)))
+        # Bandit may override the TWAP interval — daily-tuned by ε-greedy
+        twap_interval = (
+            int(twap_interval_override)
+            if twap_interval_override is not None
+            else max(0, int(get_setting("execution.twap_interval_seconds", 0)))
+        )
         sliced_orders = (
             self._twap_slice(orders, twap_slices) if twap_enabled else orders
         )

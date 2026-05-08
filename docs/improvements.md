@@ -81,16 +81,25 @@ When the assistant works through these items it:
 | R-5 | Real-time websocket stops (H0STCNT0) | ✅ | (this) |
 | R-6 | 52-week breakout backtest regression | ✅ | `ce9b1c4` |
 
-## Future ideas — not yet promoted
+## Future ideas — all addressed ✅ (round 2)
 
-The above closes the initial improvement sweep. Genuinely new ideas to
-consider as the system runs:
+| # | Idea | Status | Commit |
+|---|---|---|---|
+| F-1 | English RSS feeds for global macro | ✅ | (chunk 11) |
+| F-2 | Deep MLP booster tier (auto-promotes when n≥50) | ✅ | (chunk 11) |
+| F-3 | Spot-only defensive ETF hedge (no futures, long-only) | ✅ | (chunk 11) |
+| F-4 | ε-greedy bandit picks best TWAP interval per day | ✅ | (chunk 11) |
+| F-5 | KRX300 + KOSDAQ150 + UNION universe options | ✅ | (chunk 11) |
 
-- **Multi-language news** (Bloomberg / Reuters API) for non-Korean macro
-- **Deep learning alpha booster** (LSTM on prompt-versioned outcome history)
-  if the ridge booster's predictive power plateaus
-- **Cross-asset hedge** (gold / KRW future) — currently long-only equity,
-  exposed to broad-market drawdowns
-- **Reinforcement learning for execution** (TWAP slice scheduling)
-- **Korean small-cap universe** beyond KOSPI200 (KRX300 + KOSDAQ150) once
-  liquidity / data quality is validated
+## What's left — pure operational, not coding
+
+- Run paper for 2~3 weeks, watch Slack/Telegram alerts
+- Switch ``KIS_ENV=live`` with small capital (100~200만원)
+- Enable feature flags one at a time, ≥2 weeks per flag:
+  - ``hedge.enabled``
+  - ``execution.twap_bandit_enabled``
+  - ``optimizer.ab_auto_rotate``
+  - ``websocket.enabled``
+- Monitor the X-ray dashboard daily — factor exposure drift is the
+  leading indicator that a regime change is happening before NAV
+  reflects it

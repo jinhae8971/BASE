@@ -16,10 +16,13 @@ class MacroAgent(BaseAgent):
     def gather_context(self, as_of: date) -> dict[str, Any]:
         from data.macro import fetch_macro_snapshot
         from data.news import fetch_news_headlines
+        from data.news_global import fetch_global_macro_headlines
 
         snap = fetch_macro_snapshot(as_of)
-        news = fetch_news_headlines(as_of, limit=20)
-        snap["recent_news"] = news.get("headlines", [])[:20]
+        kr_news = fetch_news_headlines(as_of, limit=20)
+        global_news = fetch_global_macro_headlines(as_of, limit=20)
+        snap["recent_news_kr"] = kr_news.get("headlines", [])[:20]
+        snap["recent_news_global"] = global_news.get("headlines", [])[:20]
         return snap
 
     def parse_response(self, text: str, as_of: date) -> AgentProposal:

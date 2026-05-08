@@ -59,6 +59,11 @@ execution:
   # Asymmetric drift — quick to add, slow to trim (let winners run)
   rebalance_buy_threshold: 0.04
   rebalance_sell_threshold: 0.08
+  # ε-greedy bandit picks the best TWAP interval per day from these arms.
+  # Off by default — turn on after twap_enabled has been stable for ≥1w.
+  twap_bandit_enabled: false
+  twap_bandit_epsilon: 0.10
+  twap_bandit_arms: [60, 180, 300, 600]
   # Pyramid winners — add to positions that have proven the thesis
   pyramid_triggers: [0.20, 0.40]   # +20%, +40% from entry
   pyramid_step_pct: 0.025          # add 2.5%p of NAV per level
@@ -141,6 +146,24 @@ learning:
   # whitelisted reflection_apply pipeline. Set true to skip reflection and
   # apply directly (rarely needed).
   auto_apply: false
+  # Model selector — auto promotes MLP once >=50 labelled picks are
+  # available, falls back to ridge below that. Set explicit to force
+  # one path. Values: auto | mlp | ridge.
+  model: auto
+  mlp_hidden: [16, 8]   # MLPRegressor hidden_layer_sizes
+
+hedge:
+  # Defensive spot-ETF hedge — long-only, no futures. Off by default.
+  enabled: false
+  # Maximum portion of cash that can be redirected into the basket.
+  max_hedge_weight: 0.20
+  # Don't hedge unless cash already exceeds this (keep some dry powder).
+  min_cash_to_hedge: 0.10
+  # Spot-only basket. Override per-ticker if you maintain your own.
+  basket:
+    "411060": {name: "ACE KRX금현물", weight: 0.50, kind: gold_spot}
+    "304660": {name: "KOSEF 단기자금", weight: 0.30, kind: money_market}
+    "132030": {name: "KODEX 국고채30년", weight: 0.20, kind: long_bond}
 
 monitor:
   # Paper-vs-live divergence: alert when the two NAV curves drift apart by
