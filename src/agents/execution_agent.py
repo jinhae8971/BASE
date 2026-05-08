@@ -175,9 +175,13 @@ class ExecutionAgent(BaseAgent):
                     self._set_limit_price(o, prices, orderbooks or {}) for o in orders
                 ]
 
-        # 7. Submit (with optional TWAP slicing)
+        # 7. Submit (with optional TWAP slicing).
+        # TWAP space child orders by execution.twap_interval_seconds. We
+        # sleep in-process so each slice gets a fresh price/orderbook print
+        # — caller is responsible for budgeting the order_phase wall clock.
         twap_enabled = bool(get_setting("execution.twap_enabled", False))
         twap_slices = max(1, int(get_setting("execution.twap_slices", 4)))
+        twap_interval = max(0, int(get_setting("execution.twap_interval_seconds", 0)))
         sliced_orders = (
             self._twap_slice(orders, twap_slices) if twap_enabled else orders
         )
@@ -185,7 +189,16 @@ class ExecutionAgent(BaseAgent):
         client = KISClient()
         results: list[ExecutionResult] = []
         today_dt = datetime.utcnow().date()
-        for order in sliced_orders:
+        for slice_idx, order in enumerate(sliced_orders):
+            # Space TWAP children. Skip the wait for slice 0 and dry-run.
+            if (
+                twap_enabled
+                and not dry_run
+                and twap_interval > 0
+                and slice_idx > 0
+                and slice_idx % twap_slices != 0
+            ):
+                self._twap_wait(twap_interval)
             if dry_run:
                 log.info("execution.dry_run", order=order.model_dump())
                 result = ExecutionResult(
@@ -242,13 +255,9 @@ class ExecutionAgent(BaseAgent):
     def _twap_slice(self, orders: list[Order], slices: int) -> list[Order]:
         """Split each order into ``slices`` roughly-equal child orders.
 
-        We rely on KIS's instant order acceptance — the time-spacing itself
-        is handled by the scheduler (we just submit the slice; the operator
-        is expected to use ``execution.twap_interval_seconds`` between calls
-        if running TWAP across the morning band manually).
-
-        For now we keep slicing simple: just emit the child orders. The
-        ExecutionAgent caller can sleep between calls if desired.
+        Slice ``i`` of order ``o`` is emitted at index ``slices * o + i``
+        in the output list — the submit loop above uses that ordering to
+        space children with ``execution.twap_interval_seconds``.
         """
         if slices <= 1:
             return orders
@@ -263,6 +272,13 @@ class ExecutionAgent(BaseAgent):
                 out.append(o.model_copy(update={"quantity": qty}))
                 remaining -= qty
         return out
+
+    @staticmethod
+    def _twap_wait(seconds: int) -> None:
+        """Hook for tests to monkey-patch. Real impl just sleeps."""
+        import time
+
+        time.sleep(seconds)
 
     # ------------------------------------------------------------------
     # Order planning

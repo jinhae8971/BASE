@@ -134,3 +134,12 @@ def _enrich_sector(rows: list[dict[str, Any]], ymd: str) -> list[dict[str, Any]]
 def sector_map(as_of: date | None = None) -> dict[str, str]:
     """Map ticker → sector label."""
     return {row["ticker"]: row.get("sector") or "기타" for row in get_universe(as_of)}
+
+
+def invalidate_universe_cache() -> None:
+    """Drop the cached universe so the next ``get_universe`` call re-fetches.
+
+    Long-running schedulers must call this at end-of-day or universe stays
+    frozen at boot. ``sector_map`` reads from the same cache transitively.
+    """
+    get_universe.cache_clear()

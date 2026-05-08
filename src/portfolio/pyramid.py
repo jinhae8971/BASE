@@ -46,9 +46,25 @@ def evaluate_pyramid(
     prices: dict[str, float],
     nav: float,
 ) -> list[PyramidIntent]:
-    """Decide which winners get pyramided. Mutates target.positions in-place.
+    """Decide which winners get pyramided. Mutates ``target.positions`` in place.
 
-    Returns the list of intents so the caller can journal/notify.
+    Args:
+        target: Today's PortfolioTarget. We only pyramid into tickers already
+            in ``target.positions`` — the research engine must still endorse
+            the name.
+        current_positions: KIS-reported holdings, ``ticker -> share count``.
+        prices: **Live KIS quotes from the same order_phase tick**, never
+            backtest closes or stale fixtures. Pyramid PnL is computed as
+            ``prices[t] / position_state.entry_price - 1`` so a stale price
+            here would either under- or over-fire the +20% / +40% triggers.
+        nav: Total portfolio NAV (cash + position notional) used to convert
+            the per-step ``execution.pyramid_step_pct`` (% of NAV) into a
+            target weight.
+
+    Returns:
+        Intent list for journal / notify. The caller is expected to invoke
+        ``commit_pyramid_levels`` *after* the BUY orders are submitted, so
+        a rejected order doesn't lock out the trigger.
     """
     if nav <= 0:
         return []

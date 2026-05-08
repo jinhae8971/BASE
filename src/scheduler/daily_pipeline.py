@@ -137,6 +137,12 @@ def order_phase(as_of: date | None = None, *, dry_run: bool = True) -> dict[str,
     as_of = as_of or date.today()
     log.info("order.start", as_of=as_of.isoformat(), dry_run=dry_run)
 
+    from common.calendar import is_trading_day
+
+    if not is_trading_day(as_of):
+        log.info("order.skip_non_trading_day", as_of=as_of.isoformat())
+        return {"as_of": as_of.isoformat(), "skipped": "non_trading_day"}
+
     loaded = state_store.load_target(as_of)
     if loaded is None:
         log.warning("order.no_saved_target_running_research")
@@ -256,6 +262,11 @@ def monitor_unfilled_phase(as_of: date | None = None) -> dict[str, Any]:
     as_of = as_of or date.today()
     log.info("monitor_unfilled.start", as_of=as_of.isoformat())
 
+    from common.calendar import is_trading_day
+
+    if not is_trading_day(as_of):
+        return {"as_of": as_of.isoformat(), "skipped": "non_trading_day"}
+
     env = get_env()
     if not (env.kis_app_key and env.kis_app_secret):
         log.debug("monitor_unfilled.no_kis_credentials")
@@ -362,6 +373,11 @@ def intraday_stops_phase(as_of: date | None = None) -> dict[str, Any]:
     setup_logging()
     as_of = as_of or date.today()
 
+    from common.calendar import is_trading_day
+
+    if not is_trading_day(as_of):
+        return {"as_of": as_of.isoformat(), "skipped": "non_trading_day"}
+
     env = get_env()
     if not (env.kis_app_key and env.kis_app_secret):
         log.debug("intraday.no_kis_credentials")
@@ -443,6 +459,54 @@ def intraday_stops_phase(as_of: date | None = None) -> dict[str, Any]:
     }
 
 
+def _reconcile_position_state_from_kis() -> None:
+    """Sync the local position_state table with KIS truth.
+
+    KIS balance carries the *actual* held qty + average buy price after every
+    partial / full fill. Aligning to that source of truth means a partially
+    filled BUY doesn't leave us with an incorrect entry_price (which would
+    miscalibrate hard_stop and pyramid triggers).
+    """
+    from broker.kis_client import KISClient
+    from portfolio.position_state import (
+        PositionState,
+        all_states,
+        remove,
+        upsert_on_buy,
+    )
+
+    state = KISClient().get_account_state()
+    raw = state.get("raw") or {}
+    truth: dict[str, dict[str, float]] = {}
+    for row in raw.get("output1", []) or []:
+        ticker = (row.get("pdno") or "").strip()
+        if not ticker:
+            continue
+        try:
+            qty = int(float(row.get("hldg_qty") or 0))
+            avg = float(row.get("pchs_avg_pric") or 0)
+        except ValueError:
+            continue
+        if qty <= 0 or avg <= 0:
+            continue
+        truth[ticker] = {"qty": qty, "avg": avg}
+
+    persisted = {s.ticker: s for s in all_states()}
+
+    # Drop persisted rows for tickers no longer held.
+    for ticker in persisted.keys() - truth.keys():
+        remove(ticker)
+
+    # Upsert any disagreement (qty or avg) using the broker's numbers.
+    today = date.today()
+    for ticker, t in truth.items():
+        local: PositionState | None = persisted.get(ticker)
+        if local is None or local.qty != t["qty"] or abs(local.entry_price - t["avg"]) > 1.0:
+            # Replace by deleting and re-creating with the broker's avg as entry.
+            remove(ticker)
+            upsert_on_buy(ticker, t["avg"], int(t["qty"]), today)
+
+
 # ----------------------------------------------------------------------
 # End-of-day mark-to-market
 # ----------------------------------------------------------------------
@@ -466,9 +530,27 @@ def eod_phase(as_of: date | None = None) -> dict[str, Any]:
     if nav > 0:
         persist_nav(as_of, nav)
 
+    # Reconcile partial fills against position_state so trailing peaks /
+    # pyramid PnL use real average entry prices, not pre-fill estimates.
+    if env.kis_app_key and env.kis_app_secret:
+        try:
+            _reconcile_position_state_from_kis()
+        except Exception as e:
+            log.warning("eod.reconcile_failed", error=str(e))
+
     from memory.outcomes import update_outcomes
 
     counts = update_outcomes()
+
+    # Drop the universe cache so tomorrow's research_phase pulls a fresh
+    # KOSPI200 snapshot (membership changes weekly, market caps daily).
+    try:
+        from data.universe import invalidate_universe_cache
+
+        invalidate_universe_cache()
+    except Exception as e:
+        log.warning("eod.cache_invalidate_failed", error=str(e))
+
     log.info("eod.done", nav=nav, **counts)
     return {"as_of": as_of.isoformat(), "nav": nav, **counts}
 
