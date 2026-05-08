@@ -167,9 +167,92 @@ def _page_backtest() -> None:
             st.dataframe(pd.DataFrame(res.trade_log), use_container_width=True)
 
 
+def _page_xray() -> None:
+    st.title("🔬 Portfolio X-ray")
+    st.caption("Live factor / sector / regime exposure of the current book")
+
+    try:
+        from broker.kis_client import KISClient
+        from data.market import fetch_factor_panel
+        from data.universe import sector_map
+        from portfolio.position_state import all_states
+    except Exception as e:
+        st.error(f"Import failed: {e}")
+        return
+
+    # Live positions (from KIS) + persisted entry prices for PnL %
+    try:
+        state = KISClient().get_account_state()
+    except Exception as e:
+        st.warning(f"KIS unavailable, using last persisted state. ({e})")
+        state = {"positions": {}, "prices": {}, "cash": 0, "nav": 0}
+
+    positions = state.get("positions") or {}
+    if not positions:
+        st.info("No live positions to X-ray.")
+        return
+
+    smap = sector_map()
+    panel = fetch_factor_panel(date.today())
+    by_ticker = {r["ticker"]: r for r in panel.get("rows", [])}
+    persisted = {s.ticker: s for s in all_states()}
+    nav = float(state.get("nav") or 0) or sum(
+        q * state["prices"].get(t, 0) for t, q in positions.items()
+    )
+
+    # Build the per-position X-ray table
+    rows = []
+    for ticker, qty in positions.items():
+        px = state["prices"].get(ticker, 0)
+        weight = (qty * px) / nav if nav > 0 else 0.0
+        f = by_ticker.get(ticker, {})
+        s = persisted.get(ticker)
+        rows.append(
+            {
+                "ticker": ticker,
+                "weight": weight,
+                "sector": smap.get(ticker, "기타"),
+                "M": f.get("momentum", 0.0),
+                "V": f.get("value", 0.0),
+                "Q": f.get("quality", 0.0),
+                "L": f.get("lowvol", 0.0),
+                "S": f.get("size", 0.0),
+                "F": f.get("flow", 0.0),
+                "B": f.get("breakout", 0.0),
+                "pnl_%": (px / s.entry_price - 1.0) if s and s.entry_price else 0.0,
+                "pyramid": s.pyramid_levels if s else 0,
+            }
+        )
+    df = pd.DataFrame(rows).sort_values("weight", ascending=False)
+    st.dataframe(df, use_container_width=True, hide_index=True)
+
+    # Sector exposure
+    st.subheader("Sector exposure")
+    sec_df = df.groupby("sector")["weight"].sum().reset_index().sort_values(
+        "weight", ascending=False
+    )
+    st.bar_chart(sec_df.set_index("sector"))
+
+    # Weighted factor exposure of the whole book
+    st.subheader("Portfolio factor exposure (weighted)")
+    if df["weight"].sum() > 0:
+        factors = ["M", "V", "Q", "L", "S", "F", "B"]
+        weighted = {f: float((df[f] * df["weight"]).sum()) for f in factors}
+        fac_df = pd.DataFrame.from_dict(weighted, orient="index", columns=["z"])
+        st.bar_chart(fac_df)
+
+    # Regime hint surfaced
+    st.metric(
+        "Regime hint",
+        panel.get("regime_hint", "—"),
+        f"KOSPI 3m mom {panel.get('kospi_mom_3m', 0):+.2%}",
+    )
+
+
 PAGES = {
     "📈 Overview": _page_overview,
     "💼 Positions": _page_positions,
+    "🔬 X-ray": _page_xray,
     "🧾 Journal": _page_journal,
     "⏪ Backtest": _page_backtest,
 }
