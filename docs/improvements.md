@@ -64,21 +64,33 @@ When the assistant works through these items it:
 - `ec6b9c6` chunk 3 — KIS API token-bucket rate limiter
 - `5915f7e` chunk 4 — paper-vs-live divergence monitor, E2E smoke test
 - `44cb9dd` chunk 5 — pre-commit hooks, prompt versioning + journal column
-- (final) chunk 6 — Streamlit X-ray page (factor / sector / pyramid /
-  regime exposure of the live book)
+- `7cee5ec` chunk 6 — Streamlit X-ray page
+- `ce9b1c4` chunk 7 — Prometheus metrics + 52w breakout regression (R-1, R-6)
+- `8feb138` chunk 8 — Reflection auto-apply + A/B optimizer paper books (R-3, R-2)
+- `ac56453` chunk 9 — ML alpha booster (R-4)
+- (this) chunk 10 — KIS websocket realtime stops (R-5)
 
-## Remaining ideas (not yet promoted to tracked items)
+## Remaining ideas — all addressed ✅
 
-These were scoped out of the initial improvement sweep — open them when
-operational data shows a need:
+| # | Idea | Status | Commit |
+|---|---|---|---|
+| R-1 | API watchdog — Prometheus exporter | ✅ | `ce9b1c4` |
+| R-2 | A/B optimizer paper books | ✅ | `8feb138` |
+| R-3 | Reflection auto-application (whitelisted) | ✅ | `8feb138` |
+| R-4 | ML alpha booster (sklearn ridge) | ✅ | `ac56453` |
+| R-5 | Real-time websocket stops (H0STCNT0) | ✅ | (this) |
+| R-6 | 52-week breakout backtest regression | ✅ | `ce9b1c4` |
 
-- **API watchdog**: Prometheus / OpenTelemetry exporter
-- **A/B optimizer paper books**: score_weighted vs MV vs BL vs RP run in
-  parallel; pick monthly winner
-- **Reflection auto-application**: small parameter tweaks accepted without
-  human review
-- **ML alpha booster**: train a small model on prompt-versioned attribution
-  history to auto-tune consensus weights
-- **Real-time websocket stops**: KIS H0STCNT0 stream for sub-30s reaction
-- **52-week breakout factor regime test in backtest** (already in production
-  factor panel; needs historical sim to validate)
+## Future ideas — not yet promoted
+
+The above closes the initial improvement sweep. Genuinely new ideas to
+consider as the system runs:
+
+- **Multi-language news** (Bloomberg / Reuters API) for non-Korean macro
+- **Deep learning alpha booster** (LSTM on prompt-versioned outcome history)
+  if the ridge booster's predictive power plateaus
+- **Cross-asset hedge** (gold / KRW future) — currently long-only equity,
+  exposed to broad-market drawdowns
+- **Reinforcement learning for execution** (TWAP slice scheduling)
+- **Korean small-cap universe** beyond KOSPI200 (KRX300 + KOSDAQ150) once
+  liquidity / data quality is validated

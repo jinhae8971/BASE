@@ -81,3 +81,21 @@ services:
       - ./data_store:/app/data_store
       - ./config:/app/config
     command: ["python", "scripts/run_reflection.py"]
+
+  websocket:
+    # Realtime tick subscriber. Off by default — enable in compose with
+    # `docker compose --profile realtime up websocket` once the daily
+    # pipeline has been stable for a week.
+    image: mais:latest
+    profiles: ["realtime"]
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      MAIS_TZ: Asia/Seoul
+      TZ: Asia/Seoul
+      PYTHONPATH: /app/src
+    volumes:
+      - ./data_store:/app/data_store
+      - ./config:/app/config
+      - ./.kis_token.json:/app/.kis_token.json
+    command: ["python", "-m", "broker.kis_websocket"]

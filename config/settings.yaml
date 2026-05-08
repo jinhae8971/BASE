@@ -35,6 +35,16 @@ broker:
   rate_limit_per_sec: 5.0
   rate_limit_burst: 10
 
+websocket:
+  # Realtime tick-driven stops via KIS H0STCNT0. Off by default — enable
+  # only after the daily pipeline has been stable for at least a week.
+  enabled: false
+  # Trigger intraday_stops_phase when any position moves more than this
+  # fraction since the last reference price.
+  tick_threshold: 0.015
+  # Suppress repeated firings on the same ticker within this many seconds.
+  cooldown_seconds: 60
+
 execution:
   order_style: limit              # limit | market | twap
   twap_enabled: true

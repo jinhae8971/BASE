@@ -50,6 +50,8 @@ RUN pip install --upgrade pip setuptools wheel \
         "sqlalchemy>=2.0" \
         "feedparser>=6.0" \
         "prometheus-client>=0.20" \
+        "websockets>=12.0" \
+        "scikit-learn>=1.4" \
         "yfinance>=0.2" \
         "FinanceDataReader>=0.9.90" \
         "pykrx>=1.0.45" \
