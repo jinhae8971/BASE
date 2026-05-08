@@ -122,6 +122,11 @@ memory:
   rag_store: data_store/chroma
   rag_top_k: 5
 
+monitor:
+  # Paper-vs-live divergence: alert when the two NAV curves drift apart by
+  # this fraction of return (default 0.5%). 0 disables the check.
+  divergence_threshold: 0.005
+
 backtest:
   start: "2015-01-01"
   initial_capital: 100_000_000

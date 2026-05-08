@@ -542,6 +542,14 @@ def eod_phase(as_of: date | None = None) -> dict[str, Any]:
 
     counts = update_outcomes()
 
+    # Paper-vs-live drift check (no-op if either curve is missing)
+    try:
+        from portfolio.divergence import evaluate_divergence
+
+        evaluate_divergence(as_of)
+    except Exception as e:
+        log.warning("eod.divergence_check_failed", error=str(e))
+
     # Drop the universe cache so tomorrow's research_phase pulls a fresh
     # KOSPI200 snapshot (membership changes weekly, market caps daily).
     try:
