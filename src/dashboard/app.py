@@ -51,47 +51,175 @@ st.set_page_config(
     layout="wide",
 )
 
-# Sidebar — global controls reused across pages
-with st.sidebar:
-    auto_refresh = st.checkbox("Auto-refresh (60s)", value=False)
-    if auto_refresh:
-        # Lightweight refresh — meta tag triggers a full reload every 60s.
-        st.markdown(
-            '<meta http-equiv="refresh" content="60">', unsafe_allow_html=True
+
+def _render_sidebar() -> None:
+    """Sidebar — global controls reused across pages.
+
+    Defined as a function so module-load order doesn't break page-helper
+    references (``_next_cron_summary`` etc are defined later in the file).
+    Called from ``main()``.
+    """
+    with st.sidebar:
+        auto_refresh = st.checkbox("자동 새로고침 (60초)", value=False)
+        if auto_refresh:
+            st.markdown(
+                '<meta http-equiv="refresh" content="60">', unsafe_allow_html=True
+            )
+
+        st.divider()
+        st.subheader("바로 실행")
+        st.caption(
+            "이 작업은 **이 탭을 블록**합니다. 다른 탭을 열고 같이 모니터링하세요."
         )
 
-    st.divider()
-    st.subheader("Quick actions")
-    st.caption(
-        "These run synchronously and **block this tab** until done. "
-        "Open another tab to keep monitoring."
-    )
+        if st.button("⏯ 지금 리서치 실행", use_container_width=True):
+            try:
+                from scheduler.daily_pipeline import research_phase
 
-    if st.button("⏯ Run research now", use_container_width=True):
-        try:
-            from scheduler.daily_pipeline import research_phase
+                with st.spinner("4개 에이전트 실행 중 (~60-120초)…"):
+                    research_phase()
+                st.success("리서치 완료 — Today 페이지로 이동.")
+            except Exception as e:
+                _show_friendly_error(e, context="리서치 실행 실패")
 
-            with st.spinner("Running 4 specialist agents (~60-120s)…"):
-                research_phase()
-            st.success("Research finished — see Today page.")
-        except Exception as e:
-            st.error(f"research failed: {e}")
+        if st.button("📅 EOD 정산 실행", use_container_width=True):
+            try:
+                from scheduler.daily_pipeline import eod_phase
 
-    if st.button("📅 EOD reconcile now", use_container_width=True):
-        try:
-            from scheduler.daily_pipeline import eod_phase
+                with st.spinner("EOD 정산 중 (~5-10초)…"):
+                    eod_phase()
+                st.success("EOD 정산 완료.")
+            except Exception as e:
+                _show_friendly_error(e, context="EOD 정산 실패")
 
-            with st.spinner("Running EOD (~5-10s)…"):
-                eod_phase()
-            st.success("EOD reconciliation done.")
-        except Exception as e:
-            st.error(f"eod failed: {e}")
+        st.divider()
+        import contextlib
+
+        with contextlib.suppress(Exception):
+            st.caption(f"⏰ {_next_cron_summary()}")
 
 
 def _pct(v: float) -> str:
     """Color-coded HTML span for a +/- percentage."""
     color = "#22c55e" if v >= 0 else "#dc2626"
     return f'<span style="color:{color};font-weight:600">{v:+.2%}</span>'
+
+
+# =====================================================================
+# Friendly error / onboarding helpers
+# =====================================================================
+_ERROR_HINTS: dict[str, str] = {
+    "KIS_APP_KEY": (
+        "KIS 인증이 비어있습니다. ``.env`` 파일에 ``KIS_APP_KEY`` / "
+        "``KIS_APP_SECRET`` / ``KIS_ACCOUNT_NO`` 를 채우거나 "
+        "``mais init`` 마법사를 실행하세요."
+    ),
+    "RetryError": (
+        "KIS 서버 호출이 실패했습니다. 네트워크 또는 KIS 키가 만료되었을 수 "
+        "있습니다. 터미널에서 ``mais doctor`` 로 점검하세요."
+    ),
+    "ANTHROPIC_API_KEY": (
+        "ANTHROPIC API 키가 없습니다. LLM 에이전트가 동작하려면 ``.env`` 의 "
+        "``ANTHROPIC_API_KEY`` 를 채워야 합니다."
+    ),
+    "No module named 'pykrx'": (
+        "데이터 패키지가 설치되어 있지 않습니다. Docker 이미지에서는 자동 "
+        "설치되지만, 로컬 환경에선 ``pip install pykrx FinanceDataReader yfinance`` "
+        "를 실행하세요."
+    ),
+    "no_proposals_met_min_conviction": (
+        "에이전트들이 충분한 신뢰도로 의견을 내지 못해 합의가 이루어지지 "
+        "못했습니다. ``mais run research`` 를 다시 실행하거나 "
+        "``consensus.min_conviction`` 을 임시로 낮춰보세요."
+    ),
+}
+
+
+def _friendly_error(exc: Exception) -> str:
+    """Translate a raw exception into a Korean operator-friendly hint."""
+    msg = str(exc)
+    for needle, hint in _ERROR_HINTS.items():
+        if needle in msg or needle in repr(exc):
+            return hint
+    return f"오류: `{type(exc).__name__}: {msg[:200]}`"
+
+
+def _show_friendly_error(exc: Exception, context: str = "") -> None:
+    """Render a friendly error block in the current Streamlit page."""
+    hint = _friendly_error(exc)
+    st.error(f"⚠️ {context}\n\n{hint}" if context else f"⚠️ {hint}")
+    with st.expander("자세히 보기 (raw)"):
+        st.code(f"{type(exc).__name__}: {exc}")
+
+
+def _last_updated(label: str = "마지막 갱신") -> None:
+    """Right-aligned timestamp showing when this page rendered."""
+    from datetime import datetime as _dt
+
+    st.caption(
+        f"<div style='text-align:right;opacity:0.7'>{label}: "
+        f"{_dt.now().strftime('%H:%M:%S')}</div>",
+        unsafe_allow_html=True,
+    )
+
+
+def _onboarding_cta(message: str, button_label: str, action: str) -> None:
+    """Big call-to-action when a page has no data yet.
+
+    ``action`` ∈ {'research', 'doctor', 'init'} — maps to the right
+    follow-up.
+    """
+    st.info(message)
+    if st.button(f"▶ {button_label}", type="primary"):
+        try:
+            if action == "research":
+                from scheduler.daily_pipeline import research_phase
+
+                with st.spinner("리서치 실행 중 (~60-120초)…"):
+                    research_phase()
+                st.success("리서치 완료. 페이지를 새로고침하세요.")
+                st.rerun()
+            elif action == "doctor":
+                st.info(
+                    "터미널에서 ``mais doctor`` 를 실행하세요. 환경변수 + 패키지 "
+                    "설치 + 거래일 여부를 한 번에 점검합니다."
+                )
+            elif action == "init":
+                st.info("터미널에서 ``mais init`` 을 실행하세요.")
+        except Exception as e:
+            _show_friendly_error(e, context="실행 실패")
+
+
+def _next_cron_summary() -> str:
+    """Compute time until the next scheduled phase. Returns a friendly
+    one-liner like '다음 리서치까지 1시간 23분'."""
+    from datetime import datetime as _dt
+
+    now = _dt.now()
+    crons = [
+        ("리서치", str(get_setting("scheduler.research_time", "08:00"))),
+        ("주문", str(get_setting("scheduler.order_time", "09:05"))),
+        ("EOD", str(get_setting("scheduler.eod_review_time", "16:00"))),
+    ]
+    upcoming: list[tuple[str, _dt]] = []
+    for name, hhmm in crons:
+        try:
+            h, m = map(int, hhmm.split(":"))
+        except (ValueError, AttributeError):
+            continue
+        when = now.replace(hour=h, minute=m, second=0, microsecond=0)
+        if when <= now:
+            from datetime import timedelta as _td
+
+            when += _td(days=1)
+        upcoming.append((name, when))
+    if not upcoming:
+        return "다음 일정 없음"
+    name, when = min(upcoming, key=lambda kv: kv[1])
+    delta = when - now
+    h = delta.seconds // 3600
+    m = (delta.seconds % 3600) // 60
+    return f"다음 [{name}] 까지 {h}시간 {m}분"
 
 
 @st.cache_data(ttl=60)
@@ -160,7 +288,12 @@ def _page_overview() -> None:
     st.subheader("최근 30일 의사결정")
     df = _journal_recent(30)
     if df.empty:
-        st.info("아직 저널 기록이 없습니다. `python scripts/run_daily.py` 로 시작하세요.")
+        _onboarding_cta(
+            "아직 저널 기록이 없습니다. 첫 리서치를 실행해서 시스템을 시작하세요.",
+            "지금 첫 리서치 실행",
+            "research",
+        )
+        _last_updated()
         return
 
     by_agent = (
@@ -174,6 +307,7 @@ def _page_overview() -> None:
     st.subheader("일자별 의사결정 추이")
     daily = df.groupby([df["ts"].dt.date, "agent"]).size().unstack(fill_value=0)
     st.line_chart(daily)
+    _last_updated()
 
 
 def _page_positions() -> None:
@@ -185,10 +319,15 @@ def _page_positions() -> None:
         state = KISClient().get_account_state()
         states = {s.ticker: s for s in all_states()}
     except Exception as e:
-        st.error(f"KIS 잔고 조회 실패: {e}")
+        _show_friendly_error(e, context="KIS 잔고 조회 실패")
         return
     if not state["positions"]:
-        st.info("보유 포지션이 없습니다.")
+        st.info(
+            "보유 포지션이 없습니다. "
+            "사이드바의 **Run research now** 로 첫 타깃을 만든 뒤, "
+            "**mais run order --live** 또는 09:05 cron으로 매수가 발생합니다."
+        )
+        _last_updated()
         return
 
     rows = []
@@ -238,26 +377,74 @@ def _page_positions() -> None:
     col1.metric("현금 (KRW)", f"{state['cash']:,.0f}")
     col2.metric("순자산 (KRW)", f"{state['nav']:,.0f}")
     col3.metric("평균 PnL", f"{df['pnl%'].mean():+.2%}" if not df.empty else "0.00%")
+    if not df.empty:
+        st.download_button(
+            "⬇ CSV 내려받기",
+            data=df.to_csv(index=False).encode("utf-8-sig"),
+            file_name=f"positions_{date.today().isoformat()}.csv",
+            mime="text/csv",
+        )
+    _last_updated()
 
 
 def _page_journal() -> None:
     st.title("🧾 의사결정 저널")
-    days = st.slider("Lookback (days)", min_value=1, max_value=180, value=30)
+    days = st.slider(
+        "조회 기간 (days)",
+        min_value=1,
+        max_value=180,
+        value=30,
+        help="저널에서 최근 며칠 어치를 가져올지 — 길수록 attribution이 안정적",
+    )
     df = _journal_recent(days)
     if df.empty:
-        st.info("기록 없음")
+        _onboarding_cta(
+            "조회된 저널 기록이 없습니다. 첫 리서치를 돌려보세요.",
+            "지금 첫 리서치 실행",
+            "research",
+        )
+        _last_updated()
         return
 
-    agent = st.selectbox(
+    # Filters row
+    f1, f2, f3 = st.columns(3)
+    agent = f1.selectbox(
         "Agent", ["(전체)", *sorted(df["agent"].unique().tolist())]
     )
+    action = f2.selectbox(
+        "Action",
+        ["(전체)", *sorted(df["action"].astype(str).unique().tolist())],
+    )
+    ticker_q = f3.text_input("Ticker / 키워드", help="6자리 코드 또는 부분 텍스트")
+
     if agent != "(전체)":
         df = df[df["agent"] == agent]
+    if action != "(전체)":
+        df = df[df["action"] == action]
+    if ticker_q:
+        q = ticker_q.strip()
+        df = df[
+            df["ticker"].astype(str).str.contains(q, na=False, regex=False)
+            | df["rationale"].astype(str).str.contains(q, na=False, regex=False)
+        ]
+
+    st.caption(f"행 수: **{len(df)}**")
+    cols_to_show = [c for c in ["ts", "agent", "action", "ticker", "conviction",
+                                "rationale", "outcome_1w", "outcome_1m"] if c in df.columns]
     st.dataframe(
-        df[["ts", "agent", "action", "ticker", "conviction", "rationale"]],
+        df[cols_to_show],
         use_container_width=True,
         hide_index=True,
     )
+
+    # CSV export
+    if not df.empty:
+        st.download_button(
+            "⬇ CSV 내려받기",
+            data=df[cols_to_show].to_csv(index=False).encode("utf-8-sig"),
+            file_name=f"journal_{date.today().isoformat()}.csv",
+            mime="text/csv",
+        )
 
     st.subheader("Outcome 분석")
     if "outcome_1m" in df.columns:
@@ -268,6 +455,9 @@ def _page_journal() -> None:
             )
             attribution.columns = ["agent", "avg_1m_return", "n"]
             st.dataframe(attribution, use_container_width=True, hide_index=True)
+        else:
+            st.caption("outcome 데이터가 아직 backfill되지 않았습니다 (1주~1개월 후 자동 채워짐).")
+    _last_updated()
 
 
 def _page_backtest() -> None:
@@ -321,7 +511,10 @@ def _page_xray() -> None:
     try:
         state = KISClient().get_account_state()
     except Exception as e:
-        st.warning(f"KIS unavailable, using last persisted state. ({e})")
+        st.warning(
+            "KIS 잔고 조회 실패 — 마지막 저장 상태로 표시합니다.\n\n"
+            f"{_friendly_error(e)}"
+        )
         state = {"positions": {}, "prices": {}, "cash": 0, "nav": 0}
 
     positions = state.get("positions") or {}
@@ -397,14 +590,17 @@ def _page_today() -> None:
 
         loaded = load_target(today_d)
     except Exception as e:
-        st.error(f"State load failed: {e}")
+        _show_friendly_error(e, context="상태 파일 로드 실패")
         return
 
     if loaded is None:
-        st.warning(
-            "No saved target yet. Click **Run research now** in the sidebar "
-            "or run `mais run research`."
+        _onboarding_cta(
+            f"오늘({today_d.isoformat()})자 타깃이 아직 없습니다. "
+            "리서치를 실행해서 오늘의 포트폴리오 타깃을 만들어보세요.",
+            "지금 첫 리서치 실행",
+            "research",
         )
+        _last_updated()
         return
 
     target, extra = loaded
@@ -453,13 +649,14 @@ def _page_today() -> None:
     except Exception as e:
         st.warning(f"Stops eval failed: {e}")
 
-    if st.button("📨 Send morning report now"):
+    if st.button("📨 모닝리포트 즉시 발송"):
         try:
-            with st.spinner("Sending…"):
+            with st.spinner("발송 중…"):
                 build_morning_report(today_d)
-            st.success("Sent to Slack/Telegram.")
+            st.success("Slack/Telegram 발송 완료.")
         except Exception as e:
-            st.error(f"Failed: {e}")
+            _show_friendly_error(e, context="모닝리포트 발송 실패")
+    _last_updated()
 
 
 def _page_alerts() -> None:
@@ -495,6 +692,7 @@ def _page_alerts() -> None:
     )
     if not mix.empty:
         st.bar_chart(mix)
+    _last_updated()
 
 
 def _page_learning() -> None:
@@ -560,6 +758,7 @@ def _page_learning() -> None:
             st.info("No paper book history yet.")
     except Exception as e:
         st.info(f"A/B books unavailable: {e}")
+    _last_updated()
 
 
 def _settings_path() -> Path:
@@ -610,41 +809,112 @@ def _page_control() -> None:
     settings = _load_settings_yaml()
 
     # ── Feature flags ────────────────────────────────────────────────
-    st.subheader("Feature flags")
+    st.subheader("기능 플래그")
     flag_paths = [
-        ("Hedge (defensive ETF)", "hedge.enabled"),
-        ("TWAP execution", "execution.twap_enabled"),
-        ("TWAP ε-greedy bandit", "execution.twap_bandit_enabled"),
-        ("Intraday stops (every 30m)", "scheduler.intraday_stops_enabled"),
-        ("A/B optimizer auto-rotate", "optimizer.ab_auto_rotate"),
-        ("Booster auto-apply", "learning.auto_apply"),
-        ("Realtime websocket stops", "websocket.enabled"),
+        (
+            "방어 자산 헷지 (Hedge)",
+            "hedge.enabled",
+            "regime이 risk_off일 때 cash의 일부를 금 ETF/단기자금/장기채로 자동 분배",
+        ),
+        (
+            "TWAP 분할 체결",
+            "execution.twap_enabled",
+            "주문을 4분할로 시간 분산해서 시장 충격 완화",
+        ),
+        (
+            "TWAP ε-greedy 밴딧",
+            "execution.twap_bandit_enabled",
+            "TWAP 간격을 매일 강화학습으로 자동 튜닝 (slippage 기반)",
+        ),
+        (
+            "장중 stops (30분 간격)",
+            "scheduler.intraday_stops_enabled",
+            "10:00~15:00 매 30분마다 stops만 평가 (추가매수 X)",
+        ),
+        (
+            "A/B 옵티마이저 자동 회전",
+            "optimizer.ab_auto_rotate",
+            "월말에 paper book Sharpe 우승 옵티마이저로 자동 전환",
+        ),
+        (
+            "Booster 자동 적용",
+            "learning.auto_apply",
+            "리플렉션 검토 없이 ML booster의 가중치 패치를 즉시 반영",
+        ),
+        (
+            "실시간 웹소켓 stops",
+            "websocket.enabled",
+            "KIS H0STCNT0 구독 — 1.5% 즉시 변동에 stops 발동 (paper에서 1주 검증 후 권장)",
+        ),
     ]
     cols = st.columns(2)
     changed = False
-    for i, (label, path) in enumerate(flag_paths):
+    for i, (label, path, help_text) in enumerate(flag_paths):
         cur = bool(get_setting(path, False))
-        new = cols[i % 2].toggle(label, value=cur, key=f"flag_{path}")
+        new = cols[i % 2].toggle(
+            label, value=cur, key=f"flag_{path}", help=help_text
+        )
         if new != cur:
             _set_dotted(settings, path, bool(new))
             changed = True
 
     # ── Risk params (sliders) ────────────────────────────────────────
-    st.subheader("Risk parameters")
+    st.subheader("리스크 파라미터")
     sliders = [
-        ("Hard stop %", "risk.hard_stop_pct", 0.05, 0.20, 0.005),
-        ("Trailing take %", "risk.trailing_take_pct", 0.05, 0.20, 0.005),
-        ("Cash buffer min", "risk.cash_buffer_min", 0.02, 0.20, 0.01),
-        ("Max single position", "risk.max_position_weight", 0.05, 0.30, 0.01),
-        ("Max sector", "risk.max_sector_weight", 0.10, 0.50, 0.05),
-        ("BUY drift", "execution.rebalance_buy_threshold", 0.02, 0.10, 0.005),
-        ("SELL drift", "execution.rebalance_sell_threshold", 0.04, 0.20, 0.005),
+        (
+            "하드 손절 (Hard stop)",
+            "risk.hard_stop_pct",
+            0.05, 0.20, 0.005,
+            "진입가 대비 이만큼 빠지면 무조건 시장가 매도 (기본 12%)",
+        ),
+        (
+            "트레일링 익절 (Trailing take)",
+            "risk.trailing_take_pct",
+            0.05, 0.20, 0.005,
+            "고점 대비 이만큼 빠지면 익절 (단, 진입 +5% 이후만 발동)",
+        ),
+        (
+            "최소 현금 보유",
+            "risk.cash_buffer_min",
+            0.02, 0.20, 0.01,
+            "포트폴리오의 최소 현금 비중. 너무 낮으면 슬리피지 + 비상 대응 어려움",
+        ),
+        (
+            "단일 종목 최대 비중",
+            "risk.max_position_weight",
+            0.05, 0.30, 0.01,
+            "한 종목에 NAV의 몇 %까지 허용할지 (기본 10%)",
+        ),
+        (
+            "단일 섹터 최대 비중",
+            "risk.max_sector_weight",
+            0.10, 0.50, 0.05,
+            "한 섹터(반도체 등)에 NAV의 몇 %까지 허용할지 (기본 30%)",
+        ),
+        (
+            "매수 drift 임계값",
+            "execution.rebalance_buy_threshold",
+            0.02, 0.10, 0.005,
+            "현재/타깃 차이가 이 % 이상이면 BUY 주문 발생 (낮을수록 자주 매수)",
+        ),
+        (
+            "매도 drift 임계값",
+            "execution.rebalance_sell_threshold",
+            0.04, 0.20, 0.005,
+            "비대칭: 매수보다 높게 둬서 '가는 말 타고 오래' 원칙 유지",
+        ),
     ]
-    for label, path, lo, hi, step in sliders:
+    for label, path, lo, hi, step, help_text in sliders:
         cur = float(get_setting(path, lo) or lo)
         cur = max(lo, min(hi, cur))
         new = st.slider(
-            label, min_value=lo, max_value=hi, value=cur, step=step, key=f"sl_{path}"
+            label,
+            min_value=lo,
+            max_value=hi,
+            value=cur,
+            step=step,
+            key=f"sl_{path}",
+            help=help_text,
         )
         if abs(new - cur) > step / 100:
             _set_dotted(settings, path, float(new))
@@ -782,7 +1052,8 @@ def _page_reflection_review() -> None:
             st.success("Patches block removed. Reloading page…")
             st.rerun()
     else:
-        st.info("No patches block in this report — read-only.")
+        st.info("이 리포트에는 자동 적용 patches 블록이 없습니다 — 읽기 전용.")
+    _last_updated()
 
 
 PAGES = {
@@ -800,6 +1071,7 @@ PAGES = {
 
 
 def main() -> None:
+    _render_sidebar()
     page = st.sidebar.radio("페이지", list(PAGES.keys()))
     PAGES[page]()
     st.sidebar.divider()

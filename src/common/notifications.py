@@ -195,12 +195,16 @@ def _send_slack(
         {"title": k, "value": str(v), "short": True}
         for k, v in (fields or {}).items()
     ]
+    dash_url = str(get_setting("notifications.dashboard_url", "") or "").strip()
+    body_text = message
+    if dash_url:
+        body_text = f"{message}\n\n<{dash_url}|대시보드 열기>"
     payload = {
         "attachments": [
             {
                 "color": color,
                 "title": f"[MAI-System] {title}",
-                "text": message,
+                "text": body_text,
                 "fields": attachment_fields,
                 "ts": int(time.time()),
             }
@@ -227,6 +231,9 @@ def _send_telegram(
     parts = [f"{icon} *{title}*", message]
     for k, v in (fields or {}).items():
         parts.append(f"• {k}: `{v}`")
+    dash_url = str(get_setting("notifications.dashboard_url", "") or "").strip()
+    if dash_url:
+        parts.append(f"[대시보드]({dash_url})")
     text = "\n".join(parts)
     url = f"https://api.telegram.org/bot{env.telegram_bot_token}/sendMessage"
     payload = {

@@ -166,6 +166,10 @@ hedge:
     "132030": {name: "KODEX 국고채30년", weight: 0.20, kind: long_bond}
 
 notifications:
+  # Optional: full dashboard URL appended as a deeplink to every Slack/
+  # Telegram message so the operator can jump straight from the alert.
+  # Example: "http://192.168.0.10:8501"
+  dashboard_url: ""
   # Per-category × per-level toggle. Set false to suppress noisy events
   # (e.g. order-info pings every fill on a busy day).
   categories:
