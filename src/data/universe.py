@@ -91,8 +91,66 @@ def get_universe(as_of: date | None = None) -> list[dict[str, Any]]:
         log.warning("universe.fallback", error=str(e), reason="pykrx unavailable or offline")
         rows = list(FALLBACK_UNIVERSE)
 
+    rows = _filter_excluded(rows, as_of)
+
     log.info("universe.loaded", count=len(rows), index=index_name, as_of=as_of.isoformat())
     return rows
+
+
+def _filter_excluded(
+    rows: list[dict[str, Any]], as_of: date | None
+) -> list[dict[str, Any]]:
+    """Drop tickers we should never trade today.
+
+    - 거래정지 / 관리종목 / 투자경고·주의·위험
+    - User-supplied blacklist in ``settings.yaml::universe.exclude_tickers``
+    - We source halt info from ``data_store/excluded_tickers.json`` if the
+      operator maintains one (manual override) and from pykrx best-effort
+      otherwise.
+    """
+    excluded: set[str] = set(get_setting("universe.exclude_tickers", []) or [])
+
+    # Manual operator override file — easy way to exclude during incidents
+    try:
+        from pathlib import Path as _Path
+
+        from common.config import get_env
+
+        p = _Path(get_env().mais_data_dir) / "excluded_tickers.json"
+        if p.exists():
+            import json as _json
+
+            data = _json.loads(p.read_text(encoding="utf-8"))
+            excluded |= set(data if isinstance(data, list) else data.get("tickers", []))
+    except Exception:
+        pass
+
+    # pykrx best-effort: 관리종목 + 투자경고
+    try:
+        from pykrx import stock  # type: ignore
+
+        ymd = (as_of or date.today()).strftime("%Y%m%d")
+        for status in ("관리종목", "투자위험", "투자경고", "투자주의"):
+            try:
+                tickers = stock.get_market_warning_by_ticker(ymd, status=status)
+                if tickers is not None and not getattr(tickers, "empty", True):
+                    excluded |= set(tickers.index.astype(str))
+            except Exception:
+                continue
+    except Exception:
+        pass
+
+    if not excluded:
+        return rows
+    filtered = [r for r in rows if r["ticker"] not in excluded]
+    dropped = len(rows) - len(filtered)
+    if dropped > 0:
+        log.info(
+            "universe.excluded",
+            dropped=dropped,
+            sample=sorted(excluded)[:5],
+        )
+    return filtered
 
 
 def _enrich_sector(rows: list[dict[str, Any]], ymd: str) -> list[dict[str, Any]]:
