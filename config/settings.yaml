@@ -126,6 +126,9 @@ monitor:
   # Paper-vs-live divergence: alert when the two NAV curves drift apart by
   # this fraction of return (default 0.5%). 0 disables the check.
   divergence_threshold: 0.005
+  # Prometheus exporter port (scheduler container). Map this in
+  # docker-compose if you want host-level scraping.
+  metrics_port: 9100
 
 backtest:
   start: "2015-01-01"

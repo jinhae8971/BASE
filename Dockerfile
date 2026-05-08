@@ -49,6 +49,7 @@ RUN pip install --upgrade pip setuptools wheel \
         "rich>=13.7" "typer>=0.12" "structlog>=24.1" \
         "sqlalchemy>=2.0" \
         "feedparser>=6.0" \
+        "prometheus-client>=0.20" \
         "yfinance>=0.2" \
         "FinanceDataReader>=0.9.90" \
         "pykrx>=1.0.45" \

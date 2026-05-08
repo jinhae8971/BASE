@@ -15,6 +15,8 @@ services:
       - ./data_store:/app/data_store
       - ./config:/app/config
       - ./.kis_token.json:/app/.kis_token.json
+    ports:
+      - "9100:9100"        # Prometheus /metrics
     command: ["python", "-m", "scheduler.scheduler"]
 
   dashboard:

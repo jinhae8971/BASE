@@ -26,6 +26,7 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 
 from common.config import get_env
 from common.logging import get_logger
+from common.metrics import KIS_LATENCY, KIS_REQUESTS
 from common.types import ExecutionResult, Order, Side
 
 from .rate_limiter import get_default_limiter
@@ -43,6 +44,14 @@ def _throttle() -> None:
         get_default_limiter().acquire(timeout=10.0)
     except Exception as e:
         log.warning("kis.rate_limit_timeout", error=str(e))
+
+
+def _record_kis(endpoint: str, started: float, ok: bool) -> None:
+    """Tag each KIS round-trip with Prometheus latency + outcome."""
+    import time
+
+    KIS_LATENCY.labels(endpoint=endpoint).observe(time.monotonic() - started)
+    KIS_REQUESTS.labels(endpoint=endpoint, outcome="ok" if ok else "err").inc()
 
 
 BASE_URLS = {

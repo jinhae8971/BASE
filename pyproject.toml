@@ -30,6 +30,7 @@ dependencies = [
     "OpenDartReader>=0.2.2",
     "yfinance>=0.2",
     "feedparser>=6.0",
+    "prometheus-client>=0.20",
     "chromadb>=0.4.24",
     "sqlalchemy>=2.0",
     "rich>=13.7",

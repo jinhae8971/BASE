@@ -26,6 +26,13 @@ from agents import (
 from broker.kis_client import KISClient
 from common.config import get_env, get_setting
 from common.logging import get_logger, setup_logging
+from common.metrics import (
+    CASH_PCT,
+    GUARD_FIRES,
+    N_POSITIONS,
+    NAV_KRW,
+    PHASE_RUNS,
+)
 from common.notifications import notify_error, notify_info, notify_warning
 from common.types import PortfolioTarget
 from data.market import fetch_latest_prices
@@ -124,6 +131,9 @@ def research_phase(as_of: date | None = None) -> dict[str, Any]:
         positions=len(target.positions),
         cash=f"{target.cash_weight:.0%}",
     )
+    N_POSITIONS.set(len(target.positions))
+    CASH_PCT.set(target.cash_weight)
+    PHASE_RUNS.labels(phase="research", outcome="ok").inc()
     log.info(
         "research.done",
         positions=len(target.positions),
@@ -250,6 +260,7 @@ def order_phase(as_of: date | None = None, *, dry_run: bool = True) -> dict[str,
             context=r.model_dump(mode="json"),
         )
 
+    PHASE_RUNS.labels(phase="order", outcome="ok").inc()
     log.info("order.done", n_orders=len(results), dry_run=dry_run)
     return {
         "as_of": as_of.isoformat(),
@@ -354,6 +365,7 @@ def monitor_unfilled_phase(as_of: date | None = None) -> dict[str, Any]:
             f"{len(replaced)} orders re-priced to fresh bid/ask",
             tickers=",".join(r["ticker"] for r in replaced),
         )
+    PHASE_RUNS.labels(phase="monitor_unfilled", outcome="ok").inc()
     log.info("monitor_unfilled.done", n_replaced=len(replaced))
     return {"as_of": as_of.isoformat(), "n_replaced": len(replaced), "replaced": replaced}
 
@@ -457,6 +469,8 @@ def intraday_stops_phase(as_of: date | None = None) -> dict[str, Any]:
             apply_state_after_fill(
                 order.ticker, Side.SELL, order.quantity, prices.get(order.ticker, 0.0), as_of
             )
+    PHASE_RUNS.labels(phase="intraday_stops", outcome="ok").inc()
+    GUARD_FIRES.labels(guard="intraday_stop").inc(len(submitted))
     log.warning("intraday.stops_executed", n=len(submitted))
     return {
         "as_of": as_of.isoformat(),
@@ -566,6 +580,8 @@ def eod_phase(as_of: date | None = None) -> dict[str, Any]:
     except Exception as e:
         log.warning("eod.cache_invalidate_failed", error=str(e))
 
+    NAV_KRW.set(nav)
+    PHASE_RUNS.labels(phase="eod", outcome="ok").inc()
     log.info("eod.done", nav=nav, **counts)
     return {"as_of": as_of.isoformat(), "nav": nav, **counts}
 

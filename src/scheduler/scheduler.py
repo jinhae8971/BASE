@@ -21,6 +21,7 @@ from pytz import timezone
 
 from common.config import get_setting
 from common.logging import get_logger, setup_logging
+from common.metrics import serve as serve_metrics
 
 log = get_logger(__name__)
 
@@ -214,6 +215,12 @@ def build_scheduler() -> BlockingScheduler:
 
 def main() -> None:
     sched = build_scheduler()
+
+    # Prometheus exporter on a dedicated port — scrape this from outside the
+    # container with ``http://<host>:<port>/metrics``.
+    metrics_port = int(get_setting("monitor.metrics_port", 9100))
+    serve_metrics(metrics_port)
+    log.info("scheduler.metrics_started", port=metrics_port)
 
     def _shutdown(signum: int, _frame: object) -> None:
         log.info("scheduler.shutdown", signal=signum)
