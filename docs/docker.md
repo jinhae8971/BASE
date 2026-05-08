@@ -5,15 +5,64 @@
 
 ## 사전 준비
 
-1. **Docker Desktop for Windows** 설치 (WSL2 백엔드 권장).
-2. **PowerShell** 또는 **Windows Terminal**.
-3. KIS 계정과 ANTHROPIC API 키.
+### 필수 설치
 
-## 1) 빠른 시작
+| 도구 | 설치 방법 | 비고 |
+|---|---|---|
+| Docker Desktop | https://docs.docker.com/desktop/install/windows/ | WSL2 백엔드 권장 |
+| Git for Windows | https://git-scm.com/download/win | |
+| Windows Terminal | Microsoft Store 검색 "Windows Terminal" | 권장 |
+
+### WSL2 활성화 (권장, Docker Desktop 설치 전에 수행)
+
+```powershell
+# 관리자 PowerShell에서 실행
+wsl --install
+# 재부팅 후 Docker Desktop에서 Settings → General → "Use WSL 2 based engine" 체크
+```
+
+### 계정/키 발급
+
+- **한국투자증권 KIS Open API**: https://apiportal.koreainvestment.com/ → 모의투자 신청
+- **Anthropic API Key**: https://console.anthropic.com/ → Claude 4 사용 가능 플랜
+- **DART API Key** (선택): https://opendart.fss.or.kr/
+- **ECOS API Key** (선택): https://ecos.bok.or.kr/
+
+---
+
+## 1) 자동 설치 스크립트 (권장)
+
+루트 폴더의 `setup_windows.ps1`이 아래 모든 단계를 자동으로 수행합니다.
+
+```powershell
+# 1. 코드 클론
+git clone <repository_url> mais
+cd mais
+git checkout claude/setup-windows-environment-J0O1g
+
+# 2. PowerShell 실행 정책 일시 허용 (필요 시)
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+
+# 3. 자동 설치
+.\setup_windows.ps1
+```
+
+스크립트가 하는 일:
+- Docker / Git / WSL2 존재 여부 검증
+- `.env` 파일 대화형 작성 (API 키 입력)
+- `data_store/` 하위 디렉토리 생성
+- `.kis_token.json` 빈 캐시 파일 생성
+- `docker compose build` (5~10분)
+- `mais doctor` 환경 진단
+- `docker compose up -d scheduler dashboard` + 브라우저 자동 오픈
+
+---
+
+## 2) 수동 설치 (스크립트 대신)
 
 ```powershell
 # 1. 코드 체크아웃 후 폴더로 이동
-cd C:\dev\kis-autotrade
+cd C:\dev\mais
 
 # 2. 환경변수 파일 작성
 copy .env.example .env
@@ -22,11 +71,15 @@ notepad .env   # KIS_APP_KEY / KIS_APP_SECRET / KIS_ACCOUNT_NO / ANTHROPIC_API_K
 # 3. 빈 토큰 캐시 파일 (KIS 토큰 보관용)
 type nul > .kis_token.json
 
-# 4. 이미지 빌드 + 백그라운드 기동
-docker compose build
-docker compose up -d scheduler dashboard
+# 4. 데이터 디렉토리 생성
+mkdir data_store\logs, data_store\state, data_store\reflections
 
-# 5. 대시보드 확인
+# 5. 이미지 빌드 + 환경 진단
+docker compose build
+docker compose run --rm scheduler mais doctor
+
+# 6. 백그라운드 기동 + 대시보드 확인
+docker compose up -d scheduler dashboard
 start http://localhost:8501
 ```
 
