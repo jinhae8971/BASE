@@ -6,7 +6,7 @@ breakdown is a first-class artefact surfaced in the dashboard.
 """
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Any, Literal
 
@@ -117,7 +117,9 @@ class OrderResult(BaseModel):
     avg_price: float = 0.0
     paid_fee: float = 0.0
     krw_amount: float = 0.0
-    submitted_at: datetime = Field(default_factory=datetime.utcnow)
+    submitted_at: datetime = Field(
+        default_factory=lambda: datetime.now(UTC).replace(tzinfo=None)
+    )
     message: str = ""
     raw: dict[str, Any] = Field(default_factory=dict)
 

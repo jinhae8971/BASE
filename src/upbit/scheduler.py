@@ -14,6 +14,7 @@ The dashboard owns this object: changing a time in the 전략 tab calls
 """
 from __future__ import annotations
 
+import logging
 import threading
 from datetime import datetime
 from typing import Any
@@ -55,6 +56,10 @@ class UpbitScheduler:
     # ------------------------------------------------------------------
     def start(self) -> dict[str, Any]:
         from apscheduler.schedulers.background import BackgroundScheduler
+
+        # APScheduler narrates every job add at INFO; our own structured events
+        # already cover what matters, so keep its chatter out of the console.
+        logging.getLogger("apscheduler").setLevel(logging.WARNING)
 
         with self._lock:
             if self._scheduler is None:

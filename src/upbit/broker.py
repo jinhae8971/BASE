@@ -16,13 +16,12 @@ Upbit KRW conventions baked in here:
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from datetime import datetime
 from typing import Any
 
 from common.logging import get_logger
 
 from .client import UpbitClient, round_to_tick
-from .store import UpbitStore, get_store
+from .store import UpbitStore, get_store, utc_now
 from .types import OrderRequest, OrderResult
 
 log = get_logger(__name__)
@@ -176,7 +175,7 @@ class PaperBroker(Broker):
 
         return OrderResult(
             request=req,
-            uuid=f"paper-{datetime.utcnow().timestamp():.0f}",
+            uuid=f"paper-{utc_now().timestamp():.0f}",
             state="simulated",
             executed_volume=volume,
             avg_price=price,
@@ -214,7 +213,7 @@ class PaperBroker(Broker):
 
         return OrderResult(
             request=req,
-            uuid=f"paper-{datetime.utcnow().timestamp():.0f}",
+            uuid=f"paper-{utc_now().timestamp():.0f}",
             state="simulated",
             executed_volume=volume,
             avg_price=price,

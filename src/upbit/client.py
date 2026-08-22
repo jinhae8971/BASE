@@ -19,7 +19,6 @@ import threading
 import time
 import uuid as uuid_mod
 from collections import deque
-from datetime import datetime
 from typing import Any, Literal
 from urllib.parse import unquote, urlencode
 
@@ -30,6 +29,7 @@ from common.config import get_setting
 from common.logging import get_logger
 
 from . import credentials as creds_mod
+from .store import utc_now
 from .types import OrderRequest, OrderResult
 
 log = get_logger(__name__)
@@ -258,7 +258,7 @@ class UpbitClient:
         except Exception as exc:  # surfaced to the dashboard, never fatal
             log.error("upbit.order_failed", market=req.market, side=req.side, error=str(exc))
             return OrderResult(
-                request=req, state="rejected", message=str(exc), submitted_at=datetime.utcnow()
+                request=req, state="rejected", message=str(exc), submitted_at=utc_now()
             )
 
         return OrderResult(
@@ -267,7 +267,7 @@ class UpbitClient:
             state="submitted",
             executed_volume=float(raw.get("executed_volume") or 0.0),
             paid_fee=float(raw.get("paid_fee") or 0.0),
-            submitted_at=datetime.utcnow(),
+            submitted_at=utc_now(),
             raw=raw,
         )
 

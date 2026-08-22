@@ -3,6 +3,7 @@
 Everything the dashboard does, minus the browser: useful for cron, for a first
 smoke test, and for driving the system on a box with no UI.
 
+    mais-upbit doctor                  # preflight: deps, config, API, port
     mais-upbit scan --dry-run          # score the universe, place no orders
     mais-upbit scan                    # scan and enter per the current strategy
     mais-upbit monitor                 # run one exit-check pass
@@ -97,9 +98,22 @@ def liquidate(
 
 
 @app.command()
+def doctor(
+    skip_network: bool = typer.Option(False, "--offline", help="네트워크 점검 건너뛰기"),
+) -> None:
+    """실행 전 환경 점검 — 의존성·설정·저장소·API·포트를 확인합니다."""
+    from .doctor import run
+
+    report = run(skip_network=skip_network)
+    typer.echo(report.render())
+    raise typer.Exit(code=1 if report.failures else 0)
+
+
+@app.command()
 def serve(
     host: str = typer.Option("", help="기본값은 settings.yaml 의 upbit.dashboard.host"),
     port: int = typer.Option(0, help="기본값은 settings.yaml 의 upbit.dashboard.port"),
+    skip_checks: bool = typer.Option(False, "--skip-checks", help="실행 전 점검 건너뛰기"),
 ) -> None:
     """대시보드와 스케줄러를 함께 실행합니다."""
     import os
@@ -108,6 +122,16 @@ def serve(
         os.environ["UPBIT_DASHBOARD_HOST"] = host
     if port:
         os.environ["UPBIT_DASHBOARD_PORT"] = str(port)
+
+    if not skip_checks:
+        from .doctor import run
+
+        report = run()
+        typer.echo(report.render())
+        if report.failures:
+            typer.echo("점검 실패 항목을 해결한 뒤 다시 실행하세요. (--skip-checks 로 건너뛸 수 있습니다)")
+            raise typer.Exit(code=1)
+
     from dashboard.server import main as serve_main
 
     serve_main()

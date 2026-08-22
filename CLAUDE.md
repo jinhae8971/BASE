@@ -58,12 +58,21 @@ docs/               # architecture.md, agents.md, risk_policy.md
 ## Running Locally
 
 ```bash
-pip install -e ".[dev]"
+# Dependencies are split per subsystem — the base install is the shared pure-Python
+# core, and each stack adds its own extra.
+pip install -e ".[equity,dev]"   # Korean equity stack (KIS, DART, optimizer, RAG)
+pip install -e ".[upbit,dev]"    # Upbit crypto stack (FastAPI dashboard, JWT, crypto)
+
 cp .env.example .env   # fill in keys
 python scripts/run_daily.py --env paper --dry-run
 pytest
 ruff check src tests
 ```
+
+The Upbit subsystem runs standalone — `./start-upbit.sh` (or `start-upbit.ps1` on
+Windows) creates the venv, installs `.[upbit]`, runs `mais-upbit doctor`, and serves
+the dashboard. `mais-upbit doctor` is the preflight: deps, settings, storage,
+credentials, public/private API reachability, and the dashboard port.
 
 ## Extending the System
 

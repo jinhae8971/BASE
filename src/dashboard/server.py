@@ -14,6 +14,7 @@ The API surface maps 1:1 onto the tabs of the SPA in ``static/``:
 from __future__ import annotations
 
 import os
+import sys
 from contextlib import asynccontextmanager, suppress
 from datetime import datetime, timedelta
 from typing import Any
@@ -23,7 +24,6 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from common.config import get_setting
 from common.logging import get_logger, setup_logging
 from upbit import credentials as creds_mod
 from upbit import holdings as holdings_mod
@@ -32,7 +32,7 @@ from upbit.broker import PaperBroker
 from upbit.client import UpbitAPIError, UpbitClient
 from upbit.engine import KST, TradingEngine
 from upbit.scheduler import get_scheduler
-from upbit.store import get_store
+from upbit.store import get_store, utc_now
 
 log = get_logger(__name__)
 
@@ -207,7 +207,7 @@ def trades(
     mode: str | None = Query(None, pattern="^(paper|live)$"),
 ) -> dict[str, Any]:
     since = (
-        (datetime.utcnow() - timedelta(days=days)).isoformat(timespec="seconds") if days else None
+        (utc_now() - timedelta(days=days)).isoformat(timespec="seconds") if days else None
     )
     store = get_store()
     rows = store.list_trades(
@@ -518,10 +518,19 @@ def main() -> None:
     """`mais-upbit-dashboard` entry point."""
     import uvicorn
 
-    host = os.environ.get("UPBIT_DASHBOARD_HOST") or get_setting(
-        "upbit.dashboard.host", "127.0.0.1"
-    )
-    port = int(os.environ.get("UPBIT_DASHBOARD_PORT") or get_setting("upbit.dashboard.port", 8787))
+    from upbit.doctor import dashboard_address, port_in_use
+
+    host, port = dashboard_address()
+    if port_in_use(host if host != "0.0.0.0" else "127.0.0.1", port):
+        # Binding would fail with a bare errno; say something useful instead.
+        print(
+            f"\n[중단] {host}:{port} 를 이미 다른 프로세스가 사용하고 있습니다.\n"
+            f"       대시보드가 이미 떠 있다면 http://{host}:{port} 를 여세요.\n"
+            f"       새로 띄우려면 다른 포트를 쓰세요:  mais-upbit serve --port {port + 1}\n",
+            file=sys.stderr,
+        )
+        raise SystemExit(1)
+
     uvicorn.run(app, host=host, port=port, log_level="info")
 
 

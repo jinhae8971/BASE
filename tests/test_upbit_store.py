@@ -1,11 +1,9 @@
 """SQLite persistence — everything the dashboard reads back."""
 from __future__ import annotations
 
-from datetime import datetime
-
 import pytest
 
-from upbit.store import UpbitStore
+from upbit.store import UpbitStore, utc_now
 from upbit.types import Candidate, Position, ScoreBreakdown
 
 
@@ -87,7 +85,7 @@ def test_trade_stats_is_empty_safe(store: UpbitStore) -> None:
 def test_position_lifecycle(store: UpbitStore) -> None:
     pos = Position(
         market="KRW-XRP", symbol="XRP", volume=100.0, avg_price=900.0,
-        opened_at=datetime.utcnow(), high_water=910.0, stop_price=873.0,
+        opened_at=utc_now(), high_water=910.0, stop_price=873.0,
         take_price=945.0, mode="paper",
     )
     pid = store.open_position(pos, entry_trade_id=1, score=71.4)

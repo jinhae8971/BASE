@@ -10,8 +10,10 @@ readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
 authors = [{ name = "jinhae8971" }]
+# Pure-Python core shared by both subsystems. Everything heavy or
+# subsystem-specific lives in an extra, so `pip install -e ".[upbit]"` does not
+# drag in the Korean-equity data stack (and vice versa).
 dependencies = [
-    "anthropic>=0.39.0",
     "pydantic>=2.6",
     "pydantic-settings>=2.2",
     "pyyaml>=6.0",
@@ -21,6 +23,15 @@ dependencies = [
     "apscheduler>=3.10",
     "pandas>=2.2",
     "numpy>=1.26",
+    "rich>=13.7",
+    "typer>=0.12",
+    "structlog>=24.1",
+]
+
+[project.optional-dependencies]
+# Korean equity stack: LLM agents, optimizer, KRX/DART data, RAG memory.
+equity = [
+    "anthropic>=0.39.0",
     "scipy>=1.12",
     "cvxpy>=1.4",
     "PyPortfolioOpt>=1.5",
@@ -29,12 +40,14 @@ dependencies = [
     "OpenDartReader>=0.2.2",
     "chromadb>=0.4.24",
     "sqlalchemy>=2.0",
-    "rich>=13.7",
-    "typer>=0.12",
-    "structlog>=24.1",
 ]
-
-[project.optional-dependencies]
+# Upbit crypto day-trading + its dashboard. Installs standalone.
+upbit = [
+    "fastapi>=0.110",
+    "uvicorn>=0.29",
+    "PyJWT>=2.8",
+    "cryptography>=42.0",
+]
 dev = [
     "pytest>=8.1",
     "pytest-asyncio>=0.23",
@@ -46,12 +59,6 @@ dev = [
 dashboard = [
     "streamlit>=1.33",
     "plotly>=5.20",
-]
-upbit = [
-    "fastapi>=0.110",
-    "uvicorn[standard]>=0.29",
-    "PyJWT>=2.8",
-    "cryptography>=42.0",
 ]
 backtest = [
     "vectorbt>=0.26",
@@ -67,6 +74,9 @@ mais-upbit-dashboard = "dashboard.server:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+dashboard = ["static/*"]
 
 [tool.ruff]
 line-length = 100

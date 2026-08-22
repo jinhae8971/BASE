@@ -20,7 +20,7 @@ import sqlite3
 import threading
 from collections.abc import Iterator
 from contextlib import contextmanager
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any, ClassVar
 
@@ -151,8 +151,17 @@ CREATE INDEX IF NOT EXISTS idx_event_ts ON event_log(ts DESC);
 _LOCK = threading.RLock()
 
 
+def utc_now() -> datetime:
+    """Naive UTC — the single timestamp convention for every stored value.
+
+    ``datetime.utcnow`` is deprecated from Python 3.12; this keeps the identical
+    on-disk format (no offset suffix) so the string comparisons in SQL stay valid.
+    """
+    return datetime.now(UTC).replace(tzinfo=None)
+
+
 def _now() -> str:
-    return datetime.utcnow().isoformat(timespec="seconds")
+    return utc_now().isoformat(timespec="seconds")
 
 
 def default_db_path() -> Path:
@@ -366,7 +375,7 @@ class UpbitStore:
             args.append(mode)
         if days:
             sql += " AND ts >= ?"
-            args.append((datetime.utcnow() - timedelta(days=days)).isoformat(timespec="seconds"))
+            args.append((utc_now() - timedelta(days=days)).isoformat(timespec="seconds"))
         with self.connect() as c:
             rows = [dict(r) for r in c.execute(sql, args)]
             fee_row = c.execute(
@@ -473,7 +482,7 @@ class UpbitStore:
             )
 
     def equity_history(self, days: int = 90, mode: str | None = None) -> list[dict[str, Any]]:
-        since = (datetime.utcnow() - timedelta(days=days)).isoformat(timespec="seconds")
+        since = (utc_now() - timedelta(days=days)).isoformat(timespec="seconds")
         sql = "SELECT * FROM equity_snapshots WHERE ts >= ?"
         args: list[Any] = [since]
         if mode:

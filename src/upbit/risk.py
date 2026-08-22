@@ -19,13 +19,13 @@ has carved the protected bag out.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import timedelta
 from typing import Any
 
 from common.logging import get_logger
 
 from .broker import MIN_ORDER_KRW
-from .store import UpbitStore, get_store
+from .store import UpbitStore, get_store, utc_now
 from .strategy import UpbitConfig
 from .types import MarketRegimeView, Regime
 
@@ -72,7 +72,7 @@ class RiskGuard:
     # ------------------------------------------------------------------
     def realized_pnl_today(self) -> float:
         """Sum of realised P&L on positions closed since 00:00 UTC-relative day start."""
-        since = (datetime.utcnow() - timedelta(hours=24)).isoformat(timespec="seconds")
+        since = (utc_now() - timedelta(hours=24)).isoformat(timespec="seconds")
         trades = self.store.list_trades(
             limit=500, side="ask", since=since, mode=self.config.mode
         )

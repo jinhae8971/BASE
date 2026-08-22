@@ -146,26 +146,108 @@ src/dashboard/
 
 ## 6. 설치와 실행
 
+### 원클릭 실행 (권장)
+
+저장소를 받은 폴더에서 아래 하나만 실행하면 됩니다. 가상환경 생성 → 의존성 설치 →
+환경 점검 → 대시보드 실행 → 브라우저 열기까지 전부 처리합니다.
+두 번째 실행부터는 설치를 건너뛰고 바로 뜹니다.
+
 ```bash
-pip install -e ".[dev,upbit]"
+# macOS / Linux
+./start-upbit.sh
+./start-upbit.sh --port 9000      # 포트 변경
+./start-upbit.sh --reinstall      # 의존성 재설치
 
-# 대시보드 + 스케줄러 (권장)
-python scripts/run_upbit_dashboard.py      # http://127.0.0.1:8787
-
-# 또는 CLI
-mais-upbit status
-mais-upbit scan --dry-run                  # 점수만 계산, 주문 없음
-mais-upbit scan --execute                  # 실제(모드에 따라 모의/실거래) 진입
-mais-upbit monitor
-mais-upbit holdings add BTC
+# Windows
+start-upbit.bat                   # 더블클릭
+.\start-upbit.ps1 -Port 9000      # PowerShell
 ```
 
-### cron 으로 운용할 경우
+> Windows 에서 `.ps1` 실행이 막히면 `start-upbit.bat` 을 쓰거나
+> `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass` 를 먼저 실행하세요.
+
+### 수동 설치
+
+의존성은 서브시스템별로 분리되어 있습니다. `[upbit]` 는 국내주식 스택(cvxpy, pykrx,
+chromadb 등)을 전혀 설치하지 않습니다.
+
+```bash
+python -m venv .venv
+source .venv/bin/activate          # Windows: .venv\Scripts\activate
+pip install -e ".[upbit]"          # 개발까지 하려면 ".[upbit,dev]"
+
+mais-upbit doctor                  # 실행 전 점검
+mais-upbit serve                   # 대시보드 + 스케줄러
+```
+
+### 실행 전 점검 (`mais-upbit doctor`)
+
+| 점검 항목 | 내용 |
+|---|---|
+| Python | 3.11 이상 |
+| 의존성 패키지 | 런타임에 필요한 14개 |
+| 설정 파일 | `config/settings.yaml` 및 `upbit` 섹션 |
+| 대시보드 파일 | `src/dashboard/static/` |
+| 데이터 저장소 | `data_store/` 쓰기 권한, SQLite 초기화 |
+| 거래 모드 / 스케줄 | paper·live, 09:10 선정 시각 등 |
+| 장기보유 제외 | 등록된 코인 (없으면 경고) |
+| API 키 | 등록 여부 (없으면 경고 — 모의는 동작) |
+| 업비트 공개/계좌 API | 실제 연결 및 인증 확인 |
+| 대시보드 포트 | 점유 여부, 외부 노출 시 토큰 유무 |
+
+`FAIL` 이 있으면 `serve` 가 실행을 거부합니다 (`--skip-checks` 로 우회 가능).
+
+### CLI
+
+```bash
+mais-upbit status                  # 모드·자산·포지션·보호 심볼
+mais-upbit scan --dry-run          # 점수만 계산, 주문 없음
+mais-upbit scan --execute          # 실제 진입 (모드에 따라 모의/실거래)
+mais-upbit monitor                 # 청산 조건 1회 점검
+mais-upbit holdings add BTC        # 거래 제외 등록
+mais-upbit liquidate --confirm I-UNDERSTAND
+```
+
+### 24시간 켜두기
+
+대시보드 프로세스가 스케줄러를 함께 들고 있으므로, **이 프로세스만 살아 있으면**
+매일 09:10 선정과 5분 간격 모니터링이 자동으로 돕니다. PC를 껐다 켜도 자동으로
+뜨게 하려면:
+
+**Windows — 작업 스케줄러**
+1. `작업 스케줄러` → `기본 작업 만들기`
+2. 트리거: `로그온할 때`
+3. 동작: `프로그램 시작` → 프로그램 `C:\경로\start-upbit.bat`, 시작 위치 `C:\경로`
+4. 속성에서 `사용자가 로그온한 경우에만 실행` 유지 (암호 저장 불필요)
+
+**macOS — launchd** (`~/Library/LaunchAgents/com.upbit.desk.plist`)
+```xml
+<key>ProgramArguments</key><array>
+  <string>/bin/bash</string><string>/경로/start-upbit.sh</string>
+</array>
+<key>RunAtLoad</key><true/>
+<key>KeepAlive</key><true/>
+<key>WorkingDirectory</key><string>/경로</string>
+```
+`launchctl load ~/Library/LaunchAgents/com.upbit.desk.plist`
+
+**Linux — systemd user unit** (`~/.config/systemd/user/upbit-desk.service`)
+```ini
+[Service]
+WorkingDirectory=/경로
+ExecStart=/경로/.venv/bin/python -m upbit.cli serve --skip-checks
+Restart=always
+[Install]
+WantedBy=default.target
+```
+`systemctl --user enable --now upbit-desk`
+
+### 대시보드 없이 cron 으로만
 
 ```cron
-10 9 * * *  cd /path/to/repo && python scripts/run_upbit_daily.py scan --execute
-*/5 * * * * cd /path/to/repo && python scripts/run_upbit_daily.py monitor
-50 8 * * *  cd /path/to/repo && python scripts/run_upbit_daily.py eod-exit
+10 9 * * *  cd /path/to/repo && .venv/bin/python scripts/run_upbit_daily.py scan --execute
+*/5 * * * * cd /path/to/repo && .venv/bin/python scripts/run_upbit_daily.py monitor
+50 8 * * *  cd /path/to/repo && .venv/bin/python scripts/run_upbit_daily.py eod-exit
 ```
 
 ### API 키 등록

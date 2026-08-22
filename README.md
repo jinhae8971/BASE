@@ -92,9 +92,24 @@ config/
 - 포트폴리오 · 거래내역 · 분석내역 · 전략 · 장기보유 · 설정 7개 탭의 트레이딩 대시보드
 - **기본값은 모의(paper) 모드** — 실거래 전환은 확인 문구 입력 필요
 
+**설치 없이 바로 실행** — 저장소를 받은 뒤 아래 한 줄이면 가상환경 생성·의존성 설치·
+환경 점검·대시보드 실행·브라우저 열기까지 전부 처리합니다.
+
 ```bash
-pip install -e ".[dev,upbit]"
-python scripts/run_upbit_dashboard.py     # http://127.0.0.1:8787
+# macOS / Linux
+./start-upbit.sh
+
+# Windows — start-upbit.bat 더블클릭, 또는 PowerShell 에서
+.\start-upbit.ps1
+```
+
+수동으로 하려면:
+
+```bash
+python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
+pip install -e ".[upbit]"
+mais-upbit doctor      # 의존성·설정·저장소·API·포트 점검
+mais-upbit serve       # http://127.0.0.1:8787
 ```
 
 API 키는 대시보드 **설정** 탭에서 입력하며 `data_store/` 아래에 암호화 저장된다.
@@ -108,7 +123,7 @@ API 키는 대시보드 **설정** 탭에서 입력하며 `data_store/` 아래�
 ```bash
 # 1. 환경 설정
 python -m venv .venv && source .venv/bin/activate
-pip install -e ".[dev]"
+pip install -e ".[equity,dev]"     # 국내주식 스택 (업비트만 쓸 거면 아래 6번만 해도 됩니다)
 
 # 2. 환경변수
 cp .env.example .env  # KIS_APP_KEY, KIS_APP_SECRET, ANTHROPIC_API_KEY 등 입력
@@ -122,10 +137,14 @@ python scripts/run_backtest.py --start 2015-01-01 --end 2025-12-31
 # 5. 리플렉션 (주간/월간)
 python scripts/run_reflection.py
 
-# 6. 업비트 자동매매 대시보드 (독립 실행)
+# 6. 업비트 자동매매 대시보드 (독립 실행 — 국내주식 스택 불필요)
 pip install -e ".[upbit]"
-python scripts/run_upbit_dashboard.py   # http://127.0.0.1:8787
+mais-upbit doctor                       # 실행 전 환경 점검
+mais-upbit serve                        # http://127.0.0.1:8787
 ```
+
+> 의존성은 서브시스템별로 분리되어 있습니다. `[equity]` 는 KIS·DART·최적화·RAG 스택,
+> `[upbit]` 는 크립토 대시보드만 설치합니다. 둘 다 쓰려면 `pip install -e ".[equity,upbit,dev]"`.
 
 ---
 
