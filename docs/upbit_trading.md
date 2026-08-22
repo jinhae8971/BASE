@@ -146,7 +146,10 @@ src/dashboard/
 
 ## 6. 설치와 실행
 
-### 원클릭 실행 (권장)
+실행 방법은 두 가지다. **장기 운용이라면 도커를 권한다** — 호스트에 파이썬을 깔지 않고,
+크래시나 재부팅에도 자동으로 복구된다. 잠깐 써보거나 코드를 만질 거라면 파이썬 직접 설치가 편하다.
+
+### 원클릭 실행 (파이썬 직접 설치)
 
 저장소를 받은 폴더에서 아래 하나만 실행하면 됩니다. 가상환경 생성 → 의존성 설치 →
 환경 점검 → 대시보드 실행 → 브라우저 열기까지 전부 처리합니다.
@@ -208,7 +211,100 @@ mais-upbit holdings add BTC        # 거래 제외 등록
 mais-upbit liquidate --confirm I-UNDERSTAND
 ```
 
-### 24시간 켜두기
+### 도커로 운영하기 (권장)
+
+호스트에 파이썬을 깔지 않고, 부팅·크래시 후 자동 복구되는 형태로 돌립니다.
+
+```bash
+docker compose up -d --build     # 첫 실행 (빌드 3~5분)
+docker compose logs -f           # 로그
+docker compose ps                # 상태 / healthcheck
+docker compose down              # 정지 (데이터는 볼륨에 남습니다)
+```
+
+대시보드: <http://127.0.0.1:8787>
+
+| 특성 | 값 |
+|---|---|
+| 베이스 | `python:3.12-slim` · 이미지 약 450MB |
+| 실행 계정 | 비루트 `upbit` (uid 10001) |
+| 타임존 | `Asia/Seoul` (엔진은 별도로 KST 고정) |
+| 포트 게시 | `127.0.0.1:8787` — 같은 PC 에서만 접근 |
+| 재시작 | `unless-stopped` — 크래시·부팅 시 자동 복구, 직접 `stop` 하면 그대로 유지 |
+| 헬스체크 | 30초 간격 `/api/health` |
+| 로그 | json-file, 10MB × 5 로 순환 |
+| 데이터 | named volume `upbit-data` → `/app/data_store` |
+
+#### 컨테이너 안에서 CLI 쓰기
+
+```bash
+docker compose exec upbit mais-upbit status
+docker compose exec upbit mais-upbit doctor
+docker compose exec upbit mais-upbit holdings add BTC --memo "장투"
+docker compose exec upbit mais-upbit scan --dry-run
+docker compose exec upbit mais-upbit liquidate --confirm I-UNDERSTAND   # 킬 스위치
+```
+
+#### 백업과 복원 — 반드시 해두세요
+
+`upbit-data` 볼륨에는 **암호화된 API 키(`upbit_credentials.enc`), 그 복호화용 마스터 키
+(`.upbit_master.key`), 전체 거래·분석 이력(`upbit.sqlite`)** 이 들어 있습니다.
+볼륨을 지우면 전부 사라집니다. `docker compose down -v` 는 볼륨까지 삭제하니 주의하세요.
+
+```bash
+# 백업 (숨김 파일 포함)
+docker run --rm -v upbit-data:/data -v "$PWD":/backup alpine:3   tar czf /backup/upbit-backup-$(date +%Y%m%d).tar.gz -C /data .
+
+# 복원
+docker compose down
+docker run --rm -v upbit-data:/data -v "$PWD":/backup alpine:3   sh -c "rm -rf /data/* /data/.[!.]* 2>/dev/null; tar xzf /backup/upbit-backup-20260822.tar.gz -C /data"
+docker compose up -d
+```
+
+> Windows PowerShell 에서는 `$PWD` 대신 `${PWD}` 를 쓰고 `$(date ...)` 는 직접 날짜를 적으세요.
+
+#### 설정 바꾸기
+
+* **전략 값** — 대시보드 전략 탭에서 바꾸면 즉시 반영됩니다 (DB 오버라이드, 재시작 불필요).
+* **기본값 파일** — `config/settings.yaml` 이 읽기 전용으로 마운트되어 있어 호스트에서 편집 후
+  `docker compose restart` 하면 반영됩니다. 단 대시보드에서 바꾼 값이 이 파일보다 우선합니다.
+* **포트 변경** — compose 의 `ports` 를 `127.0.0.1:9000:8787` 로 바꾸고 `docker compose up -d`.
+* **암호화 키를 디스크에 두지 않기** — 저장소 루트 `.env` 에 `UPBIT_KEY_PASSPHRASE=...` 를 넣으면
+  마스터 키를 그 문구에서 유도합니다. 잊어버리면 저장된 API 키를 복구할 수 없습니다.
+
+#### LAN 의 다른 기기에서 열기
+
+기본은 이 PC 에서만 열립니다. 휴대폰 등에서 보려면 **반드시 토큰을 함께 설정**하세요.
+주문 실행 권한이 그대로 노출됩니다.
+
+```yaml
+# docker-compose.yml
+ports:
+  - "8787:8787"        # 127.0.0.1 접두사 제거
+```
+```bash
+# 저장소 루트 .env
+UPBIT_DASHBOARD_TOKEN=충분히-긴-임의-문자열
+```
+브라우저에서는 개발자도구 콘솔에 아래를 한 번 실행해 토큰을 저장합니다.
+```js
+localStorage.setItem('upbit_dashboard_token', '충분히-긴-임의-문자열')
+```
+
+#### 문제가 생기면
+
+```bash
+docker compose logs --tail 100        # 기동 로그와 사전 점검 결과
+docker compose exec upbit mais-upbit doctor
+docker compose restart
+docker compose up -d --build          # 코드를 받은 뒤 재빌드
+```
+
+기동 시 사전 점검은 **실행을 막아야 하는 실패**(의존성 누락, 저장소 쓰기 불가, 포트 점유)에서만
+중단합니다. API 키가 거부되는 경우처럼 **대시보드에서 고칠 수 있는 문제**는 실패로 표시하되
+그대로 기동합니다 — 키를 다시 넣을 화면이 안 뜨면 고칠 방법이 없기 때문입니다.
+
+### 24시간 켜두기 (도커를 안 쓸 때)
 
 대시보드 프로세스가 스케줄러를 함께 들고 있으므로, **이 프로세스만 살아 있으면**
 매일 09:10 선정과 5분 간격 모니터링이 자동으로 돕니다. PC를 껐다 켜도 자동으로

@@ -9,6 +9,11 @@ import structlog
 from .config import get_env
 
 
+# Libraries that narrate every call at INFO. Our own structured events already
+# cover what matters, and at 24/7 these bury the log.
+NOISY_LIBRARIES = ("httpx", "httpcore", "apscheduler", "urllib3")
+
+
 def setup_logging() -> None:
     env = get_env()
     level = getattr(logging, env.mais_log_level.upper(), logging.INFO)
@@ -18,6 +23,10 @@ def setup_logging() -> None:
         stream=sys.stdout,
         level=level,
     )
+
+    if level > logging.DEBUG:
+        for name in NOISY_LIBRARIES:
+            logging.getLogger(name).setLevel(logging.WARNING)
 
     structlog.configure(
         processors=[

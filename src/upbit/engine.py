@@ -364,6 +364,22 @@ class TradingEngine:
         remaining = self.risk.available_capital(equity, regime)
         n_open = len(open_positions)
 
+        # Explain an entirely empty run rather than returning a silent [].
+        if n_open >= self.config.strategy.max_positions:
+            note = (
+                f"이미 최대 보유 종목 수({self.config.strategy.max_positions})를 채웠습니다 "
+                f"— 청산 후 다음 사이클에 진입합니다."
+            )
+            self.store.log_event("info", "selection", note)
+            return [{"market": "-", "action": "skip", "reason": note}]
+        if remaining <= 0:
+            note = (
+                f"가용 자금이 없습니다 (노출 {equity.exposure_pct * 100:.1f}%, "
+                f"현금 {equity.cash_krw:,.0f} KRW) — 노출·현금 버퍼 한도에 걸렸습니다."
+            )
+            self.store.log_event("info", "selection", note)
+            return [{"market": "-", "action": "skip", "reason": note}]
+
         for cand in candidates:
             if n_open >= self.config.strategy.max_positions:
                 break

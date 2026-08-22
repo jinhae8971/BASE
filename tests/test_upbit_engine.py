@@ -113,6 +113,38 @@ def test_warned_markets_are_excluded(store: UpbitStore) -> None:
     assert "KRW-DOGE" not in scanned
 
 
+def test_full_book_explains_itself(store: UpbitStore, client: FakeUpbitClient) -> None:
+    """A scan that buys nothing must say why, not return a silent empty list."""
+    engine = build_engine(store, client, strategy={"max_positions": 2, "min_score": 40.0,
+                                                   "position_pct": 0.2})
+    engine.run_selection(dry_run=False)
+    assert len(store.list_open_positions("paper")) == 2
+
+    result = engine.run_selection(dry_run=False)
+    assert result["selected"] == []
+    assert len(result["decisions"]) == 1
+    decision = result["decisions"][0]
+    assert decision["action"] == "skip"
+    assert "최대 보유 종목 수" in decision["reason"]
+    assert any("최대 보유 종목 수" in e["message"] for e in store.list_events())
+
+
+def test_exhausted_capital_explains_itself(store: UpbitStore, client: FakeUpbitClient) -> None:
+    """Whatever blocks a buy, the run must name it — never buy nothing silently."""
+    engine = build_engine(
+        store, client,
+        strategy={"max_positions": 10, "min_score": 40.0, "position_pct": 0.2},
+        risk={"max_total_exposure_pct": 0.3, "min_cash_buffer_pct": 0.7},
+    )
+    engine.run_selection(dry_run=False)
+    result = engine.run_selection(dry_run=False)
+
+    assert result["selected"] == []
+    assert result["decisions"], "빈 실행에도 사유가 있어야 한다"
+    assert all(d.get("reason") for d in result["decisions"])
+    assert any("자금" in d["reason"] for d in result["decisions"])
+
+
 def test_risk_off_regime_blocks_all_entries(store: UpbitStore) -> None:
     bearish = FakeUpbitClient(
         MARKETS,

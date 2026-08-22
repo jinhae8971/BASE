@@ -54,6 +54,9 @@ docs/               # architecture.md, agents.md, risk_policy.md
    code path that bypasses it, including in liquidation and EOD flatten.
 9. Upbit API keys are entered in the dashboard and sealed under `data_store/`. Never log them,
    never return them unmasked from the API, never write them to `config/` or a committed file.
+10. `data_store/` (the Docker `upbit-data` volume) holds the sealed API keys, their master key,
+    and the entire trade history. Never add a code path or doc step that wipes it casually —
+    `docker compose down -v` is destructive and must always be called out as such.
 
 ## Running Locally
 
@@ -69,10 +72,19 @@ pytest
 ruff check src tests
 ```
 
-The Upbit subsystem runs standalone — `./start-upbit.sh` (or `start-upbit.ps1` on
-Windows) creates the venv, installs `.[upbit]`, runs `mais-upbit doctor`, and serves
-the dashboard. `mais-upbit doctor` is the preflight: deps, settings, storage,
-credentials, public/private API reachability, and the dashboard port.
+The Upbit subsystem runs standalone, two ways:
+
+```bash
+docker compose up -d --build     # 운영용: 비루트, KST, named volume, 자동 재시작
+./start-upbit.sh                 # 개발용: venv + .[upbit] + serve (Windows: start-upbit.ps1)
+```
+
+`mais-upbit doctor` is the preflight: deps, settings, storage, credentials,
+public/private API reachability, and the dashboard port. Checks carry a
+`blocking` flag — `serve` refuses to start only on blocking failures (missing
+deps, unwritable storage, busy port). A rejected API key is a non-blocking
+failure on purpose: the dashboard is where the user fixes it, so refusing to
+start would hide the fix. Never make a UI-fixable condition blocking.
 
 ## Extending the System
 

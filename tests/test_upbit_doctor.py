@@ -22,6 +22,10 @@ def isolated(tmp_path, monkeypatch):
     monkeypatch.delenv("UPBIT_SECRET_KEY", raising=False)
     monkeypatch.delenv("UPBIT_DASHBOARD_HOST", raising=False)
     monkeypatch.delenv("UPBIT_DASHBOARD_TOKEN", raising=False)
+    # Whatever happens to be listening on this machine must not decide a test's
+    # outcome; the port-specific tests override these explicitly.
+    monkeypatch.setattr(doctor, "port_in_use", lambda h, p: False)
+    monkeypatch.setattr(doctor, "in_container", lambda: False)
     return tmp_path
 
 
@@ -101,6 +105,7 @@ def test_unwritable_storage_fails(isolated, monkeypatch, tmp_path) -> None:
 
 def test_external_bind_without_token_fails(isolated, monkeypatch) -> None:
     monkeypatch.setenv("UPBIT_DASHBOARD_HOST", "0.0.0.0")
+    monkeypatch.setattr(doctor, "in_container", lambda: False)
     report = doctor.run(skip_network=True)
     check = by_name(report, "외부 노출")
     assert check.status == FAIL
@@ -111,6 +116,43 @@ def test_external_bind_with_token_passes(isolated, monkeypatch) -> None:
     monkeypatch.setenv("UPBIT_DASHBOARD_HOST", "0.0.0.0")
     monkeypatch.setenv("UPBIT_DASHBOARD_TOKEN", "s3cret-token")
     assert by_name(doctor.run(skip_network=True), "외부 노출").status == OK
+
+
+def test_container_bind_without_token_is_a_warning_not_a_failure(isolated, monkeypatch) -> None:
+    """In Docker, 0.0.0.0 is the only workable bind — it must not block startup."""
+    monkeypatch.setenv("UPBIT_DASHBOARD_HOST", "0.0.0.0")
+    monkeypatch.setattr(doctor, "in_container", lambda: True)
+    report = doctor.run(skip_network=True)
+    check = by_name(report, "외부 노출")
+    assert check.status == WARN
+    assert "127.0.0.1:8787:8787" in check.hint
+    assert not report.failures
+
+
+def test_container_bind_with_token_passes(isolated, monkeypatch) -> None:
+    monkeypatch.setenv("UPBIT_DASHBOARD_HOST", "0.0.0.0")
+    monkeypatch.setenv("UPBIT_DASHBOARD_TOKEN", "tok")
+    monkeypatch.setattr(doctor, "in_container", lambda: True)
+    assert by_name(doctor.run(skip_network=True), "외부 노출").status == OK
+
+
+def test_bare_metal_bind_without_token_still_fails(isolated, monkeypatch) -> None:
+    monkeypatch.setenv("UPBIT_DASHBOARD_HOST", "0.0.0.0")
+    monkeypatch.setattr(doctor, "in_container", lambda: False)
+    assert by_name(doctor.run(skip_network=True), "외부 노출").status == FAIL
+
+
+def test_in_container_detects_dockerenv(monkeypatch) -> None:
+    # No `isolated` fixture here — it stubs in_container, which is the thing
+    # under test.
+    import pathlib as _pathlib
+
+    real_exists = _pathlib.Path.exists
+    monkeypatch.setattr(
+        _pathlib.Path, "exists",
+        lambda self: True if str(self) == "/.dockerenv" else real_exists(self),
+    )
+    assert doctor.in_container() is True
 
 
 def test_localhost_bind_reports_no_exposure_check(isolated) -> None:
@@ -183,9 +225,65 @@ def test_dashboard_address_honours_env_overrides(isolated, monkeypatch) -> None:
     assert doctor.dashboard_address() == ("127.0.0.1", 9911)
 
 
-def testis_our_dashboard_is_false_when_nothing_answers(isolated) -> None:
+def test_is_our_dashboard_is_false_when_nothing_answers() -> None:
     # Port 1 never has our dashboard on it; the probe must fail closed, not raise.
     assert doctor.is_our_dashboard("127.0.0.1", 1) is False
+
+
+def test_rejected_api_key_does_not_block_startup(isolated, monkeypatch) -> None:
+    """A 401 from Upbit must still let the dashboard come up — that is where the
+    user re-enters the key. Seen live: it put the container in a restart loop."""
+    from upbit import credentials as creds_mod
+    from upbit.client import UpbitAPIError
+
+    creds_mod.save("ACCESSKEY1234567890", "SECRETKEY0987654321")
+    monkeypatch.setattr(
+        doctor, "_check_public_api", lambda report: report.add("업비트 공개 API", OK, "stub")
+    )
+
+    class Boom:
+        def __init__(self, *a, **k): ...
+        def get_accounts(self):
+            raise UpbitAPIError("HTTP 401", status=401)
+        def close(self): ...
+
+    monkeypatch.setattr("upbit.client.UpbitClient", Boom)
+
+    report = doctor.run(skip_network=False)
+    check = by_name(report, "업비트 계좌 조회")
+    assert check.status == FAIL
+    assert check.blocking is False
+    assert report.failures            # doctor still reports it honestly
+    assert not report.blocking_failures  # ...but serve must not refuse to start
+    assert "실행은 되지만" in report.render()
+
+
+def test_unreadable_credentials_do_not_block_startup(isolated, monkeypatch) -> None:
+    from upbit import credentials as creds_mod
+
+    monkeypatch.setattr(
+        creds_mod, "status",
+        lambda: {"configured": False, "stored_on_disk": True, "error": "복호화 실패"},
+    )
+    report = doctor.run(skip_network=True)
+    check = by_name(report, "API 키")
+    assert check.status == FAIL and check.blocking is False
+    assert not report.blocking_failures
+
+
+def test_storage_failure_still_blocks(isolated, monkeypatch, tmp_path) -> None:
+    """Contrast: something the dashboard cannot fix must keep blocking."""
+    from upbit import store as store_mod
+
+    monkeypatch.setattr(store_mod, "default_db_path", lambda: tmp_path / "x" / "u.sqlite")
+
+    def deny(*a, **k):
+        raise OSError("permission denied")
+
+    monkeypatch.setattr("pathlib.Path.mkdir", deny)
+    report = doctor.run(skip_network=True)
+    assert report.blocking_failures
+    assert by_name(report, "데이터 저장소").blocking is True
 
 
 def test_public_api_failure_is_reported_not_raised(isolated, monkeypatch) -> None:

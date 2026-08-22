@@ -128,9 +128,13 @@ def serve(
 
         report = run()
         typer.echo(report.render())
-        if report.failures:
+        if report.blocking_failures:
             typer.echo("점검 실패 항목을 해결한 뒤 다시 실행하세요. (--skip-checks 로 건너뛸 수 있습니다)")
             raise typer.Exit(code=1)
+        if report.failures:
+            typer.echo(
+                "실패 항목이 있지만 대시보드에서 조치할 수 있어 그대로 기동합니다.\n"
+            )
 
     from dashboard.server import main as serve_main
 

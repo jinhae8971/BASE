@@ -531,7 +531,17 @@ def main() -> None:
         )
         raise SystemExit(1)
 
-    uvicorn.run(app, host=host, port=port, log_level="info")
+    # The container healthcheck hits /api/health every 30s; its access lines add
+    # ~3k rows a day and say nothing the event log doesn't. Keep them only when
+    # someone is actually debugging.
+    debug = os.environ.get("MAIS_LOG_LEVEL", "INFO").upper() == "DEBUG"
+    uvicorn.run(
+        app,
+        host=host,
+        port=port,
+        log_level="debug" if debug else "info",
+        access_log=debug,
+    )
 
 
 if __name__ == "__main__":

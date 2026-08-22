@@ -1,0 +1,59 @@
+# ---------------------------------------------------------------------------
+# 업비트 알트코인 자동매매 — 로컬 운영 스택
+#
+#   docker compose up -d --build            기동 (첫 실행은 빌드에 몇 분)
+#   docker compose logs -f                  로그 보기
+#   docker compose ps                       상태 / healthcheck
+#   docker compose down                     정지  (데이터는 볼륨에 남습니다)
+#
+# 대시보드: http://127.0.0.1:8787
+# ---------------------------------------------------------------------------
+services:
+  upbit:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: mais-upbit:latest
+    container_name: upbit-desk
+
+    # 24시간 운영: 데몬 재시작·부팅 후에도 자동으로 살아납니다.
+    # (직접 `docker compose stop` 한 경우에는 다시 뜨지 않습니다.)
+    restart: unless-stopped
+
+    environment:
+      TZ: Asia/Seoul
+      UPBIT_DASHBOARD_HOST: "0.0.0.0"   # 컨테이너 내부 바인드. 외부 노출은 아래 ports 가 결정합니다.
+      UPBIT_DASHBOARD_PORT: "8787"
+      # 아래 둘은 저장소 루트의 .env 나 셸 환경에서 주입됩니다 (없으면 빈 값).
+      #   UPBIT_DASHBOARD_TOKEN : 대시보드를 LAN 에 열 때 필요한 접근 토큰
+      #   UPBIT_KEY_PASSPHRASE  : 설정하면 암호화 마스터 키를 디스크에 두지 않습니다
+      UPBIT_DASHBOARD_TOKEN: "${UPBIT_DASHBOARD_TOKEN:-}"
+      UPBIT_KEY_PASSPHRASE: "${UPBIT_KEY_PASSPHRASE:-}"
+      MAIS_LOG_LEVEL: "${MAIS_LOG_LEVEL:-INFO}"
+
+    # 127.0.0.1 로만 게시 — 같은 PC 에서만 접근됩니다.
+    # LAN 의 다른 기기에서도 열려면 "8787:8787" 로 바꾸고 반드시
+    # UPBIT_DASHBOARD_TOKEN 을 설정하세요. (주문 실행 권한이 그대로 노출됩니다.)
+    ports:
+      - "127.0.0.1:8787:8787"
+
+    volumes:
+      # 거래 기록 · 암호화된 API 키 · 전략 오버라이드가 모두 여기 있습니다.
+      # 이 볼륨을 지우면 API 키와 전체 이력이 사라집니다.
+      - upbit-data:/app/data_store
+      # 기본 전략값을 호스트에서 편집하고 재시작으로 반영. 대시보드에서 바꾼 값은
+      # DB 오버라이드로 남아 이 파일보다 우선합니다.
+      - ./config/settings.yaml:/app/config/settings.yaml:ro
+
+    # 24시간 돌면 로그가 무한정 쌓입니다.
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+    stop_grace_period: 20s
+
+volumes:
+  upbit-data:
+    name: upbit-data

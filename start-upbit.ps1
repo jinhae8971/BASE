@@ -84,12 +84,9 @@ if ($running) {
     exit 0
 }
 
-# --- 5. 사전 점검 ----------------------------------------------------------
-Say "실행 전 점검"
-& $vpy -m upbit.cli doctor
-if ($LASTEXITCODE -ne 0) { Die "점검에 실패했습니다. 위 항목을 해결한 뒤 다시 실행하세요." }
-
-# --- 6. 실행 ---------------------------------------------------------------
+# --- 5. 실행 ---------------------------------------------------------------
+# 사전 점검은 `serve` 가 직접 수행합니다 — 기동을 막아야 하는 실패에서만 중단하고,
+# API 키 거부처럼 대시보드에서 고칠 수 있는 문제는 그대로 띄웁니다.
 $dashHost = & $vpy -c "import os; from common.config import get_setting; print(os.environ.get('UPBIT_DASHBOARD_HOST') or get_setting('upbit.dashboard.host','127.0.0.1'))"
 $dashPort = & $vpy -c "import os; from common.config import get_setting; print(os.environ.get('UPBIT_DASHBOARD_PORT') or get_setting('upbit.dashboard.port',8787))"
 $url = "http://${dashHost}:${dashPort}"
@@ -106,4 +103,4 @@ if (-not $NoBrowser) {
     }
 }
 
-& $vpy -m upbit.cli serve --skip-checks
+& $vpy -m upbit.cli serve

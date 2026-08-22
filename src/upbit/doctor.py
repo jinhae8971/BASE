@@ -56,18 +56,35 @@ class Check:
     status: str
     detail: str = ""
     hint: str = ""
+    # Does this failure make the app unusable, or is it something the user fixes
+    # *in* the running dashboard? Rejected API keys are the latter — refusing to
+    # start would hide the very screen where you re-enter them.
+    blocking: bool = True
 
 
 @dataclass
 class Report:
     checks: list[Check] = field(default_factory=list)
 
-    def add(self, name: str, status: str, detail: str = "", hint: str = "") -> None:
-        self.checks.append(Check(name, status, detail, hint))
+    def add(
+        self,
+        name: str,
+        status: str,
+        detail: str = "",
+        hint: str = "",
+        *,
+        blocking: bool = True,
+    ) -> None:
+        self.checks.append(Check(name, status, detail, hint, blocking))
 
     @property
     def failures(self) -> list[Check]:
         return [c for c in self.checks if c.status == FAIL]
+
+    @property
+    def blocking_failures(self) -> list[Check]:
+        """Failures that must stop `serve` from starting at all."""
+        return [c for c in self.failures if c.blocking]
 
     @property
     def warnings(self) -> list[Check]:
@@ -82,8 +99,12 @@ class Report:
             if c.hint:
                 lines.append(f"      └ {c.hint}")
         lines.append("=" * 62)
-        if self.failures:
-            lines.append(f"  {len(self.failures)}건을 먼저 해결해야 실행할 수 있습니다.")
+        if self.blocking_failures:
+            lines.append(f"  {len(self.blocking_failures)}건을 먼저 해결해야 실행할 수 있습니다.")
+        elif self.failures:
+            lines.append(
+                f"  {len(self.failures)}건 실패 — 실행은 되지만 대시보드에서 조치가 필요합니다."
+            )
         elif self.warnings:
             lines.append("  실행 가능합니다. 위 경고는 확인만 하세요.")
         else:
@@ -224,7 +245,13 @@ def _check_credentials(report: Report) -> None:
 
     status = creds_mod.status()
     if status.get("error"):
-        report.add("API 키", FAIL, str(status["error"]), "설정 탭에서 키를 다시 입력하세요.")
+        report.add(
+            "API 키",
+            FAIL,
+            str(status["error"]),
+            "설정 탭에서 키를 다시 입력하세요.",
+            blocking=False,
+        )
         return
     if not status.get("configured"):
         report.add(
@@ -274,7 +301,9 @@ def _check_private_api(report: Report) -> None:
             "업비트 계좌 조회",
             FAIL,
             f"{type(exc).__name__}: {str(exc)[:120]}",
-            "업비트 Open API 관리에서 자산조회 권한과 서버 IP 허용 등록을 확인하세요.",
+            "업비트 Open API 관리에서 자산조회 권한과 서버 IP 허용 등록을 확인하세요. "
+            "대시보드 설정 탭에서 키를 다시 입력할 수 있습니다.",
+            blocking=False,
         )
         return
     krw = next((a for a in accounts if a.get("currency") == "KRW"), {})
@@ -360,19 +389,45 @@ def _check_static(report: Report) -> None:
         report.add("대시보드 파일", OK, str(static))
 
 
+def in_container() -> bool:
+    """Are we running inside a container? Binding 0.0.0.0 is normal there."""
+    if Path("/.dockerenv").exists():
+        return True
+    try:
+        cgroup = Path("/proc/1/cgroup").read_text()
+    except OSError:
+        return False
+    return any(marker in cgroup for marker in ("docker", "containerd", "kubepods", "podman"))
+
+
 def _check_exposure(report: Report) -> None:
     host = os.environ.get("UPBIT_DASHBOARD_HOST") or get_setting("upbit.dashboard.host", "127.0.0.1")
     if host in ("127.0.0.1", "localhost", "::1"):
         return
+
     if os.environ.get("UPBIT_DASHBOARD_TOKEN"):
         report.add("외부 노출", OK, f"{host} 바인드 · 토큰 인증 활성")
-    else:
+        return
+
+    if in_container():
+        # Inside a container 0.0.0.0 is the only way the published port works,
+        # and we cannot see the host-side mapping from in here — so this is a
+        # thing to confirm, not a thing to block on.
         report.add(
             "외부 노출",
-            FAIL,
-            f"{host} 에 바인드하면서 인증 토큰이 없습니다.",
-            "UPBIT_DASHBOARD_TOKEN 을 설정하거나 127.0.0.1 로 실행하세요.",
+            WARN,
+            f"컨테이너에서 {host} 바인드 (정상) — 호스트 게시 범위를 확인하세요.",
+            'compose 의 ports 가 "127.0.0.1:8787:8787" 이면 이 PC 에서만 열립니다. '
+            "LAN 에 열려면 UPBIT_DASHBOARD_TOKEN 을 설정하세요.",
         )
+        return
+
+    report.add(
+        "외부 노출",
+        FAIL,
+        f"{host} 에 바인드하면서 인증 토큰이 없습니다.",
+        "UPBIT_DASHBOARD_TOKEN 을 설정하거나 127.0.0.1 로 실행하세요.",
+    )
 
 
 def run(*, skip_network: bool = False) -> Report:
