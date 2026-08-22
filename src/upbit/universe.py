@@ -74,16 +74,19 @@ class UniverseBuilder:
             warning, cautions = market_flags(entry)
             blocking = cautions & disqualifying_cautions
             reason: str | None = None
-            if cfg.exclude_warning and warning:
+            # 장기보유 first: it is the user's own explicit instruction, so it must
+            # be the reason reported even when an exchange flag would also catch
+            # the coin — otherwise the 분석내역 log hides why it was really skipped.
+            if self.guard.is_protected(symbol):
+                reason = "장기보유 코인 (거래 제외)"
+            elif symbol in blacklist:
+                reason = "수동 제외 목록"
+            elif cfg.exclude_warning and warning:
                 reason = "유의 종목"
             elif cfg.exclude_caution and blocking:
                 reason = f"주의 종목 ({', '.join(sorted(blocking))})"
             elif cfg.exclude_stablecoins and symbol in stablecoins:
                 reason = "스테이블코인"
-            elif symbol in blacklist:
-                reason = "수동 제외 목록"
-            elif self.guard.is_protected(symbol):
-                reason = "장기보유 코인 (거래 제외)"
 
             if reason:
                 rejected.append({"market": code, "symbol": symbol, "reason": reason})

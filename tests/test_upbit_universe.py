@@ -79,6 +79,32 @@ def test_exclude_caution_toggle_overrides_the_type_list() -> None:
     assert "KRW-DOGE" in markets
 
 
+def test_long_term_wins_over_an_exchange_flag() -> None:
+    """The user's own exclusion must be the reported reason, not a caution flag.
+
+    Seen live: BTC was registered as 장기보유 but the log said "주의 종목", because
+    the exchange flag was checked first.
+    """
+    client = FakeUpbitClient(
+        MARKETS,
+        warnings={"KRW-BTC"},
+        cautions={"KRW-SOL": ["PRICE_FLUCTUATIONS"]},
+    )
+    guard = HoldingsGuard([LongTermHolding(symbol="BTC"), LongTermHolding(symbol="SOL")])
+    markets, _, rejected = build(client, guard).eligible_markets()
+    reasons = {r["symbol"]: r["reason"] for r in rejected}
+
+    assert reasons["BTC"] == "장기보유 코인 (거래 제외)"
+    assert reasons["SOL"] == "장기보유 코인 (거래 제외)"
+    assert "KRW-BTC" not in markets and "KRW-SOL" not in markets
+
+
+def test_blacklist_wins_over_an_exchange_flag() -> None:
+    client = FakeUpbitClient(MARKETS, warnings={"KRW-DOGE"})
+    _, _, rejected = build(client, manual_blacklist=["DOGE"]).eligible_markets()
+    assert {r["symbol"]: r["reason"] for r in rejected}["DOGE"] == "수동 제외 목록"
+
+
 def test_warning_markets_and_stablecoins_are_dropped() -> None:
     client = FakeUpbitClient(MARKETS, warnings={"KRW-XRP"})
     markets, _, rejected = build(client).eligible_markets()
