@@ -121,6 +121,29 @@ Separate from the equity stack: KRW-market alt day trading, scanned daily at 09:
   explicitly injected config or broker — that is what makes the engine testable.
 - Tests must stay offline: use `tests/upbit_fakes.FakeUpbitClient`, whose `get_accounts()` raises.
 
+### Unattended-operation invariants
+
+The subsystem is built to run for months with nobody watching. These are the
+rules that keep that true — breaking one reintroduces a silent failure:
+
+- **One cycle at a time.** `TradingEngine.cycle()` serialises selection,
+  monitoring, liquidation and reconciliation. APScheduler's `max_instances` is
+  per-job, so without this the 09:10 scan and the 5-minute monitor overlap on
+  one engine. Any new cycle entry point must take the lock.
+- **Reconcile shrinks, never grows.** `TradingEngine.reconcile()` aligns stored
+  positions with real balances at startup. A balance larger than the record is
+  the user's, not the engine's — never absorb it into a position.
+- **Health means trading, not HTTP.** `/api/health` returns 503 when the
+  scheduler is down or the monitor has gone stale; the container healthcheck
+  reads it. Never let a check report healthy while nothing is being managed.
+- **The watchdog revives faults, not decisions.** It restarts a dead scheduler
+  but leaves a schedule the user disabled alone.
+- **Shutdown waits.** `UpbitScheduler.stop(wait=True)` lets an in-flight cycle
+  finish — a process killed between an order and its DB row loses the trade.
+- **Maintenance never prunes money.** `UpbitStore.prune()` ages out analyses,
+  events and snapshots; `trades` and `positions` are financial records and stay
+  forever. Pruning is date-guarded so recent operational history survives.
+
 Docs: `docs/upbit_trading.md`.
 
 ## Roadmap (where we are)

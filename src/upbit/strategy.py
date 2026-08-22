@@ -106,6 +106,26 @@ class EntryExitConfig(BaseModel):
     limit_offset_bps: float = Field(default=10, ge=0, le=500)
 
 
+class MaintenanceConfig(BaseModel):
+    """Housekeeping for a system that is meant to run for months."""
+
+    enabled: bool = True
+    time: str = "04:30"                                   # daily, KST
+    backup_keep: int = Field(default=7, ge=0, le=90)
+    analyses_retention_days: int = Field(default=180, ge=0)
+    events_retention_days: int = Field(default=90, ge=0)
+    snapshots_retention_days: int = Field(default=730, ge=0)
+    vacuum: bool = True
+
+    @field_validator("time")
+    @classmethod
+    def _valid_hhmm(cls, v: str) -> str:
+        hh, _, mm = v.partition(":")
+        if not (hh.isdigit() and mm.isdigit() and 0 <= int(hh) < 24 and 0 <= int(mm) < 60):
+            raise ValueError(f"시간 형식은 HH:MM 이어야 합니다: {v!r}")
+        return f"{int(hh):02d}:{int(mm):02d}"
+
+
 class RiskConfig(BaseModel):
     daily_loss_kill_pct: float = Field(default=0.05, gt=0, le=1.0)
     max_total_exposure_pct: float = Field(default=0.80, gt=0, le=1.0)
@@ -126,6 +146,7 @@ class UpbitConfig(BaseModel):
     scoring: ScoringConfig = Field(default_factory=ScoringConfig)
     strategy: EntryExitConfig = Field(default_factory=EntryExitConfig)
     risk: RiskConfig = Field(default_factory=RiskConfig)
+    maintenance: MaintenanceConfig = Field(default_factory=MaintenanceConfig)
 
 
 def _deep_merge(base: dict[str, Any], patch: dict[str, Any]) -> dict[str, Any]:

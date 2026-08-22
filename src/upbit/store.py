@@ -578,6 +578,76 @@ class UpbitStore:
                 ),
             )
 
+    # ------------------------------------------------------------------
+    # Maintenance — a system that runs for months needs this
+    # ------------------------------------------------------------------
+    def prune(self, *, analyses_days: int, events_days: int, snapshots_days: int) -> dict[str, int]:
+        """Drop aged rows. Trades and positions are financial records: never pruned."""
+        removed: dict[str, int] = {}
+        with self.connect() as c:
+            for table, column, days in (
+                ("analyses", "as_of", analyses_days),
+                ("event_log", "ts", events_days),
+                ("equity_snapshots", "ts", snapshots_days),
+            ):
+                if days <= 0:
+                    continue
+                cutoff = (utc_now() - timedelta(days=days)).isoformat(timespec="seconds")
+                cur = c.execute(f"DELETE FROM {table} WHERE {column} < ?", (cutoff,))
+                removed[table] = cur.rowcount or 0
+            # Aged runs that left no analyses and no trades are pure noise. The
+            # date guard matters: without it this would wipe today's monitor
+            # cycles too, and recent operational history is exactly what you
+            # need when something goes wrong.
+            if events_days > 0:
+                cutoff = (utc_now() - timedelta(days=events_days)).isoformat(timespec="seconds")
+                cur = c.execute(
+                    """DELETE FROM runs
+                       WHERE started_at < ?
+                         AND id NOT IN (SELECT DISTINCT run_id FROM analyses WHERE run_id IS NOT NULL)
+                         AND id NOT IN (SELECT DISTINCT run_id FROM trades WHERE run_id IS NOT NULL)""",
+                    (cutoff,),
+                )
+                removed["runs"] = cur.rowcount or 0
+        return removed
+
+    def backup(self, directory: Path | str, *, keep: int = 7) -> Path:
+        """Consistent on-line copy of the DB, keeping the newest ``keep`` files.
+
+        Uses SQLite's backup API, so it is safe while the engine is writing.
+        """
+        target_dir = Path(directory)
+        target_dir.mkdir(parents=True, exist_ok=True)
+        stamp = utc_now().strftime("%Y%m%d-%H%M%S")
+        target = target_dir / f"upbit-{stamp}.sqlite"
+
+        with self.connect() as src:
+            dest = sqlite3.connect(target)
+            try:
+                src.backup(dest)
+            finally:
+                dest.close()
+
+        existing = sorted(target_dir.glob("upbit-*.sqlite"), reverse=True)
+        for stale in existing[max(keep, 1) :]:
+            stale.unlink(missing_ok=True)
+        return target
+
+    def vacuum(self) -> None:
+        """Reclaim space after a prune. Runs outside the usual transaction."""
+        conn = sqlite3.connect(self.db_path, timeout=60)
+        try:
+            conn.execute("VACUUM")
+            conn.execute("PRAGMA optimize")
+        finally:
+            conn.close()
+
+    def database_size_bytes(self) -> int:
+        try:
+            return self.db_path.stat().st_size
+        except OSError:
+            return 0
+
     def list_events(self, limit: int = 200, level: str | None = None) -> list[dict[str, Any]]:
         sql = "SELECT * FROM event_log"
         args: list[Any] = []

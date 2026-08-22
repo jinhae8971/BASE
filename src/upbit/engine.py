@@ -22,7 +22,9 @@ to compute 수급.
 """
 from __future__ import annotations
 
+import threading
 import time
+from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
@@ -69,6 +71,25 @@ class TradingEngine:
         self.broker = broker or build_broker(self.client, self.config, self.store)
         self.guard = HoldingsGuard.load(self.store)
         self.risk = RiskGuard(self.config, self.store)
+        # One cycle at a time. The scheduler's `max_instances` is per-job, so the
+        # 09:10 selection and the 5-minute monitor otherwise overlap on this same
+        # instance — reload() would swap the broker mid-scan, and the monitor
+        # would close positions while selection sizes against a stale snapshot.
+        self._cycle_lock = threading.RLock()
+
+    @contextmanager
+    def cycle(self, name: str):
+        """Serialise a trading cycle, logging when one had to wait on another."""
+        acquired = self._cycle_lock.acquire(blocking=False)
+        if not acquired:
+            waited = time.monotonic()
+            log.info("upbit.cycle.waiting", cycle=name)
+            self._cycle_lock.acquire()
+            log.info("upbit.cycle.resumed", cycle=name, waited_sec=round(time.monotonic() - waited, 1))
+        try:
+            yield
+        finally:
+            self._cycle_lock.release()
 
     def reload(self) -> None:
         """Pick up config / holdings edits made in the dashboard."""
@@ -195,6 +216,10 @@ class TradingEngine:
     # ==================================================================
     def run_selection(self, *, dry_run: bool = False) -> dict[str, Any]:
         """Daily scan → score → enter. ``dry_run`` scores and logs but never buys."""
+        with self.cycle("selection"):
+            return self._run_selection(dry_run=dry_run)
+
+    def _run_selection(self, *, dry_run: bool) -> dict[str, Any]:
         self.reload()
         run_id = self.store.start_run("selection", self.mode, "일일 종목 선정")
         started = time.monotonic()
@@ -523,6 +548,10 @@ class TradingEngine:
     # ==================================================================
     def monitor_positions(self, *, force_exit: bool = False) -> dict[str, Any]:
         """Re-price every open position and close whichever rules have tripped."""
+        with self.cycle("monitor"):
+            return self._monitor_positions(force_exit=force_exit)
+
+    def _monitor_positions(self, *, force_exit: bool) -> dict[str, Any]:
         self.reload()
         positions = self.store.list_open_positions(self.mode)
         if not positions:
@@ -716,9 +745,76 @@ class TradingEngine:
         }
 
     # ==================================================================
+    # Reconciliation
+    # ==================================================================
+    def reconcile(self) -> dict[str, Any]:
+        """Re-align stored positions with what the exchange actually holds.
+
+        A crash between placing an order and writing the row, or a manual sell in
+        the Upbit app, leaves the journal claiming coins that are not there. The
+        engine would then keep trying to exit a phantom position on every cycle.
+
+        Positions are only ever shrunk to the real balance or released — never
+        grown — so this can never invent exposure the user did not have.
+        """
+        with self.cycle("reconcile"):
+            self.reload()
+            positions = self.store.list_open_positions(self.mode)
+            if not positions:
+                return {"checked": 0, "released": [], "adjusted": []}
+
+            released: list[dict[str, Any]] = []
+            adjusted: list[dict[str, Any]] = []
+            for pos in positions:
+                symbol = pos["symbol"]
+                try:
+                    on_exchange = self.broker.coin_balance(symbol)
+                except Exception as exc:  # a lookup failure must not drop a position
+                    log.error("upbit.reconcile.balance_failed", symbol=symbol, error=str(exc))
+                    continue
+
+                tradable = self.guard.tradable_quantity(symbol, on_exchange)
+                recorded = float(pos["volume"])
+
+                # Below the exchange's dust threshold there is nothing left to sell.
+                if tradable <= recorded * 1e-6:
+                    self._release_position(pos, on_exchange)
+                    released.append({"market": pos["market"], "recorded": recorded})
+                    continue
+
+                if tradable < recorded * 0.999:
+                    self.store.update_position(pos["id"], volume=tradable)
+                    self.store.log_event(
+                        "warning",
+                        "reconcile",
+                        f"{pos['market']} 수량 보정 {recorded:.8f} → {tradable:.8f} "
+                        f"(거래소 잔고 기준)",
+                    )
+                    adjusted.append(
+                        {"market": pos["market"], "from": recorded, "to": tradable}
+                    )
+
+            summary = {"checked": len(positions), "released": released, "adjusted": adjusted}
+            if released or adjusted:
+                self.store.log_event(
+                    "warning",
+                    "reconcile",
+                    f"기동 정합성 점검 — 관리해제 {len(released)}건, 수량보정 {len(adjusted)}건",
+                    summary,
+                )
+                log.warning("upbit.reconcile.drift", **{k: len(v) for k, v in summary.items() if isinstance(v, list)})
+            else:
+                log.info("upbit.reconcile.clean", checked=len(positions))
+            return summary
+
+    # ==================================================================
     # Manual controls
     # ==================================================================
     def close_position_by_id(self, position_id: int, reason: str = "manual") -> dict[str, Any]:
+        with self.cycle("manual_close"):
+            return self._close_position_by_id(position_id, reason)
+
+    def _close_position_by_id(self, position_id: int, reason: str) -> dict[str, Any]:
         positions = [p for p in self.store.list_open_positions(self.mode) if p["id"] == position_id]
         if not positions:
             return {"error": "해당 포지션을 찾을 수 없습니다."}
@@ -733,6 +829,10 @@ class TradingEngine:
 
     def liquidate_all(self, reason: str = "panic") -> dict[str, Any]:
         """Kill switch — flatten every engine position. 장기보유 코인은 그대로 둔다."""
+        with self.cycle("liquidate"):
+            return self._liquidate_all(reason=reason)
+
+    def _liquidate_all(self, reason: str) -> dict[str, Any]:
         self.reload()
         positions = self.store.list_open_positions(self.mode)
         run_id = self.store.start_run("liquidate", self.mode, f"전량 청산 ({reason})")

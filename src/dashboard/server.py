@@ -19,7 +19,7 @@ from contextlib import asynccontextmanager, suppress
 from datetime import datetime, timedelta
 from typing import Any
 
-from fastapi import Depends, FastAPI, HTTPException, Query, Request
+from fastapi import Depends, FastAPI, HTTPException, Query, Request, Response
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -36,6 +36,7 @@ from upbit.store import get_store, utc_now
 
 log = get_logger(__name__)
 
+APP_VERSION = "1.1.0"
 STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
 DASHBOARD_TOKEN = os.environ.get("UPBIT_DASHBOARD_TOKEN", "")
 
@@ -61,7 +62,7 @@ async def lifespan(_: FastAPI):
 app = FastAPI(
     title="Upbit Auto-Trading Dashboard",
     description="업비트 알트코인 데이트레이딩 자동매매 대시보드",
-    version="1.0.0",
+    version=APP_VERSION,
     docs_url="/api/docs",
     openapi_url="/api/openapi.json",
     lifespan=lifespan,
@@ -101,14 +102,32 @@ async def _creds_error(_: Request, exc: creds_mod.CredentialsError) -> JSONRespo
 # Health & credentials  (설정 탭)
 # ----------------------------------------------------------------------
 @app.get("/api/health", dependencies=Guarded)
-def health() -> dict[str, Any]:
+def health(response: Response) -> dict[str, Any]:
+    """Liveness *and* readiness.
+
+    Returns 503 when the process is serving HTTP but not actually trading — a
+    dead scheduler or a monitor that has stopped succeeding. The container
+    healthcheck reads this, so `docker compose ps` tells the truth instead of
+    showing a healthy box that quietly stopped managing positions.
+    """
     store = get_store()
     config = strategy_mod.load_config(store)
+    scheduler = get_scheduler()
+    health_report = scheduler.health()
+    if not health_report["healthy"]:
+        response.status_code = 503
+
     return {
-        "status": "ok",
+        "status": "ok" if health_report["healthy"] else "degraded",
+        "problems": health_report["problems"],
         "mode": config.mode,
+        "version": APP_VERSION,
         "credentials": creds_mod.status(),
-        "scheduler": get_scheduler().status(),
+        "scheduler": scheduler.status(),
+        "storage": {
+            "db_bytes": store.database_size_bytes(),
+            "open_positions": len(store.list_open_positions(config.mode)),
+        },
         "server_time_kst": datetime.now(KST).isoformat(timespec="seconds"),
     }
 

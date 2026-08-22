@@ -52,7 +52,21 @@ services:
         max-size: "10m"
         max-file: "5"
 
-    stop_grace_period: 20s
+    # 폭주해도 호스트를 끌어내리지 않도록. 실측 사용량은 100MB 안팎이라 여유가 큽니다.
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+          cpus: "1.5"
+        reservations:
+          memory: 128m
+
+    # 스캔이 진행 중이면 끝날 때까지 기다린 뒤 종료합니다 — 주문을 내고 기록하기
+    # 전에 잘리면 거래가 장부에 빠집니다.
+    stop_grace_period: 90s
+
+    # 컨테이너 안에서 프로세스가 죽어도 좀비로 남지 않게.
+    init: true
 
 volumes:
   upbit-data:

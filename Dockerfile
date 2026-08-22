@@ -46,8 +46,13 @@ USER upbit
 
 EXPOSE 8787
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-  CMD python -c "import sys,urllib.request; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8787/api/health', timeout=5).status == 200 else 1)"
+# /api/health returns 503 when the process serves HTTP but is not actually
+# trading (dead scheduler, stalled monitor), so this reflects trading liveness,
+# not just "the web server answered".
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+  CMD python -c "import sys,urllib.request as u; \
+sys.exit(0 if u.urlopen('http://127.0.0.1:8787/api/health', timeout=8).status == 200 else 1)" \
+  || exit 1
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 CMD ["serve"]

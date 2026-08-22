@@ -27,7 +27,8 @@
     const res = await fetch('/api' + path, opts);
     let body = null;
     try { body = await res.json(); } catch (e) { body = null; }
-    if (!res.ok) {
+    // /api/health answers 503 when degraded; the body is the diagnosis, not an error.
+    if (!res.ok && !(res.status === 503 && body && body.problems)) {
       throw new Error((body && (body.detail || body.message)) || ('HTTP ' + res.status));
     }
     return body;
@@ -290,10 +291,21 @@
   function renderScheduler(sched) {
     const jobs = sched.jobs || [];
     const selection = jobs.find((j) => j.id === 'selection');
+    const health = sched.health || {};
+    const degraded = health.healthy === false;
+    const uptime = health.uptime_sec
+      ? (health.uptime_sec >= 86400
+          ? `${Math.floor(health.uptime_sec / 86400)}일 ${Math.floor((health.uptime_sec % 86400) / 3600)}시간`
+          : `${Math.floor(health.uptime_sec / 3600)}시간 ${Math.floor((health.uptime_sec % 3600) / 60)}분`)
+      : '—';
+
     $('schedBody').innerHTML = `
-      <div><span class="${sched.running ? 'on' : 'off'}">${sched.running ? '● 실행 중' : '○ 중지됨'}</span></div>
+      <div><span class="${sched.running ? 'on' : 'off'}">${sched.running ? '● 실행 중' : '○ 중지됨'}</span>
+        ${degraded ? '<span class="off" style="margin-left:6px">⚠ 이상</span>' : ''}</div>
       <div style="margin-top:4px">다음 선정: ${selection && selection.next_run ? localTime(selection.next_run) : '—'}</div>
-      <div style="margin-top:2px;font-size:10.5px;opacity:.75">서버 ${localTime(sched.now)} KST</div>`;
+      <div style="margin-top:2px">가동 ${uptime}</div>
+      <div style="margin-top:2px;font-size:10.5px;opacity:.75">서버 ${localTime(sched.now)} KST</div>
+      ${degraded ? `<div class="sched-problem">${(health.problems || []).map(esc).join('<br>')}</div>` : ''}`;
 
     const last = sched.last_results || {};
     const regimeValue = (last.selection && last.selection.regime && last.selection.regime.regime)
@@ -967,16 +979,32 @@
     };
   }
 
+  function renderHealthBadge(health) {
+    const badge = $('healthBadge');
+    if (!badge) return;
+    if (!health || health.healthy !== false) {
+      badge.classList.add('hidden');
+      return;
+    }
+    badge.classList.remove('hidden');
+    badge.textContent = `⚠ ${(health.problems || ['이상 감지'])[0]}`;
+    badge.title = (health.problems || []).join('\n');
+  }
+
   async function pollHeader() {
     try {
-      const [pf, control] = await Promise.all([get('/portfolio'), get('/control/status')]);
+      const [pf, control, health] = await Promise.all([
+        get('/portfolio'), get('/control/status'), get('/health'),
+      ]);
       renderHeader(pf, control);
+      renderHealthBadge(health && health.scheduler && health.scheduler.health);
     } catch (e) { /* transient — the next tick retries */ }
   }
 
   document.addEventListener('DOMContentLoaded', () => {
     bind();
     switchTab('overview');
+    pollHeader();
     setInterval(pollHeader, 30000);
     window.addEventListener('resize', () => {
       clearTimeout(window.__resizeTimer);

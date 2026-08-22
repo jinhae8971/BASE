@@ -55,6 +55,32 @@ def test_health_reports_paper_mode(client) -> None:
     assert body["credentials"]["configured"] is False
 
 
+def test_health_is_503_when_not_actually_trading(client, monkeypatch) -> None:
+    """HTTP 200 must not mean 'healthy' when the scheduler stopped managing
+    positions — the container healthcheck reads this endpoint."""
+    from upbit import scheduler as sched_mod
+
+    sched = sched_mod._SCHEDULER
+    monkeypatch.setattr(
+        sched, "health",
+        lambda: {"healthy": False, "problems": ["모니터링이 42분째 성공하지 못했습니다."],
+                 "running": False, "started_at": None, "uptime_sec": 0,
+                 "watchdog_alive": False, "watchdog_revivals": 0, "cycles": {}},
+    )
+    resp = client.get("/api/health")
+    assert resp.status_code == 503
+    body = resp.json()
+    assert body["status"] == "degraded"
+    assert "모니터링" in body["problems"][0]
+
+
+def test_health_carries_version_and_storage(client) -> None:
+    body = client.get("/api/health").json()
+    assert body["version"]
+    assert body["storage"]["db_bytes"] > 0
+    assert "open_positions" in body["storage"]
+
+
 def test_portfolio_shape(client) -> None:
     body = client.get("/api/portfolio").json()
     for key in ("cash_krw", "trading_krw", "longterm_krw", "total_equity", "positions", "stats"):

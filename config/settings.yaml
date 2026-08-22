@@ -161,6 +161,15 @@ upbit:
       neutral: 0.6
       risk_off: 0.0
 
+  maintenance:
+    enabled: true
+    time: "04:30"                # 매일 KST — 백업·정리·VACUUM
+    backup_keep: 7               # data_store/backups/ 에 보관할 백업 수
+    analyses_retention_days: 180 # 분석 이력 보관 기간 (거래·포지션 기록은 영구 보관)
+    events_retention_days: 90
+    snapshots_retention_days: 730
+    vacuum: true
+
   storage:
     db: data_store/upbit.sqlite
     credentials: data_store/upbit_credentials.enc
