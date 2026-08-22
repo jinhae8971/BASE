@@ -33,6 +33,11 @@ class EnvSettings(BaseSettings):
     dart_api_key: str = ""
     ecos_api_key: str = ""
 
+    # Upbit — normally entered in the dashboard and sealed under data_store/.
+    # These env vars exist only as an escape hatch for headless/CI runs.
+    upbit_access_key: str = ""
+    upbit_secret_key: str = ""
+
     mais_data_dir: str = "./data_store"
     mais_log_level: str = "INFO"
     mais_tz: str = "Asia/Seoul"

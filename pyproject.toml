@@ -47,6 +47,12 @@ dashboard = [
     "streamlit>=1.33",
     "plotly>=5.20",
 ]
+upbit = [
+    "fastapi>=0.110",
+    "uvicorn[standard]>=0.29",
+    "PyJWT>=2.8",
+    "cryptography>=42.0",
+]
 backtest = [
     "vectorbt>=0.26",
     "matplotlib>=3.8",
@@ -56,6 +62,8 @@ backtest = [
 mais-daily = "scheduler.daily_pipeline:main"
 mais-backtest = "backtest.engine:main"
 mais-reflect = "agents.reflection_agent:main"
+mais-upbit = "upbit.cli:main"
+mais-upbit-dashboard = "dashboard.server:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

@@ -71,11 +71,35 @@ src/
 ├── backtest/         # 이벤트 기반 백테스트
 ├── memory/           # Decision Journal + RAG
 ├── scheduler/        # 일일 파이프라인
-└── dashboard/        # 운영 UI
+├── upbit/            # 업비트 알트코인 데이트레이딩 (독립 서브시스템)
+└── dashboard/        # FastAPI 백엔드 + SPA 트레이딩 대시보드
 config/
-├── settings.yaml     # 리스크 한도·유니버스·스케줄
+├── settings.yaml     # 리스크 한도·유니버스·스케줄 (+ upbit 섹션)
 └── prompts/          # 에이전트 시스템 프롬프트
 ```
+
+---
+
+## 🪙 업비트 알트코인 자동매매 (Upbit Desk)
+
+국내주식 스택과 **독립적으로** 동작하는 크립토 데이트레이딩 서브시스템.
+다가올 상승장에서 알트코인 펌핑의 **베타 수익**을 노린다.
+
+- 매일 **09:10 (KST)** 에 KRW 마켓을 스캔해 **거래량 · 수급 · 차트 · 베타** 4축 종합점수 상위 종목을 자동 매수
+- 5분 간격 모니터링으로 익절 · 손절 · 트레일링 스톱 · 보유시간 · 국면 전환 청산
+- **장기보유로 등록한 코인은 매수도 매도도 하지 않는다** (전량 청산·강제 청산에서도 보호)
+- BTC 국면이 `risk_off` 면 신규 진입을 전면 차단
+- 포트폴리오 · 거래내역 · 분석내역 · 전략 · 장기보유 · 설정 7개 탭의 트레이딩 대시보드
+- **기본값은 모의(paper) 모드** — 실거래 전환은 확인 문구 입력 필요
+
+```bash
+pip install -e ".[dev,upbit]"
+python scripts/run_upbit_dashboard.py     # http://127.0.0.1:8787
+```
+
+API 키는 대시보드 **설정** 탭에서 입력하며 `data_store/` 아래에 암호화 저장된다.
+
+📖 상세: [`docs/upbit_trading.md`](docs/upbit_trading.md)
 
 ---
 
@@ -97,6 +121,10 @@ python scripts/run_backtest.py --start 2015-01-01 --end 2025-12-31
 
 # 5. 리플렉션 (주간/월간)
 python scripts/run_reflection.py
+
+# 6. 업비트 자동매매 대시보드 (독립 실행)
+pip install -e ".[upbit]"
+python scripts/run_upbit_dashboard.py   # http://127.0.0.1:8787
 ```
 
 ---

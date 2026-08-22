@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Upbit Auto-Trading Desk</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>📈</text></svg>" />
+</head>
+<body>
+<div id="app">
+
+  <!-- ================= Sidebar ================= -->
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-mark">▲</span>
+      <div>
+        <div class="brand-name">UPBIT DESK</div>
+        <div class="brand-sub">알트 데이트레이딩 자동매매</div>
+      </div>
+    </div>
+
+    <nav class="nav" id="nav">
+      <button class="nav-item active" data-tab="overview"><span class="nav-ico">◎</span>대시보드</button>
+      <button class="nav-item" data-tab="portfolio"><span class="nav-ico">▦</span>포트폴리오</button>
+      <button class="nav-item" data-tab="trades"><span class="nav-ico">⇄</span>거래내역</button>
+      <button class="nav-item" data-tab="analysis"><span class="nav-ico">◐</span>분석내역</button>
+      <button class="nav-item" data-tab="strategy"><span class="nav-ico">⚙</span>전략</button>
+      <button class="nav-item" data-tab="longterm"><span class="nav-ico">🔒</span>장기보유</button>
+      <button class="nav-item" data-tab="settings"><span class="nav-ico">🔑</span>설정</button>
+    </nav>
+
+    <div class="sidebar-foot">
+      <div class="sched-card" id="schedCard">
+        <div class="sched-title">스케줄러</div>
+        <div class="sched-body" id="schedBody">확인 중…</div>
+      </div>
+      <button class="btn btn-danger btn-block" id="panicBtn">⚠ 전량 청산</button>
+    </div>
+  </aside>
+
+  <!-- ================= Main ================= -->
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <h1 id="pageTitle">대시보드</h1>
+        <span class="mode-badge" id="modeBadge">—</span>
+        <span class="regime-badge" id="regimeBadge">—</span>
+      </div>
+      <div class="topbar-right">
+        <div class="kpi-inline">
+          <span class="kpi-inline-label">총 자산</span>
+          <span class="kpi-inline-value" id="topEquity">—</span>
+        </div>
+        <div class="kpi-inline">
+          <span class="kpi-inline-label">평가손익</span>
+          <span class="kpi-inline-value" id="topUnrealized">—</span>
+        </div>
+        <button class="btn btn-ghost" id="refreshBtn" title="새로고침">↻</button>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <!-- ---------- 대시보드 ---------- -->
+      <section class="tab active" id="tab-overview">
+        <div class="kpi-grid" id="kpiGrid"></div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-head">
+              <h2>자산 추이</h2>
+              <div class="seg" id="equityRange">
+                <button data-days="7">7D</button>
+                <button data-days="30" class="on">30D</button>
+                <button data-days="90">90D</button>
+                <button data-days="365">1Y</button>
+              </div>
+            </div>
+            <canvas id="equityChart" height="260"></canvas>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><h2>자산 구성</h2></div>
+            <canvas id="allocChart" height="260"></canvas>
+            <div class="legend" id="allocLegend"></div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-head">
+              <h2>오늘의 선정 종목</h2>
+              <span class="muted" id="pickRunInfo"></span>
+            </div>
+            <div class="table-wrap"><table id="picksTable"></table></div>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><h2>시장 국면 (BTC)</h2></div>
+            <div id="regimePanel" class="regime-panel"></div>
+            <div class="card-head" style="margin-top:18px"><h2>최근 이벤트</h2></div>
+            <div class="event-list" id="eventList"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- 포트폴리오 ---------- -->
+      <section class="tab" id="tab-portfolio">
+        <div class="kpi-grid" id="pfKpi"></div>
+
+        <div class="card">
+          <div class="card-head">
+            <h2>트레이딩 포지션</h2>
+            <div class="head-actions">
+              <button class="btn btn-sm" id="snapshotBtn">자산 스냅샷</button>
+              <button class="btn btn-sm" id="monitorBtn">지금 모니터링</button>
+            </div>
+          </div>
+          <div class="table-wrap"><table id="positionsTable"></table></div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-head"><h2>장기보유 (거래 제외)</h2></div>
+            <div class="table-wrap"><table id="longtermTable"></table></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h2>포지션 비중</h2></div>
+            <canvas id="pfAllocChart" height="240"></canvas>
+            <div class="legend" id="pfAllocLegend"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- 거래내역 ---------- -->
+      <section class="tab" id="tab-trades">
+        <div class="kpi-grid" id="tradeKpi"></div>
+
+        <div class="card">
+          <div class="card-head">
+            <h2>체결 내역</h2>
+            <div class="filters">
+              <input type="text" id="tradeMarketFilter" placeholder="마켓 (예: KRW-XRP)" />
+              <select id="tradeSideFilter">
+                <option value="">전체</option>
+                <option value="bid">매수</option>
+                <option value="ask">매도</option>
+              </select>
+              <select id="tradeDaysFilter">
+                <option value="">전체 기간</option>
+                <option value="1">최근 1일</option>
+                <option value="7">최근 7일</option>
+                <option value="30" selected>최근 30일</option>
+                <option value="90">최근 90일</option>
+              </select>
+              <button class="btn btn-sm" id="tradeApply">적용</button>
+              <button class="btn btn-sm btn-ghost" id="tradeExport">CSV</button>
+            </div>
+          </div>
+          <div class="table-wrap"><table id="tradesTable"></table></div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-head"><h2>일별 실현손익</h2></div>
+            <canvas id="pnlChart" height="240"></canvas>
+          </div>
+          <div class="card">
+            <div class="card-head"><h2>청산 사유 분포</h2></div>
+            <canvas id="exitChart" height="240"></canvas>
+            <div class="legend" id="exitLegend"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- 분석내역 ---------- -->
+      <section class="tab" id="tab-analysis">
+        <div class="card">
+          <div class="card-head">
+            <h2>분석 실행 이력</h2>
+            <div class="head-actions">
+              <label class="check"><input type="checkbox" id="dryRunCheck" checked /> 시뮬레이션(주문 없음)</label>
+              <button class="btn btn-sm btn-primary" id="runScanBtn">지금 스캔 실행</button>
+            </div>
+          </div>
+          <div class="run-strip" id="runStrip"></div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-head">
+              <h2>종합점수 순위</h2>
+              <span class="muted" id="analysisRunInfo"></span>
+            </div>
+            <div class="table-wrap tall"><table id="analysisTable"></table></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h2>점수 상세</h2></div>
+            <div id="scoreDetail" class="score-detail">
+              <p class="muted">왼쪽 표에서 종목을 선택하면 4개 축(거래량·수급·차트·베타)의 세부 지표를 볼 수 있습니다.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- 전략 ---------- -->
+      <section class="tab" id="tab-strategy">
+        <div class="card">
+          <div class="card-head">
+            <h2>종합점수 가중치</h2>
+            <span class="muted">4개 축의 상대 비중 — 합계는 자동으로 정규화됩니다.</span>
+          </div>
+          <div class="weight-grid" id="weightGrid"></div>
+          <canvas id="weightChart" height="150"></canvas>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-head"><h2>진입 · 청산 규칙</h2></div>
+            <div class="form-grid" id="strategyForm"></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h2>리스크 한도</h2></div>
+            <div class="form-grid" id="riskForm"></div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-head"><h2>스케줄</h2></div>
+            <div class="form-grid" id="scheduleForm"></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h2>유니버스 필터</h2></div>
+            <div class="form-grid" id="universeForm"></div>
+          </div>
+        </div>
+
+        <div class="sticky-actions">
+          <button class="btn btn-ghost" id="resetConfigBtn">기본값으로 초기화</button>
+          <button class="btn btn-primary" id="saveConfigBtn">전략 저장</button>
+        </div>
+      </section>
+
+      <!-- ---------- 장기보유 ---------- -->
+      <section class="tab" id="tab-longterm">
+        <div class="card">
+          <div class="card-head"><h2>장기보유 코인</h2></div>
+          <p class="hint">
+            여기에 등록한 코인은 <strong>자동매매 대상에서 완전히 제외</strong>됩니다.
+            매일 아침 스캔에서 후보로 뽑히지 않고, 전량 청산·강제 청산에서도 보호됩니다.
+            <br />잠금 수량을 <code>0</code> 으로 두면 보유 전량이 보호되고, 양수로 두면 그 수량만
+            보호하고 초과분은 트레이딩에 사용합니다.
+          </p>
+          <div class="inline-form">
+            <input type="text" id="ltSymbol" placeholder="심볼 (예: BTC)" />
+            <input type="number" id="ltQty" placeholder="잠금 수량 (0 = 전량)" step="any" min="0" value="0" />
+            <input type="text" id="ltMemo" placeholder="메모 (선택)" />
+            <button class="btn btn-primary" id="ltAddBtn">추가</button>
+          </div>
+          <div class="table-wrap"><table id="longtermManageTable"></table></div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><h2>계좌 보유 자산 (미등록)</h2></div>
+          <p class="hint">계좌에는 있지만 아직 장기보유로 등록되지 않은 코인입니다. 클릭하면 바로 등록됩니다.</p>
+          <div class="chip-row" id="ltSuggest"></div>
+        </div>
+      </section>
+
+      <!-- ---------- 설정 ---------- -->
+      <section class="tab" id="tab-settings">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-head"><h2>업비트 API 키</h2></div>
+            <p class="hint">
+              업비트 → 마이페이지 → Open API 관리에서 발급한 키를 입력하세요.
+              키는 <code>data_store/</code> 아래에 암호화되어 저장되며 화면에는 마스킹된 값만 표시됩니다.
+              <br />자산조회·주문 권한과 <strong>서버 IP 허용 등록</strong>이 필요합니다.
+            </p>
+            <div class="form-grid">
+              <label>Access Key</label>
+              <input type="text" id="accessKey" placeholder="발급받은 Access Key" autocomplete="off" />
+              <label>Secret Key</label>
+              <input type="password" id="secretKey" placeholder="발급받은 Secret Key" autocomplete="off" />
+            </div>
+            <div class="row-actions">
+              <button class="btn btn-primary" id="saveKeyBtn">저장</button>
+              <button class="btn" id="testKeyBtn">연결 테스트</button>
+              <button class="btn btn-ghost btn-danger-text" id="deleteKeyBtn">키 삭제</button>
+            </div>
+            <div class="status-box" id="keyStatus"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><h2>거래 모드</h2></div>
+            <p class="hint">
+              기본값은 <strong>모의(paper)</strong> 입니다. 실거래로 전환하면 실제 자금으로 주문이
+              나갑니다. 전환하려면 확인 문구 <code>I-UNDERSTAND</code> 를 입력해야 합니다.
+            </p>
+            <div class="mode-switch">
+              <button class="mode-opt" data-mode="paper">모의 거래 (paper)</button>
+              <button class="mode-opt" data-mode="live">실거래 (live)</button>
+            </div>
+            <div class="form-grid" style="margin-top:14px">
+              <label>확인 문구</label>
+              <input type="text" id="modeConfirm" placeholder="실거래 전환 시 I-UNDERSTAND 입력" />
+            </div>
+
+            <div class="card-head" style="margin-top:22px"><h2>모의 계좌</h2></div>
+            <div class="form-grid">
+              <label>초기 자본 (KRW)</label>
+              <input type="number" id="paperInitial" value="10000000" step="100000" min="10000" />
+            </div>
+            <div class="row-actions">
+              <button class="btn btn-ghost btn-danger-text" id="resetPaperBtn">모의 계좌 초기화</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <h2>시스템 로그</h2>
+            <div class="head-actions">
+              <select id="logLevel">
+                <option value="">전체</option>
+                <option value="info">info</option>
+                <option value="warning">warning</option>
+                <option value="error">error</option>
+              </select>
+            </div>
+          </div>
+          <div class="table-wrap tall"><table id="logTable"></table></div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<div id="toastHost" class="toast-host"></div>
+
+<div id="modal" class="modal hidden">
+  <div class="modal-box">
+    <h3 id="modalTitle">확인</h3>
+    <p id="modalBody"></p>
+    <input type="text" id="modalInput" class="hidden" />
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="modalCancel">취소</button>
+      <button class="btn btn-danger" id="modalOk">실행</button>
+    </div>
+  </div>
+</div>
+
+<script src="/static/charts.js"></script>
+<script src="/static/app.js"></script>
+</body>
+</html>

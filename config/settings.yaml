@@ -88,3 +88,83 @@ backtest:
   start: "2015-01-01"
   initial_capital: 100_000_000
   benchmark_ticker: "^KS11"
+
+# ============================================================
+# Upbit day-trading subsystem (crypto, 24/7)
+# ------------------------------------------------------------
+# These are DEFAULTS. The dashboard writes user overrides into
+# data_store/upbit.sqlite::app_settings, which take precedence.
+# ============================================================
+upbit:
+  mode: paper                  # paper | live  — live requires an explicit switch in the dashboard
+  base_url: https://api.upbit.com
+  quote_currency: KRW
+  fee_rate: 0.0005             # 0.05% per side on the KRW market
+
+  schedule:
+    enabled: true
+    selection_time: "09:10"    # daily universe scan + entries (Asia/Seoul)
+    monitor_interval_min: 5    # intraday exit checks
+    eod_exit_time: "08:50"     # flatten before the next selection run
+    snapshot_interval_min: 30  # equity curve sampling
+
+  universe:
+    min_trade_price_24h: 5_000_000_000   # 24h 거래대금 floor (KRW)
+    max_trade_price_24h: 0               # 0 = no ceiling
+    min_price: 1.0
+    exclude_warning: true                # 유의 종목 제외
+    exclude_caution: true                # 아래 caution_types 에 해당할 때만 제외
+    # 업비트 '주의' 플래그 중 실제로 배제할 항목.
+    # TRADING_VOLUME_SOARING(거래량 급증)은 이 전략의 진입 신호 자체이므로 기본 제외 대상이 아니다.
+    caution_types:
+      - CAUTION                          # 구버전 API 의 유형 미상 주의
+      - PRICE_FLUCTUATIONS               # 가격 급등락
+      - DEPOSIT_AMOUNT_SOARING           # 입금량 급증
+      - GLOBAL_PRICE_DIFFERENCES         # 국내외 가격 차이
+      - CONCENTRATION_OF_SMALL_ACCOUNTS  # 소수 계정 집중
+    exclude_stablecoins: true
+    max_candidates: 60                   # deep-scan this many by liquidity
+    stablecoins: [USDT, USDC, DAI, TUSD, BUSD, PYUSD, USDS]
+
+  scoring:
+    weights:
+      volume: 0.30             # 거래량 / 거래대금 급증
+      flow: 0.25               # 수급 (호가 불균형 + 체결 강도)
+      technical: 0.30          # 차트 분석
+      beta: 0.15               # 알트 베타 / 상대강도
+    candle_count: 120          # daily candles pulled per candidate
+    intraday_unit: 60          # minute-candle unit for intraday confirmation
+    intraday_count: 72
+    orderbook_depth: 15
+    tick_count: 200
+
+  strategy:
+    max_positions: 5
+    min_score: 62.0            # composite score floor for an entry
+    position_pct: 0.15         # of tradable equity per position
+    max_krw_per_trade: 0       # 0 = uncapped (still bounded by position_pct)
+    min_krw_per_trade: 6000    # Upbit minimum order is 5,000 KRW
+    take_profit_pct: 0.05
+    stop_loss_pct: 0.03
+    trailing_activate_pct: 0.03
+    trailing_gap_pct: 0.02
+    max_hold_hours: 22
+    order_style: market        # market | limit
+    limit_offset_bps: 10       # limit orders cross the spread by this much
+
+  risk:
+    daily_loss_kill_pct: 0.05  # halt new entries after this much drawdown today
+    max_total_exposure_pct: 0.80
+    min_cash_buffer_pct: 0.10
+    regime_exposure:
+      risk_on: 1.0
+      neutral: 0.6
+      risk_off: 0.0
+
+  storage:
+    db: data_store/upbit.sqlite
+    credentials: data_store/upbit_credentials.enc
+
+  dashboard:
+    host: 127.0.0.1
+    port: 8787
